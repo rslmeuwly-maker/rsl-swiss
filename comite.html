@@ -3,775 +3,241 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Comité — Romandie Scooter League</title>
-
-  <!-- Fonts + styles globaux -->
+  <title>Comité RSL — Romandie Scooter League</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/common.css"/>
-
-  <!-- Supabase + scripts -->
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;900&display=swap" rel="stylesheet">
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-  <script defer src="js/env.js"></script>
-  <script defer src="js/auth.js"></script>
-  <script defer src="js/site.js"></script>
-
+  <script defer src="/js/env.js"></script>
+  <script defer src="/js/auth.js"></script>
+  <script defer src="/js/site.js"></script>
   <style>
-    :root{
-      --rsl-bg:#020617;
-      --rsl-fg:#e5e7eb;
-      --rsl-muted:#9ca3af;
-      --rsl-card:rgba(15,23,42,.96);
-      --rsl-card-soft:rgba(15,23,42,.9);
-      --rsl-border:rgba(148,163,184,.45);
-      --rsl-accent:#22c55e;
-      --rsl-accent-soft:rgba(34,197,94,.14);
-    }
-
-    body.theme-light{
-      --rsl-bg:#f3f4f6;
-      --rsl-fg:#0f172a;
-      --rsl-muted:#6b7280;
-      --rsl-card:#ffffff;
-      --rsl-card-soft:#f9fafb;
-      --rsl-border:rgba(148,163,184,.35);
-      --rsl-accent:#16a34a;
-      --rsl-accent-soft:rgba(22,163,74,.12);
-    }
-
-    *,:before,:after{ box-sizing:border-box; }
-
-    html,body{
-      height:100%;
-      margin:0;
-      background:transparent!important;
-      display:flex;
-      flex-direction:column;
-      color:var(--rsl-fg);
-      font-family:"Outfit",system-ui,-apple-system,Segoe UI,Roboto,Arial;
-      overflow-x:hidden;
-    }
-    main{ flex:1; }
-
-    /* ======= Fond vidéo ======= */
-    .site-bg-video{
-      position:fixed; inset:0;
-      width:100%; height:100%;
-      object-fit:cover;
-      z-index:-2;
-      background:#000;
-      pointer-events:none!important;
-    }
-    .site-bg-dim{
-      position:fixed; inset:0;
-      z-index:-1;
-      background:linear-gradient(180deg,rgba(0,0,0,.55),rgba(0,0,0,.9));
-      transition:background .25s ease;
-      pointer-events:none!important;
-    }
-    body.theme-light .site-bg-dim{
-      background:linear-gradient(180deg,rgba(249,250,251,.9),rgba(15,23,42,.85));
-    }
-
-    /* ======= NAVBAR ======= */
-    nav.nav{
-      background:rgba(0,0,0,.65);
-      backdrop-filter:blur(10px);
-      position:sticky; top:0; z-index:100;
-      transition:background .25s ease, border-color .25s ease, box-shadow .25s ease;
-      border-bottom:1px solid rgba(15,23,42,.8);
-    }
-    nav.nav .container{ max-width:1320px; margin:0 auto; padding:10px 18px; }
-    nav.nav .row{ display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
-
-    body.theme-light nav.nav{
-      background:rgba(248,250,252,.96);
-      border-bottom:1px solid rgba(148,163,184,.5);
-      box-shadow:0 10px 30px rgba(15,23,42,.06);
-    }
-
-    .brand{
-      display:flex; align-items:center; gap:10px;
-      color:inherit; text-decoration:none;
-      min-width:fit-content;
-    }
-    .brand img{
-      height:42px; border-radius:10px;
-      display:block;
-      background:#fff;
-      padding:3px;
-      box-shadow:0 10px 28px rgba(0,0,0,.35);
-    }
-    .brand span{
-      font-weight:800;
-      letter-spacing:.2px;
-      font-size:16px;
-      white-space:nowrap;
-    }
-
-    nav.nav ul{
-      display:flex; align-items:center; gap:20px;
-      padding:0; margin:0;
-      list-style:none;
-    }
-    nav.nav ul li a{
-      font-weight:600;
-      color:var(--rsl-fg);
-      font-size:15px;
-      letter-spacing:.02em;
-      white-space:nowrap;
-      text-decoration:none;
-      opacity:.9;
-      transition:.2s ease;
-    }
-    nav.nav ul li a:hover{ color:var(--rsl-accent); opacity:1; }
-
-    .cta{ display:flex; align-items:center; gap:10px; }
-
-    .btn{
-      border-radius:999px;
-      padding:8px 14px;
-      font-size:14px;
-      font-weight:700;
-      border:1px solid rgba(148,163,184,.5);
-      text-decoration:none;
-      cursor:pointer;
-      display:inline-flex;
-      align-items:center;
-      gap:6px;
-      background:rgba(15,23,42,.9);
-      color:#f9fafb;
-      transition:.2s ease;
-      line-height:1;
-      white-space:nowrap;
-    }
-    body.theme-light .btn{
-      background:#0f172a;
-      color:#f9fafb;
-      border-color:#0f172a;
-    }
-    .btn.green{
-      background:var(--rsl-accent);
-      color:#052e16;
-      border-color:transparent;
-      box-shadow:0 10px 26px rgba(22,163,74,.45);
-    }
-    .btn:hover{ transform:translateY(-1px); filter:brightness(1.05); }
-
-    .nav-avatar{
-      width:34px; height:34px;
-      border-radius:999px;
-      object-fit:cover;
-      border:2px solid var(--rsl-accent);
-      box-shadow:0 0 10px rgba(34,197,94,.5);
-      display:block;
-    }
-
-    .theme-toggle{
-      border-radius:999px;
-      border:1px solid rgba(148,163,184,.6);
-      background:rgba(15,23,42,.9);
-      color:#e5e7eb;
-      width:34px; height:34px;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      font-size:17px;
-      cursor:pointer;
-      padding:0;
-      transition:.2s ease;
-      line-height:1;
-    }
-    .theme-toggle:hover{ transform:translateY(-1px); filter:brightness(1.08); }
-    body.theme-light .theme-toggle{
-      background:#ffffff;
-      color:#0f172a;
-      border-color:rgba(148,163,184,.7);
-    }
-
-    #menuBtn{
-      display:none;
-      align-items:center;
-      justify-content:center;
-      padding:7px 10px;
-      font-size:18px;
-      line-height:1;
-      border-radius:10px;
-      border:1px solid rgba(148,163,184,.4);
-      background:rgba(15,23,42,.9);
-      color:#e5e7eb;
-      cursor:pointer;
-      transition:.2s ease;
-    }
-    #menuBtn:hover { filter:brightness(1.1); }
-    body.theme-light #menuBtn{
-      background:#0f172a;
-      color:#f9fafb;
-      border-color:#0f172a;
-    }
-
-    .container{ max-width:1200px; margin:0 auto; padding:0 16px; }
-
-    /* ===== Menu mobile ===== */
-    .mobile-sheet{ position:fixed; inset:0; display:none; z-index:120; }
-    .mobile-sheet.open{ display:block; }
-    .mobile-dim{ position:absolute; inset:0; background:rgba(0,0,0,.55); }
-    .mobile-panel{
-      position:absolute; top:0; right:0; height:100%;
-      width:82vw; max-width:360px;
-      background:var(--rsl-card);
-      padding:22px 18px;
-      display:flex;
-      flex-direction:column;
-      gap:10px;
-      border-left:1px solid rgba(15,23,42,.8);
-      box-shadow:-18px 0 50px rgba(0,0,0,.55);
-    }
-    .mobile-panel a{
-      color:var(--rsl-fg);
-      text-decoration:none;
-      font-weight:700;
-      padding:6px 0;
-      font-size:14px;
-    }
-    .mobile-panel hr{
-      border:0;
-      height:1px;
-      background:rgba(148,163,184,.4);
-      margin:10px 0;
-    }
-
-    @media (max-width:990px){
-      nav.nav ul{ display:none !important; }
-      #btnCart, .btn.green{ display:none !important; }
-      #menuBtn{ display:inline-flex; }
-      .coach-fab{ display:none; }
-    }
-
-    /* ===== PAGE HEADER CARD (même ADN que accueil) ===== */
-    .hero-wrap{
-      max-width:1200px;
-      margin:32px auto 18px;
-      padding:0 16px;
-    }
-    .intro-card{
-      background:var(--rsl-card);
-      border-radius:22px;
-      border:1px solid var(--rsl-border);
-      box-shadow:0 30px 80px rgba(15,23,42,.9);
-      padding:22px 22px 22px;
-      position:relative;
-      overflow:hidden;
-    }
-    body.theme-light .intro-card{
-      box-shadow:0 24px 60px rgba(15,23,42,.16);
-    }
-    .intro-card:before{
-      content:"";
-      position:absolute; inset:-40% -30%;
-      background:
-        radial-gradient(circle at 20% 25%, rgba(34,197,94,.18), transparent 55%),
-        radial-gradient(circle at 85% 20%, rgba(34,197,94,.12), transparent 60%),
-        radial-gradient(circle at 60% 90%, rgba(99,102,241,.10), transparent 62%);
-      pointer-events:none;
-      z-index:0;
-    }
-    .intro-inner{ position:relative; z-index:1; }
-
-    .top-row{
-      display:flex;
-      align-items:flex-start;
-      justify-content:space-between;
-      gap:18px;
-      flex-wrap:wrap;
-    }
-    .brand-block{
-      display:flex;
-      gap:14px;
-      align-items:center;
-      min-width:min(560px,100%);
-    }
-    .brand-logo-big{
-      width:60px; height:60px;
-      border-radius:18px;
-      background:#fff;
-      padding:7px;
-      box-shadow:0 18px 44px rgba(15,23,42,.75);
-      flex:0 0 auto;
-    }
-    .brand-logo-big img{ width:100%; height:100%; object-fit:contain; display:block; }
-
-    .brand-text-big h1{
-      margin:0;
-      font-size:clamp(24px,4vw,30px);
-      font-weight:900;
-      letter-spacing:.02em;
-      color:#f9fafb;
-    }
-    body.theme-light .brand-text-big h1{ color:#0f172a; }
-    .brand-text-big p{
-      margin:4px 0 0;
-      font-size:13px;
-      color:var(--rsl-muted);
-      max-width:70ch;
-    }
-
-    .badge-launch{
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      padding:6px 12px;
-      border-radius:999px;
-      background:rgba(15,23,42,.95);
-      border:1px solid rgba(148,163,184,.7);
-      font-size:11px;
-      text-transform:uppercase;
-      letter-spacing:.14em;
-      color:var(--rsl-muted);
-      white-space:nowrap;
-    }
-    .badge-launch span{
-      width:7px;height:7px;border-radius:999px;
-      background:var(--rsl-accent);
-      box-shadow:0 0 10px rgba(34,197,94,.9);
-    }
-    body.theme-light .badge-launch{ background:#f9fafb; }
-
-    /* ===== SECTION COMITÉ ===== */
-    .content{
-      max-width:1200px;
-      margin:0 auto 40px;
-      padding:0 16px;
-    }
-
-    .section-title{
-      font-size:13px;
-      text-transform:uppercase;
-      letter-spacing:.18em;
-      color:var(--rsl-muted);
-      margin:10px 0 10px;
-    }
-
-    .committee-grid{
-      display:grid;
-      grid-template-columns:repeat(4,minmax(0,1fr));
-      gap:16px;
-    }
-    @media(max-width:980px){
-      .committee-grid{ grid-template-columns:repeat(2,minmax(0,1fr)); }
-    }
-    @media(max-width:520px){
-      .committee-grid{ grid-template-columns:1fr; }
-    }
-
-    .member-card{
-      background:var(--rsl-card-soft);
-      border-radius:16px;
-      border:1px solid var(--rsl-border);
-      padding:16px;
-      box-shadow:0 18px 44px rgba(15,23,42,.85);
-      text-align:center;
-      position:relative;
-      overflow:hidden;
-    }
-    body.theme-light .member-card{
-      box-shadow:0 18px 44px rgba(15,23,42,.12);
-    }
-    .member-card:before{
-      content:"";
-      position:absolute; inset:-30% -30%;
-      background:
-        radial-gradient(circle at 30% 20%, rgba(34,197,94,.12), transparent 55%),
-        radial-gradient(circle at 80% 70%, rgba(34,197,94,.08), transparent 60%);
-      pointer-events:none;
-      z-index:0;
-    }
-    .member-inner{ position:relative; z-index:1; display:flex; flex-direction:column; gap:8px; align-items:center; }
-
-    .member-photo{
-      width:120px;
-      height:120px;
-      border-radius:999px;
-      object-fit:cover;
-      border:2px solid rgba(148,163,184,.45);
-      background:rgba(0,0,0,.15);
-      box-shadow:0 18px 44px rgba(0,0,0,.45);
-    }
-    body.theme-light .member-photo{
-      border-color:rgba(148,163,184,.55);
-      box-shadow:0 18px 44px rgba(15,23,42,.12);
-    }
-
-    .member-name{
-      margin:4px 0 0;
-      font-size:16px;
-      font-weight:900;
-      color:var(--rsl-fg);
-      letter-spacing:.02em;
-    }
-    .member-role{
-      margin:0;
-      font-size:13px;
-      color:var(--rsl-muted);
-      line-height:1.5;
-    }
-
-    .role-pill{
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      padding:6px 10px;
-      border-radius:999px;
-      background:rgba(34,197,94,.12);
-      border:1px solid rgba(34,197,94,.22);
-      color:var(--rsl-fg);
-      font-weight:800;
-      font-size:12px;
-      margin-top:2px;
-    }
-    .role-pill i{
-      width:8px; height:8px; border-radius:99px;
-      background:var(--rsl-accent);
-      box-shadow:0 0 10px rgba(34,197,94,.7);
-      display:inline-block;
-    }
-
-    /* ===== VISION (même vibe que overview) ===== */
-    .vision{
-      margin-top:18px;
-      background:var(--rsl-card);
-      border-radius:22px;
-      border:1px solid var(--rsl-border);
-      box-shadow:0 30px 80px rgba(15,23,42,.9);
-      padding:20px 18px 18px;
-      position:relative;
-      overflow:hidden;
-    }
-    body.theme-light .vision{
-      box-shadow:0 24px 60px rgba(15,23,42,.16);
-    }
-    .vision:before{
-      content:"";
-      position:absolute; inset:-40% -30%;
-      background:
-        radial-gradient(circle at 18% 25%, rgba(34,197,94,.14), transparent 55%),
-        radial-gradient(circle at 85% 40%, rgba(99,102,241,.08), transparent 62%);
-      pointer-events:none;
-      z-index:0;
-    }
-    .vision-inner{ position:relative; z-index:1; }
-    .vision h2{
-      margin:0 0 8px;
-      font-size:18px;
-      font-weight:900;
-      color:var(--rsl-fg);
-    }
-    .vision p{
-      margin:10px 0;
-      font-size:14px;
-      line-height:1.75;
-      color:var(--rsl-muted);
-    }
-    .vision p b{ color:var(--rsl-fg); }
-
-    /* Footer */
-    .footer-mini .copy{
-      text-align:center;
-      color:var(--rsl-muted);
-      font-size:13px;
-      padding:20px 0 24px;
-      margin:0;
-      border-top:1px solid rgba(15,23,42,.7);
-      background:rgba(15,23,42,.85);
-    }
-    body.theme-light .footer-mini .copy{
-      background:rgba(248,250,252,.96);
-      border-top-color:rgba(148,163,184,.5);
-    }
-
-    /* FAB coach */
-    .coach-fab{
-      position:fixed; right:16px; bottom:16px; z-index:80;
-      display:inline-flex; align-items:center; gap:8px;
-      padding:10px 13px; border-radius:999px;
-      background:linear-gradient(180deg,var(--rsl-accent),#16a34a);
-      color:#052e16; font-weight:800; text-decoration:none;
-      box-shadow:0 12px 28px rgba(22,163,74,.5), inset 0 1px 0 rgba(255,255,255,.18);
-      border:0;
-      font-size:13px;
-      line-height:1;
-    }
-    .coach-fab:hover{ filter:brightness(1.05); transform:translateY(-1px); transition:.15s ease; }
-    @media (max-width:990px){ .coach-fab{ display:none; } }
-
-    @media(max-width:480px){
-      .hero-wrap{ padding:0 12px; }
-      .intro-card{ padding:18px 14px 18px; border-radius:16px; }
-      .badge-launch{ width:100%; justify-content:center; }
-      .content{ padding:0 12px; }
-      .vision{ border-radius:16px; }
-    }
+    :root{--red:#cc0000;--red2:#e51010;--bg:#080808;--fg:#f0f0f0;--muted:#777;--border:rgba(255,255,255,.08);--card:#111;}
+    *,*:before,*:after{margin:0;padding:0;box-sizing:border-box;}
+    html{scroll-behavior:smooth;}
+    body{min-height:100vh;background:var(--bg);color:var(--fg);font-family:'Barlow Condensed',system-ui,sans-serif;overflow-x:hidden;}
+    a{color:inherit;text-decoration:none;}b,strong{color:#fff;}
+    #bg{position:fixed;inset:0;width:100%;height:100%;object-fit:cover;z-index:-3;filter:brightness(.18) saturate(.18) contrast(1.2);background:#000;}
+    .vig{position:fixed;inset:0;z-index:-2;pointer-events:none;background:radial-gradient(ellipse 60% 55% at 50% 15%, transparent 0%, rgba(0,0,0,.55) 55%, rgba(0,0,0,.97) 100%),linear-gradient(180deg,rgba(0,0,0,.2),#080808 70%);}
+    .grain{position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:.33;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.055'/%3E%3C/svg%3E");}
+    .sitenav{position:sticky;top:0;z-index:500;background:#000;border-bottom:3px solid var(--red);padding:0 28px;display:flex;align-items:center;justify-content:space-between;height:54px;}
+    .sitenav-brand{display:flex;align-items:center;text-decoration:none;}
+    .sitenav-tab{background:var(--red);height:54px;width:58px;display:flex;align-items:center;justify-content:center;margin-left:-28px;margin-right:16px;flex:0 0 auto;}
+    .sitenav-tab img{height:34px;object-fit:contain;}
+    .sitenav-name{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:.1em;color:#fff;line-height:1;}
+    .sitenav-name small{display:block;font-family:'Barlow Condensed',sans-serif;font-size:9px;font-weight:700;letter-spacing:.22em;color:var(--red);margin-top:-1px;}
+    .sitenav-links{display:flex;align-items:center;gap:0;list-style:none;height:54px;}
+    .sitenav-links li{height:100%;}
+    .sitenav-links a{display:flex;align-items:center;height:100%;padding:0 14px;font-weight:700;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:rgba(240,240,240,.5);text-decoration:none;border-bottom:3px solid transparent;margin-bottom:-3px;transition:.15s;}
+    .sitenav-links a:hover,.sitenav-links a[aria-current="page"]{color:#fff;border-bottom-color:var(--red);}
+    .sitenav-right{display:flex;align-items:center;gap:8px;}
+    .snbtn{padding:7px 14px;font-weight:700;font-size:11px;letter-spacing:.14em;text-transform:uppercase;text-decoration:none;cursor:pointer;border:1px solid rgba(255,255,255,.14);background:transparent;color:rgba(240,240,240,.6);transition:.15s;}
+    .snbtn:hover{border-color:rgba(255,255,255,.35);color:#fff;}
+    .snbtn.red{background:var(--red);border-color:var(--red);color:#fff;box-shadow:0 0 16px rgba(200,0,0,.45);}
+    .snbtn.red:hover{background:var(--red2);}
+    #menuBtn{display:none;background:transparent;border:1px solid rgba(255,255,255,.15);color:#fff;padding:6px 10px;font-size:18px;cursor:pointer;}
+    .mobile-sheet{position:fixed;inset:0;display:none;z-index:600;}
+    .mobile-sheet.open{display:block;}
+    .mobile-dim{position:absolute;inset:0;background:rgba(0,0,0,.6);}
+    .mobile-panel{position:absolute;top:0;right:0;height:100%;width:80vw;max-width:320px;background:#0f0f0f;border-left:3px solid var(--red);padding:20px 18px;display:flex;flex-direction:column;gap:2px;overflow-y:auto;}
+    .mobile-panel .mp-title{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:.1em;color:#fff;margin-bottom:12px;border-bottom:1px solid rgba(255,255,255,.08);padding-bottom:10px;}
+    .mobile-panel .mp-title span{color:var(--red);}
+    .mobile-panel a{color:rgba(240,240,240,.6);text-decoration:none;font-weight:700;font-size:15px;letter-spacing:.1em;text-transform:uppercase;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.05);transition:.15s;}
+    .mobile-panel a:hover{color:#fff;padding-left:6px;}
+    .mobile-panel .mp-red{color:var(--red);}
+    .mp-close{position:absolute;top:14px;right:14px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);color:#fff;width:32px;height:32px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;}
+    footer{background:#000;border-top:3px solid var(--red);padding:28px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;}
+    .ft-brand{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:.1em;color:#fff;}
+    .ft-brand span{color:var(--red);}
+    .ft-copy{font-size:11px;color:var(--muted);margin-top:3px;}
+    .ft-links{display:flex;gap:16px;list-style:none;flex-wrap:wrap;}
+    .ft-links a{font-weight:700;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);text-decoration:none;transition:.15s;}
+    .ft-links a:hover{color:var(--red);}
+    .wrap{max-width:1200px;margin:0 auto;padding:56px 28px 80px;}
+    .page-hero{position:relative;min-height:340px;display:flex;align-items:center;justify-content:center;padding:74px 20px 54px;overflow:hidden;border-bottom:1px solid rgba(200,0,0,.18);}
+    .page-hero:before{content:"";position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(480px,82vw);height:min(480px,82vw);border-radius:50%;background:radial-gradient(circle,rgba(200,0,0,.34),rgba(200,0,0,.08) 48%,transparent 70%);filter:blur(2px);animation:breathe 3.8s ease-in-out infinite;}
+    .hero-inner{position:relative;z-index:1;text-align:center;max-width:860px;}
+    .fed{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:16px;}
+    .fed-bar{width:28px;height:1px;background:rgba(255,255,255,.12);}
+    .fed-dot{width:5px;height:5px;border-radius:50%;background:var(--red);box-shadow:0 0 8px var(--red);animation:pulse 2s ease-in-out infinite;}
+    .fed-txt{font-size:8px;font-weight:700;letter-spacing:.24em;text-transform:uppercase;color:rgba(255,255,255,.32);white-space:nowrap;}
+    h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(54px,10vw,106px);line-height:.86;letter-spacing:.03em;color:#fff;text-shadow:0 0 34px rgba(200,0,0,.48);}
+    h1 span{color:var(--red);}
+    .redsep{width:36px;height:3px;background:var(--red);box-shadow:0 0 12px rgba(200,0,0,.9);margin:20px auto 18px;}
+    .hero-sub{max-width:680px;margin:0 auto;color:rgba(240,240,240,.62);font-size:18px;line-height:1.55;}
+    .section-head{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;flex-wrap:wrap;border-bottom:2px solid rgba(255,255,255,.06);padding-bottom:16px;margin-bottom:28px;}
+    .section-kicker{display:flex;align-items:flex-end;gap:12px;}
+    .num{font-family:'Bebas Neue',sans-serif;font-size:56px;color:rgba(200,0,0,.18);line-height:1;}
+    .section-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(34px,4.5vw,54px);line-height:1;letter-spacing:.04em;color:#fff;}
+    .section-title span{color:var(--red);}
+    .section-sub{max-width:380px;text-align:right;font-size:14px;color:var(--muted);line-height:1.55;}
+    .card{background:var(--card);border:1px solid rgba(255,255,255,.06);padding:25px 20px;display:flex;flex-direction:column;gap:10px;position:relative;overflow:hidden;}
+    .card:before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--red);transform:scaleY(0);transform-origin:bottom;transition:transform .22s;}
+    .card:hover{border-color:rgba(200,0,0,.42);}
+    .card:hover:before{transform:scaleY(1);}
+    .card.featured{background:linear-gradient(135deg,rgba(200,0,0,.09),var(--card) 72%);border-color:rgba(200,0,0,.22);}
+    .card.featured:before{transform:scaleY(1);}
+    .badge-tag{display:inline-flex;width:max-content;font-size:9px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--red);border:1px solid rgba(200,0,0,.35);padding:3px 10px;margin-bottom:4px;}
+    .card h2,.card h3{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:24px;letter-spacing:.04em;text-transform:uppercase;color:#fff;line-height:1.05;}
+    .card.featured h2{font-size:30px;}
+    .meta{font-size:14px;color:var(--red);font-weight:700;letter-spacing:.05em;text-transform:uppercase;}
+    .card p{font-size:15px;color:var(--muted);line-height:1.62;flex:1;}
+    .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px;}
+    .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:11px 20px;font-weight:900;font-size:12px;letter-spacing:.16em;text-transform:uppercase;text-decoration:none;cursor:pointer;border:0;transition:.15s ease;line-height:1;}
+    .btn.red{background:var(--red);color:#fff;clip-path:polygon(7px 0%,100% 0%,calc(100% - 7px) 100%,0% 100%);box-shadow:0 0 20px rgba(200,0,0,.55);}
+    .btn.red:hover{background:var(--red2);transform:translateY(-1px);}
+    .btn.ghost{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.14);color:rgba(255,255,255,.66);}
+    .btn.ghost:hover{background:rgba(255,255,255,.09);color:#fff;transform:translateY(-1px);}
+    .cards{display:grid;grid-template-columns:repeat(3,1fr);gap:3px;}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:3px;}
+    .highlight{background:var(--card);border:1px solid rgba(200,0,0,.18);padding:24px 22px;position:relative;overflow:hidden;display:flex;gap:20px;justify-content:space-between;align-items:center;}
+    .highlight:before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--red);box-shadow:0 0 20px rgba(200,0,0,.75);}
+    .h-tag{font-size:9px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:var(--red);margin-bottom:8px;}
+    .h-title{font-family:'Bebas Neue',sans-serif;font-size:28px;color:#fff;line-height:1;}
+    .h-desc{font-size:14px;color:var(--muted);line-height:1.55;margin-top:8px;max-width:560px;}
+    .tick-list{display:grid;gap:8px;margin-top:12px;}
+    .tick{background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.075);padding:12px 14px;color:var(--muted);font-size:15px;line-height:1.45;}
+    .tick:before{content:"✓";color:var(--red);font-weight:900;margin-right:9px;}
+    .member-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:3px;}
+    .member-card{background:var(--card);border:1px solid rgba(255,255,255,.06);padding:24px 16px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:10px;position:relative;}
+    .member-card:before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--red);transform:scaleY(0);transform-origin:bottom;transition:.22s;}
+    .member-card:hover:before{transform:scaleY(1);}
+    .member-photo{width:110px;height:110px;border-radius:50%;object-fit:cover;border:2px solid rgba(200,0,0,.4);box-shadow:0 0 20px rgba(200,0,0,.2);}
+    .member-name{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:.06em;color:#fff;line-height:1;}
+    .member-role{font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--red);}
+    .member-desc{font-size:13px;color:var(--muted);line-height:1.5;}
+    .contact-grid{display:grid;grid-template-columns:1fr 1fr;gap:3px;}
+    .contact-form{display:flex;flex-direction:column;gap:10px;}
+    .form-field{display:flex;flex-direction:column;gap:5px;}
+    .form-field label{font-size:10px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);}
+    .form-field input,.form-field textarea,.form-field select{background:#0d0d0d;border:1px solid rgba(255,255,255,.12);color:#fff;padding:10px 12px;font-family:'Barlow Condensed',sans-serif;font-size:15px;outline:none;transition:.15s;width:100%;}
+    .form-field input:focus,.form-field textarea:focus{border-color:rgba(200,0,0,.55);}
+    .form-field textarea{resize:vertical;min-height:120px;}
+    .rules-block{background:var(--card);border:1px solid rgba(200,0,0,.18);padding:24px 22px;position:relative;}
+    .rules-block:before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--red);box-shadow:0 0 20px rgba(200,0,0,.75);}
+    .rules-block ul{padding-left:20px;color:var(--muted);font-size:15px;line-height:1.8;}
+    .rules-block ul li{margin:6px 0;}
+    .badges-row{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0;}
+    .pill{display:inline-flex;align-items:center;gap:5px;padding:5px 11px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);font-size:12px;font-weight:700;letter-spacing:.08em;}
+    .list-clean{padding-left:18px;color:var(--muted);font-size:14px;line-height:1.75;margin:8px 0;}
+    .list-clean li{margin:5px 0;}
+    @media(max-width:980px){.sitenav-links{display:none;}.snbtn:not(.red){display:none;}.sitenav{padding:0 14px;}.sitenav-tab{margin-left:-14px;}#menuBtn{display:block;}.cards{grid-template-columns:1fr 1fr;}.grid2{grid-template-columns:1fr;}.member-grid{grid-template-columns:1fr 1fr;}.contact-grid{grid-template-columns:1fr;}}
+    @media(max-width:620px){.page-hero{min-height:280px;padding:54px 16px 44px;}.wrap{padding:36px 16px 60px;}.cards{grid-template-columns:1fr;}.member-grid{grid-template-columns:1fr 1fr;}.highlight{flex-direction:column;align-items:flex-start;}.btn{width:100%;}footer{padding:20px 16px;flex-direction:column;align-items:flex-start;}}
+    @media(max-width:400px){.member-grid{grid-template-columns:1fr;}}
+    @keyframes breathe{0%,100%{opacity:.55;transform:translate(-50%,-50%) scale(.92);}50%{opacity:1;transform:translate(-50%,-50%) scale(1.08);}}
+    @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.25;}}
   </style>
 </head>
-
 <body>
-
-  <!-- Fond vidéo -->
-  <video class="site-bg-video" autoplay muted loop playsinline id="rslBg" poster="images/hero-poster.jpg"></video>
-  <div class="site-bg-dim" aria-hidden="true"></div>
-
-  <!-- NAV -->
-  <nav class="nav">
-    <div class="container">
-      <div class="row">
-        <a class="brand" href="index.html">
-          <img src="images/logo_rsl.png" alt="Logo RSL"/>
-          <span>RSL — Romandie Scooter League</span>
-        </a>
-
-        <ul>
-          <li><a href="cours.html">Cours</a></li>
-          <li><a href="formation.html">Formation RSL</a></li>
-          <li><a href="ou_rider.html">Où rider ?</a></li>
-          <li><a href="evenements.html">Événements</a></li>
-          <li><a href="disciplines.html">Disciplines</a></li>
-          <li><a href="shop-rsl.html">Shop</a></li>
-          <li><a href="comite.html" aria-current="page">Comité</a></li>
-          <li><a href="contact.html">Contact</a></li>
-        </ul>
-
-        <div class="cta">
-          <button id="themeToggle" class="theme-toggle" aria-label="Changer le thème">🌙</button>
-
-          <a class="btn" id="btnLogin" href="access.html">Login</a>
-          <a class="btn" id="btnAccount" href="compte.html" style="display:none">Mon compte</a>
-
-          <a href="compte.html" aria-label="Mon compte">
-            <img id="navAvatar" class="nav-avatar" src="images/logo_rsl.png" alt="Avatar" style="display:none;">
-          </a>
-
-          <a class="btn" id="btnCart" href="panier/panier.html">Panier</a>
-          <a class="btn green" href="membres.html">Devenir membre</a>
-          <button id="menuBtn" aria-label="Menu">☰</button>
-        </div>
-      </div>
+  <video id="bg" autoplay muted loop playsinline poster="/images/hero-poster.jpg"></video>
+  <div class="vig"></div>
+  <div class="grain"></div>
+  <nav class="sitenav">
+    <a class="sitenav-brand" href="/">
+      <div class="sitenav-tab"><img src="/images/logo_rsl.png" alt="RSL"></div>
+      <div class="sitenav-name">RSL<small>Romandie Scooter League</small></div>
+    </a>
+    <ul class="sitenav-links">
+      <li><a href="/cours">Cours</a></li>
+      <li><a href="/formation">Formation</a></li>
+      <li><a href="/ou_rider">Où rider ?</a></li>
+      <li><a href="/evenements">Événements</a></li>
+      <li><a href="/disciplines">Disciplines</a></li>
+      <li><a href="/shop-rsl">Shop</a></li>
+      <li><a href="/comite" aria-current="page">Comité</a></li>
+      <li><a href="/contact">Contact</a></li>
+    </ul>
+    <div class="sitenav-right">
+      <a class="snbtn" href="/access" id="btnLogin">Login</a>
+      <a class="snbtn" href="/compte" id="btnAccount" style="display:none">Compte</a>
+      <a class="snbtn red" href="/membres">Devenir membre</a>
+      <button id="menuBtn" aria-label="Menu">☰</button>
     </div>
   </nav>
-
-  <!-- MENU MOBILE -->
   <div class="mobile-sheet" id="mobileMenu" aria-hidden="true">
     <div class="mobile-dim"></div>
     <nav class="mobile-panel">
-      <a href="index.html">Accueil</a>
-      <a href="cours.html">Cours</a>
-      <a href="membres.html">Devenir membre</a>
-      <a href="formation.html">Formation RSL</a>
-      <a href="disciplines.html">Disciplines</a>
-      <a href="ou_rider.html">Où rider ?</a>
-      <a href="evenements.html">Événements</a>
-      <a href="game.html">Games</a>
-      <a href="shop-rsl.html">Shop</a>
-      <a href="comite.html" aria-current="page">Comité</a>
-      <a href="contact.html">Contact</a>
-      <a href="conditions.html">Conditions générales</a>
-      <a href="access.html">Se connecter</a>
-      <a href="compte.html">Mon compte</a>
-      <a href="coach.html" class="coach-link">👨‍🏫 Je suis coach</a>
+      <button class="mp-close" type="button" id="closeMenu">×</button>
+      <div class="mp-title"><span>RSL</span> MENU</div>
+      <a href="/">Accueil</a>
+      <a href="/cours">Cours</a>
+      <a href="/membres" class="mp-red">Devenir membre</a>
+      <a href="/formation">Formation RSL</a>
+      <a href="/disciplines">Disciplines</a>
+      <a href="/ou_rider">Où rider ?</a>
+      <a href="/evenements">Événements</a>
+      <a href="/game">Games</a>
+      <a href="/shop-rsl">Shop</a>
+      <a href="/comite" aria-current="page">Comité</a>
+      <a href="/contact">Contact</a>
+      <a href="/conditions">Conditions générales</a>
+      <a href="/access">Se connecter</a>
+      <a href="/compte">Mon compte</a>
+      <a href="/coach">Je suis coach</a>
     </nav>
   </div>
-
-  <!-- CONTENU -->
-  <main>
-    <!-- HEADER CARD -->
-    <div class="hero-wrap">
-      <section class="intro-card">
-        <div class="intro-inner">
-          <div class="top-row">
-            <div class="brand-block">
-              <div class="brand-logo-big">
-                <img src="images/logo_rsl.png" alt="RSL">
-              </div>
-              <div class="brand-text-big">
-                <h1>Le comité RSL</h1>
-                <p>Les personnes qui font tourner la Romandie Scooter League au quotidien : cours, events, médias et structure.</p>
-              </div>
-            </div>
-
-            <div>
-              <div class="badge-launch">
-                <span></span> Association • Cours • Événements
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+  <header class="page-hero">
+    <div class="hero-inner">
+      <div class="fed"><div class="fed-bar"></div><div class="fed-dot"></div><div class="fed-txt">Association · Cours · Événements · Médias</div><div class="fed-dot"></div><div class="fed-bar"></div></div>
+      <h1>COMITÉ <span>RSL</span></h1>
+      <div class="redsep"></div>
+      <p class="hero-sub">Les personnes qui font tourner la Romandie Scooter League au quotidien.</p>
     </div>
-
-    <!-- GRID -->
-    <section class="content">
-      <p class="section-title">Membres du comité</p>
-
-      <div class="committee-grid">
+  </header>
+  <main>
+    <section class="wrap">
+      <div class="section-head">
+        <div class="section-kicker"><div class="num">01</div><div class="section-title">MEMBRES DU <span>COMITÉ</span></div></div>
+      </div>
+      <div class="member-grid" style="margin-bottom:42px;">
         <article class="member-card">
-          <div class="member-inner">
-            <img class="member-photo" src="images/comite_joel.png" alt="">
-            <div class="role-pill"><i></i> Président</div>
-            <h3 class="member-name">Joël Meuwly</h3>
-            <p class="member-role">Coordination — Résultats — Sponsors</p>
-          </div>
+          <img class="member-photo" src="/images/comite_joel.png" alt="Joël Meuwly">
+          <div class="member-role">Président</div>
+          <div class="member-name">Joël Meuwly</div>
+          <div class="member-desc">Coordination — Résultats — Sponsors</div>
         </article>
-
         <article class="member-card">
-          <div class="member-inner">
-            <img class="member-photo" src="images/comite_william.png" alt="">
-            <div class="role-pill"><i></i> Trésorier</div>
-            <h3 class="member-name">William Maurer</h3>
-            <p class="member-role">Comptabilité — Trésorerie — Prof RSL</p>
-          </div>
+          <img class="member-photo" src="/images/comite_william.png" alt="William Maurer">
+          <div class="member-role">Trésorier</div>
+          <div class="member-name">William Maurer</div>
+          <div class="member-desc">Comptabilité — Trésorerie — Prof RSL</div>
         </article>
-
         <article class="member-card">
-          <div class="member-inner">
-            <img class="member-photo" src="images/comite_florian.png" alt="">
-            <div class="role-pill"><i></i> Médias</div>
-            <h3 class="member-name">Florian Barbezat</h3>
-            <p class="member-role">Responsable médias — Prof RSL</p>
-          </div>
+          <img class="member-photo" src="/images/comite_florian.png" alt="Florian Barbezat">
+          <div class="member-role">Médias</div>
+          <div class="member-name">Florian Barbezat</div>
+          <div class="member-desc">Responsable médias — Prof RSL</div>
         </article>
-
         <article class="member-card">
-          <div class="member-inner">
-            <img class="member-photo" src="images/comite_louis.png" alt="">
-            <div class="role-pill"><i></i> Médias</div>
-            <h3 class="member-name">Louis Zanolli</h3>
-            <p class="member-role">Co-responsable médias — Prof RSL</p>
-          </div>
+          <img class="member-photo" src="/images/comite_louis.png" alt="Louis Zanolli">
+          <div class="member-role">Médias</div>
+          <div class="member-name">Louis Zanolli</div>
+          <div class="member-desc">Co-responsable médias — Prof RSL</div>
         </article>
       </div>
 
-      <div class="vision">
-        <div class="vision-inner">
-          <h2>Notre vision</h2>
-
-          <p>
-            L’histoire de la RSL commence avec <b>Ride4Style</b>, construite depuis 2018 pour donner une vraie structure
-            à la trottinette freestyle en Suisse romande.
-          </p>
-
-          <p>
-            Des <b>cours</b>, des <b>stages</b>, des <b>contests</b>, une communauté grandissante : coachs, parents, riders.
-            La RSL est la continuité naturelle.
-          </p>
-
-          <p>
-            Objectif : offrir une progression claire, du premier drop aux contests officiels,
-            dans un cadre cohérent et passionné.
-          </p>
-
-          <p>
-            Notre but : que les riders puissent dire un jour <b>« j’ai grandi avec la RSL »</b>.
-          </p>
+      <div class="section-head" style="margin-top:10px;">
+        <div class="section-kicker"><div class="num">02</div><div class="section-title">NOTRE <span>VISION</span></div></div>
+      </div>
+      <div class="highlight">
+        <div>
+          <div class="h-tag">Ride4Style · depuis 2018</div>
+          <div class="h-title">Une structure pour la scène romande</div>
+          <p class="h-desc">Des <b>cours</b>, des <b>stages</b>, des <b>contests</b>, une communauté grandissante. La RSL est la continuité naturelle de Ride4Style, construite pour donner un vrai cadre à la trottinette freestyle en Suisse romande. Notre but : que les riders puissent dire un jour <b>« j'ai grandi avec la RSL »</b>.</p>
         </div>
+        <a class="btn red" href="/membres">Rejoindre</a>
       </div>
     </section>
   </main>
-
-  <footer class="footer-mini">
-    <p class="copy">© 2026 — RSL Romandie Scooter League. Tous droits réservés.</p>
+  <footer>
+    <div><div class="ft-brand">ROMANDIE <span>SCOOTER LEAGUE</span></div><div class="ft-copy">© 2026 RSL — Tous droits réservés.</div></div>
+    <ul class="ft-links">
+      <li><a href="/cours">Cours</a></li><li><a href="/evenements">Événements</a></li><li><a href="/membres">Membres</a></li><li><a href="/contact">Contact</a></li><li><a href="/access">Login</a></li>
+    </ul>
   </footer>
-
-  <a href="coach.html" class="coach-fab">👨‍🏫 Je suis coach</a>
-
   <script>
-    // Thème (clair / sombre) — identique index
-    (function(){
-      const STORAGE_KEY = 'rsl-theme';
-      const body = document.body;
-      const btn = document.getElementById('themeToggle');
-
-      function applyTheme(theme){
-        if(theme === 'light'){
-          body.classList.add('theme-light');
-          if(btn) btn.textContent = '☀️';
-        }else{
-          body.classList.remove('theme-light');
-          if(btn) btn.textContent = '🌙';
-        }
-      }
-
-      let saved = null;
-      try{ saved = localStorage.getItem(STORAGE_KEY); }catch(e){}
-      if(!saved){
-        const prefersLight = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
-        saved = prefersLight ? 'light' : 'dark';
-      }
-      applyTheme(saved);
-
-      if(btn){
-        btn.addEventListener('click', ()=>{
-          const current = body.classList.contains('theme-light') ? 'light' : 'dark';
-          const next = current === 'light' ? 'dark' : 'light';
-          applyTheme(next);
-          try{ localStorage.setItem(STORAGE_KEY, next); }catch(e){}
-        });
-      }
-    })();
-
-    // Vidéo de fond
-    (function(){
-      const vids = [
-        "https://jynxifufaauoxwzjapzq.supabase.co/storage/v1/object/public/videos_rsl/trottvideo1.mp4",
-        "https://jynxifufaauoxwzjapzq.supabase.co/storage/v1/object/public/videos_rsl/trottvideo2.mp4"
-      ];
-      const pick = vids[Math.floor(Math.random()*vids.length)];
-      const v = document.getElementById('rslBg');
-      if(!v) return;
-
-      const s = document.createTegnElement ? null : document.createElement('source');
-      const source = s || document.createElement('source');
-      source.src = pick;
-      source.type = 'video/mp4';
-      v.appendChild(source);
-
-      const start = () => {
-        try{
-          v.playbackRate = 0.6;
-          const p = v.play();
-          if(p && p.catch) p.catch(()=>{});
-        }catch(e){}
-      };
-
-      start();
-
-      document.addEventListener('visibilitychange', () => {
-        if(document.hidden) v.pause();
-        else start();
-      });
-    })();
-
-    // Menu mobile — identique index
-    (function(){
-      const menuBtn=document.getElementById('menuBtn');
-      const mobile=document.getElementById('mobileMenu');
-      if(!menuBtn || !mobile) return;
-
-      menuBtn.addEventListener('click',e=>{
-        e.stopPropagation();
-        mobile.classList.add('open');
-        mobile.setAttribute('aria-hidden','false');
-      });
-      mobile.querySelector('.mobile-dim')?.addEventListener('click',()=>{
-        mobile.classList.remove('open');
-        mobile.setAttribute('aria-hidden','true');
-      });
-      document.addEventListener('keydown',e=>{
-        if(e.key==='Escape'){
-          mobile.classList.remove('open');
-          mobile.setAttribute('aria-hidden','true');
-        }
-      });
-    })();
+    (function(){const v=document.getElementById('bg');if(!v)return;const vids=["https://jynxifufaauoxwzjapzq.supabase.co/storage/v1/object/public/videos_rsl/trottvideo1.mp4","https://jynxifufaauoxwzjapzq.supabase.co/storage/v1/object/public/videos_rsl/trottvideo2.mp4"];v.src=vids[Math.floor(Math.random()*vids.length)];v.playbackRate=0.5;try{const p=v.play();if(p&&p.catch)p.catch(()=>{});}catch(e){}document.addEventListener('visibilitychange',()=>{if(document.hidden)v.pause();else{v.playbackRate=0.5;try{v.play();}catch(e){}}});})();
+    (function(){const menuBtn=document.getElementById('menuBtn'),mobile=document.getElementById('mobileMenu'),close=document.getElementById('closeMenu');if(!menuBtn||!mobile)return;const open=()=>{mobile.classList.add('open');mobile.setAttribute('aria-hidden','false');};const shut=()=>{mobile.classList.remove('open');mobile.setAttribute('aria-hidden','true');};menuBtn.addEventListener('click',e=>{e.stopPropagation();open();});close?.addEventListener('click',shut);mobile.querySelector('.mobile-dim')?.addEventListener('click',shut);document.addEventListener('keydown',e=>{if(e.key==='Escape')shut();});})();
   </script>
 </body>
 </html>
