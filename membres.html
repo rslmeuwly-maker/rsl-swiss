@@ -3,1117 +3,286 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Membres — Romandie Scooter League</title>
-
-  <!-- Fonts + styles globaux -->
+  <title>Devenir membre — Romandie Scooter League</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/common.css"/>
-
-  <!-- Supabase + scripts -->
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;900&display=swap" rel="stylesheet">
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-  <script defer src="js/env.js"></script>
-  <script defer src="js/auth.js"></script>
-  <script defer src="js/site.js"></script>
-
+  <script defer src="/js/env.js"></script>
+  <script defer src="/js/auth.js"></script>
+  <script defer src="/js/site.js"></script>
   <style>
-    :root{
-      --rsl-bg:#020617;
-      --rsl-fg:#e5e7eb;
-      --rsl-muted:#9ca3af;
-      --rsl-card:rgba(15,23,42,.96);
-      --rsl-card-soft:rgba(15,23,42,.9);
-      --rsl-border:rgba(148,163,184,.45);
-      --rsl-accent:#22c55e;
-      --rsl-accent-soft:rgba(34,197,94,.14);
-    }
-
-    body.theme-light{
-      --rsl-bg:#f3f4f6;
-      --rsl-fg:#0f172a;
-      --rsl-muted:#6b7280;
-      --rsl-card:#ffffff;
-      --rsl-card-soft:#f9fafb;
-      --rsl-border:rgba(148,163,184,.35);
-      --rsl-accent:#16a34a;
-      --rsl-accent-soft:rgba(22,163,74,.12);
-    }
-
-    *,:before,:after{ box-sizing:border-box; }
-
-    html,body{
-      height:100%;
-      margin:0;
-      background:transparent!important;
-      display:flex;
-      flex-direction:column;
-      color:var(--rsl-fg);
-      font-family:"Outfit",system-ui,-apple-system,Segoe UI,Roboto,Arial;
-      overflow-x:hidden;
-    }
-    main{ flex:1; }
-
-    /* ======= Fond vidéo ======= */
-    .site-bg-video{
-      position:fixed; inset:0;
-      width:100%; height:100%;
-      object-fit:cover;
-      z-index:-2;
-      background:#000;
-    }
-    .site-bg-dim{
-      position:fixed; inset:0;
-      z-index:-1;
-      background:linear-gradient(180deg,rgba(0,0,0,.55),rgba(0,0,0,.9));
-      transition:background .25s ease;
-    }
-    body.theme-light .site-bg-dim{
-      background:linear-gradient(180deg,rgba(249,250,251,.9),rgba(15,23,42,.85));
-    }
-
-    /* ======= NAVBAR ======= */
-    nav.nav{
-      background:rgba(0,0,0,.65);
-      backdrop-filter:blur(10px);
-      position:sticky; top:0; z-index:100;
-      transition:background .25s ease, border-color .25s ease, box-shadow .25s ease;
-      border-bottom:1px solid rgba(15,23,42,.8);
-    }
-    nav.nav .container{ max-width:1320px; margin:0 auto; padding:10px 18px; }
-    nav.nav .row{ display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
-
-    body.theme-light nav.nav{
-      background:rgba(248,250,252,.96);
-      border-bottom:1px solid rgba(148,163,184,.5);
-      box-shadow:0 10px 30px rgba(15,23,42,.06);
-    }
-
-    .brand{
-      display:flex; align-items:center; gap:10px;
-      color:inherit; text-decoration:none;
-      min-width:fit-content;
-    }
-    .brand img{
-      height:42px; border-radius:10px;
-      display:block;
-      background:#fff;
-      padding:3px;
-      box-shadow:0 10px 28px rgba(0,0,0,.35);
-    }
-    .brand span{
-      font-weight:800;
-      letter-spacing:.2px;
-      font-size:16px;
-      white-space:nowrap;
-    }
-
-    nav.nav ul{
-      display:flex; align-items:center; gap:20px;
-      padding:0; margin:0;
-      list-style:none;
-    }
-    nav.nav ul li a{
-      font-weight:600;
-      color:var(--rsl-fg);
-      font-size:15px;
-      letter-spacing:.02em;
-      white-space:nowrap;
-      text-decoration:none;
-      opacity:.9;
-      transition:.2s ease;
-    }
-    nav.nav ul li a:hover{
-      color:var(--rsl-accent);
-      opacity:1;
-    }
-
-    .cta{ display:flex; align-items:center; gap:10px; }
-
-    .btn{
-      border-radius:999px;
-      padding:8px 14px;
-      font-size:14px;
-      font-weight:700;
-      border:1px solid rgba(148,163,184,.5);
-      text-decoration:none;
-      cursor:pointer;
-      display:inline-flex;
-      align-items:center;
-      gap:6px;
-      background:rgba(15,23,42,.9);
-      color:#f9fafb;
-      transition:.2s ease;
-      line-height:1;
-      white-space:nowrap;
-    }
-    body.theme-light .btn{
-      background:#0f172a;
-      color:#f9fafb;
-      border-color:#0f172a;
-    }
-    .btn.green{
-      background:var(--rsl-accent);
-      color:#052e16;
-      border-color:transparent;
-      box-shadow:0 10px 26px rgba(22,163,74,.45);
-    }
-    .btn:hover{ transform:translateY(-1px); filter:brightness(1.05); }
-
-    .nav-avatar{
-      width:34px; height:34px;
-      border-radius:999px;
-      object-fit:cover;
-      border:2px solid var(--rsl-accent);
-      box-shadow:0 0 10px rgba(34,197,94,.5);
-      display:block;
-    }
-
-    .theme-toggle{
-      border-radius:999px;
-      border:1px solid rgba(148,163,184,.6);
-      background:rgba(15,23,42,.9);
-      color:#e5e7eb;
-      width:34px; height:34px;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      font-size:17px;
-      cursor:pointer;
-      padding:0;
-      transition:.2s ease;
-      line-height:1;
-    }
-    .theme-toggle:hover{ transform:translateY(-1px); filter:brightness(1.08); }
-    body.theme-light .theme-toggle{
-      background:#ffffff;
-      color:#0f172a;
-      border-color:rgba(148,163,184,.7);
-    }
-
-    #menuBtn{
-      display:none;
-      align-items:center;
-      justify-content:center;
-      padding:7px 10px;
-      font-size:18px;
-      line-height:1;
-      border-radius:10px;
-      border:1px solid rgba(148,163,184,.4);
-      background:rgba(15,23,42,.9);
-      color:#e5e7eb;
-      cursor:pointer;
-      transition:.2s ease;
-    }
-    #menuBtn:hover { filter:brightness(1.1); }
-    body.theme-light #menuBtn{
-      background:#0f172a;
-      color:#f9fafb;
-      border-color:#0f172a;
-    }
-
-    .container{ max-width:1200px; margin:0 auto; padding:0 16px; }
-
-    /* ===== Menu mobile ===== */
-    .mobile-sheet{ position:fixed; inset:0; display:none; z-index:120; }
-    .mobile-sheet.open{ display:block; }
-    .mobile-dim{ position:absolute; inset:0; background:rgba(0,0,0,.55); }
-    .mobile-panel{
-      position:absolute; top:0; right:0; height:100%;
-      width:82vw; max-width:360px;
-      background:var(--rsl-card);
-      padding:22px 18px;
-      display:flex;
-      flex-direction:column;
-      gap:10px;
-      border-left:1px solid rgba(15,23,42,.8);
-      box-shadow:-18px 0 50px rgba(0,0,0,.55);
-    }
-    .mobile-panel a{
-      color:var(--rsl-fg);
-      text-decoration:none;
-      font-weight:700;
-      padding:6px 0;
-      font-size:14px;
-    }
-    .mobile-panel hr{
-      border:0;
-      height:1px;
-      background:rgba(148,163,184,.4);
-      margin:10px 0;
-    }
-
-    @media (max-width:990px){
-      nav.nav ul{ display:none !important; }
-      #btnCart, .btn.green{ display:none !important; }
-      #menuBtn{ display:inline-flex; }
-    }
-
-    /* ======= MEMBRES ======= */
-    .shop-wrap{
-      max-width:1200px;
-      margin:36px auto 40px;
-      padding:0 16px 50px;
-    }
-
-    .intro-card{
-      background:var(--rsl-card);
-      border-radius:22px;
-      border:1px solid var(--rsl-border);
-      box-shadow:0 30px 80px rgba(15,23,42,.9);
-      padding:22px 22px 22px;
-      position:relative;
-      overflow:hidden;
-      max-width:100%;
-    }
-    body.theme-light .intro-card{
-      box-shadow:0 24px 60px rgba(15,23,42,.16);
-    }
-    .intro-card:before{
-      content:"";
-      position:absolute; inset:-40% -30%;
-      background:
-        radial-gradient(circle at 20% 25%, rgba(34,197,94,.18), transparent 55%),
-        radial-gradient(circle at 85% 20%, rgba(34,197,94,.12), transparent 60%),
-        radial-gradient(circle at 60% 90%, rgba(99,102,241,.10), transparent 62%);
-      pointer-events:none;
-      z-index:0;
-    }
-    .intro-inner{ position:relative; z-index:1; }
-
-    .badge-partner{
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      padding:6px 12px;
-      border-radius:999px;
-      background:rgba(15,23,42,.95);
-      border:1px solid rgba(148,163,184,.7);
-      font-size:11px;
-      text-transform:uppercase;
-      letter-spacing:.14em;
-      color:var(--rsl-muted);
-      white-space:nowrap;
-      margin-bottom:10px;
-    }
-    body.theme-light .badge-partner{ background:#f9fafb; }
-    .badge-partner span{
-      width:7px;height:7px;
-      border-radius:999px;
-      background:var(--rsl-accent);
-      box-shadow:0 0 10px rgba(34,197,94,.9);
-    }
-
-    .shop-intro h1{
-      font-size:clamp(26px,4vw,36px);
-      margin:0 0 10px;
-      font-weight:800;
-      letter-spacing:.02em;
-      color:var(--rsl-fg);
-    }
-    .shop-intro p{
-      margin:0 0 10px;
-      font-size:14px;
-      color:var(--rsl-muted);
-      max-width:78ch;
-      line-height:1.65;
-    }
-    .shop-intro b{ color:var(--rsl-fg); }
-
-    .why-block{
-      display:grid;
-      grid-template-columns:repeat(2,minmax(0,1fr));
-      gap:16px;
-      margin-top:14px;
-    }
-    @media(max-width:900px){
-      .why-block{ grid-template-columns:1fr; }
-    }
-    .why-card{
-      border-radius:16px;
-      border:1px solid var(--rsl-border);
-      background:var(--rsl-card-soft);
-      padding:14px 16px;
-      font-size:13px;
-      color:var(--rsl-fg);
-      box-shadow:0 16px 50px rgba(15,23,42,.75);
-    }
-    body.theme-light .why-card{ box-shadow:0 18px 44px rgba(15,23,42,.12); }
-    .why-card h3{
-      margin:0 0 6px;
-      font-size:12px;
-      text-transform:uppercase;
-      letter-spacing:.14em;
-      color:var(--rsl-muted);
-    }
-    .why-card ul{ margin:0; padding-left:18px; color:var(--rsl-muted); line-height:1.65; }
-    .why-card li{ margin:3px 0; }
-
-    .plans-title{
-      margin-top:18px;
-      font-size:12px;
-      text-transform:uppercase;
-      letter-spacing:.18em;
-      color:var(--rsl-muted);
-    }
-
-    .products-grid{
-      margin-top:14px;
-      display:grid;
-      grid-template-columns:repeat(5,minmax(0,1fr));
-      gap:14px;
-      align-items:stretch;
-    }
-    @media(max-width:1150px){ .products-grid{ grid-template-columns:repeat(3,minmax(0,1fr)); } }
-    @media(max-width:820px){ .products-grid{ grid-template-columns:repeat(2,minmax(0,1fr)); } }
-    @media(max-width:520px){ .products-grid{ grid-template-columns:1fr; } }
-
-    .product-card{
-      background:var(--rsl-card-soft);
-      border-radius:18px;
-      border:1px solid var(--rsl-border);
-      box-shadow:0 20px 50px rgba(0,0,0,.65);
-      padding:14px 14px 16px;
-      display:flex;
-      flex-direction:column;
-      gap:8px;
-      position:relative;
-      overflow:hidden;
-    }
-    body.theme-light .product-card{ box-shadow:0 18px 44px rgba(15,23,42,.12); }
-
-    .product-card.highlight{
-      border-color:var(--rsl-accent);
-      box-shadow:0 24px 70px rgba(34,197,94,.22);
-    }
-
-    .product-ribbon{
-      position:absolute;
-      top:10px;
-      right:-30px;
-      transform:rotate(35deg);
-      background:linear-gradient(135deg,var(--rsl-accent),#16a34a);
-      color:#052e16;
-      font-size:10px;
-      font-weight:900;
-      padding:4px 32px;
-      text-transform:uppercase;
-      letter-spacing:.15em;
-    }
-
-    .product-img{
-      width:100%;
-      border-radius:14px;
-      overflow:hidden;
-      background:
-        radial-gradient(circle at 15% 0%, rgba(34,197,94,.22), transparent 55%),
-        linear-gradient(180deg, rgba(2,6,23,.85), rgba(2,6,23,.95));
-      aspect-ratio:16/7;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      font-size:12px;
-      color:var(--rsl-muted);
-      border:1px solid rgba(148,163,184,.25);
-    }
-
-    .product-title{
-      font-size:15px;
-      font-weight:900;
-      margin-top:2px;
-      color:var(--rsl-fg);
-      letter-spacing:.01em;
-    }
-
-    .product-meta{
-      font-size:13px;
-      color:var(--rsl-muted);
-      line-height:1.55;
-    }
-    .product-meta ul{
-      margin:6px 0 0;
-      padding-left:18px;
-    }
-    .product-meta li{ margin:3px 0; }
-
-    .product-price{
-      font-size:16px;
-      font-weight:900;
-      margin-top:2px;
-      color:var(--rsl-fg);
-    }
-    .product-price span{
-      font-size:12px;
-      font-weight:700;
-      color:rgba(165,180,252,.9);
-      margin-left:6px;
-    }
-
-    .product-btn{
-      margin-top:auto;
-      display:inline-block;
-      text-align:center;
-      padding:10px 10px;
-      border-radius:12px;
-      font-size:13px;
-      font-weight:900;
-      text-decoration:none;
-      background:linear-gradient(180deg,var(--rsl-accent),#16a34a);
-      color:#052e16;
-      box-shadow:0 12px 26px rgba(0,0,0,.55);
-      cursor:pointer;
-    }
-    .product-btn:hover{ filter:brightness(1.05); transform:translateY(-1px); transition:.15s ease; }
-
-    .badge-small{
-      display:inline-block;
-      margin-top:6px;
-      padding:4px 8px;
-      font-size:11px;
-      border-radius:999px;
-      border:1px solid rgba(148,163,184,.55);
-      color:var(--rsl-muted);
-      width:fit-content;
-    }
-
-    /* Footer */
-    .footer-mini .copy{
-      text-align:center;
-      color:var(--rsl-muted);
-      font-size:13px;
-      padding:20px 0 24px;
-      margin:0;
-      border-top:1px solid rgba(15,23,42,.7);
-      background:rgba(15,23,42,.85);
-    }
-    body.theme-light .footer-mini .copy{
-      background:rgba(248,250,252,.96);
-      border-top-color:rgba(148,163,184,.5);
-    }
-
-    /* ===== Modal ===== */
-    .product-modal{
-      position:fixed;
-      inset:0;
-      display:none;
-      align-items:center;
-      justify-content:center;
-      z-index:1500;
-    }
-    .product-modal.open{ display:flex; }
-    .product-modal-backdrop{
-      position:absolute;
-      inset:0;
-      background:rgba(0,0,0,.7);
-    }
-    body.theme-light .product-modal-backdrop{ background:rgba(15,23,42,.6); }
-
-    .product-modal-panel{
-      position:relative;
-      max-width:520px;
-      width:92vw;
-      max-height:80vh;
-      background:var(--rsl-bg);
-      border-radius:18px;
-      border:1px solid rgba(148,163,184,.6);
-      box-shadow:0 25px 80px rgba(0,0,0,.9);
-      padding:18px 18px 20px;
-      overflow-y:auto;
-      z-index:1;
-      color:var(--rsl-fg);
-    }
-    body.theme-light .product-modal-panel{
-      background:#ffffff;
-      box-shadow:0 20px 55px rgba(15,23,42,.18);
-    }
-
-    .product-modal-close{
-      position:absolute;
-      top:10px;
-      right:12px;
-      border:none;
-      background:transparent;
-      color:var(--rsl-muted);
-      font-size:20px;
-      cursor:pointer;
-    }
-
-    .product-modal-content h2{
-      margin:0 0 6px;
-      font-size:18px;
-      font-weight:900;
-      color:var(--rsl-fg);
-    }
-    .product-modal-content h3{
-      margin:12px 0 6px;
-      font-size:12px;
-      text-transform:uppercase;
-      letter-spacing:.12em;
-      color:var(--rsl-muted);
-    }
-    .product-modal-content p{
-      font-size:14px;
-      line-height:1.6;
-      color:var(--rsl-fg);
-      margin:6px 0 10px;
-    }
-    .product-modal-content ul{
-      padding-left:18px;
-      margin:6px 0 10px;
-      font-size:14px;
-      color:var(--rsl-fg);
-      line-height:1.6;
-    }
-
-    @media(max-width:520px){
-      .shop-wrap{ padding:0 12px 46px; }
-      .intro-card{ padding:18px 14px 18px; border-radius:16px; }
-      .products-grid{ gap:12px; }
-      .product-card{ border-radius:16px; }
-    }
+    :root{--red:#cc0000;--red2:#e51010;--bg:#080808;--fg:#f0f0f0;--muted:#777;--border:rgba(255,255,255,.08);--card:#111;}
+    *,*:before,*:after{margin:0;padding:0;box-sizing:border-box;}
+    html{scroll-behavior:smooth;}
+    body{min-height:100vh;background:var(--bg);color:var(--fg);font-family:'Barlow Condensed',system-ui,sans-serif;overflow-x:hidden;}
+    a{color:inherit;text-decoration:none;}
+    b,strong{color:#fff;}
+    #bg{position:fixed;inset:0;width:100%;height:100%;object-fit:cover;z-index:-3;filter:brightness(.18) saturate(.18) contrast(1.2);background:#000;}
+    .vig{position:fixed;inset:0;z-index:-2;pointer-events:none;background:radial-gradient(ellipse 60% 55% at 50% 15%, transparent 0%, rgba(0,0,0,.55) 55%, rgba(0,0,0,.97) 100%),linear-gradient(180deg,rgba(0,0,0,.2),#080808 70%);}
+    .grain{position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:.33;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.055'/%3E%3C/svg%3E");}
+    .sitenav{position:sticky;top:0;z-index:500;background:#000;border-bottom:3px solid var(--red);padding:0 28px;display:flex;align-items:center;justify-content:space-between;height:54px;}
+    .sitenav-brand{display:flex;align-items:center;text-decoration:none;}
+    .sitenav-tab{background:var(--red);height:54px;width:58px;display:flex;align-items:center;justify-content:center;margin-left:-28px;margin-right:16px;flex:0 0 auto;}
+    .sitenav-tab img{height:34px;object-fit:contain;}
+    .sitenav-name{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:.1em;color:#fff;line-height:1;}
+    .sitenav-name small{display:block;font-family:'Barlow Condensed',sans-serif;font-size:9px;font-weight:700;letter-spacing:.22em;color:var(--red);margin-top:-1px;}
+    .sitenav-links{display:flex;align-items:center;gap:0;list-style:none;height:54px;}
+    .sitenav-links li{height:100%;}
+    .sitenav-links a{display:flex;align-items:center;height:100%;padding:0 14px;font-weight:700;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:rgba(240,240,240,.5);text-decoration:none;border-bottom:3px solid transparent;margin-bottom:-3px;transition:.15s;}
+    .sitenav-links a:hover,.sitenav-links a[aria-current="page"]{color:#fff;border-bottom-color:var(--red);}
+    .sitenav-right{display:flex;align-items:center;gap:8px;}
+    .snbtn{padding:7px 14px;font-weight:700;font-size:11px;letter-spacing:.14em;text-transform:uppercase;text-decoration:none;cursor:pointer;border:1px solid rgba(255,255,255,.14);background:transparent;color:rgba(240,240,240,.6);transition:.15s;}
+    .snbtn:hover{border-color:rgba(255,255,255,.35);color:#fff;}
+    .snbtn.red{background:var(--red);border-color:var(--red);color:#fff;box-shadow:0 0 16px rgba(200,0,0,.45);}
+    .snbtn.red:hover{background:var(--red2);}
+    #menuBtn{display:none;background:transparent;border:1px solid rgba(255,255,255,.15);color:#fff;padding:6px 10px;font-size:18px;cursor:pointer;}
+    .mobile-sheet{position:fixed;inset:0;display:none;z-index:600;}
+    .mobile-sheet.open{display:block;}
+    .mobile-dim{position:absolute;inset:0;background:rgba(0,0,0,.6);}
+    .mobile-panel{position:absolute;top:0;right:0;height:100%;width:80vw;max-width:320px;background:#0f0f0f;border-left:3px solid var(--red);padding:20px 18px;display:flex;flex-direction:column;gap:2px;overflow-y:auto;}
+    .mobile-panel .mp-title{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:.1em;color:#fff;margin-bottom:12px;border-bottom:1px solid rgba(255,255,255,.08);padding-bottom:10px;}
+    .mobile-panel .mp-title span{color:var(--red);}
+    .mobile-panel a{color:rgba(240,240,240,.6);text-decoration:none;font-weight:700;font-size:15px;letter-spacing:.1em;text-transform:uppercase;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.05);transition:.15s;}
+    .mobile-panel a:hover{color:#fff;padding-left:6px;}
+    .mobile-panel .mp-red{color:var(--red);}
+    .mp-close{position:absolute;top:14px;right:14px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);color:#fff;width:32px;height:32px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;}
+    footer{background:#000;border-top:3px solid var(--red);padding:28px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;}
+    .ft-brand{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:.1em;color:#fff;}
+    .ft-brand span{color:var(--red);}
+    .ft-copy{font-size:11px;color:var(--muted);margin-top:3px;}
+    .ft-links{display:flex;gap:16px;list-style:none;flex-wrap:wrap;}
+    .ft-links a{font-weight:700;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);text-decoration:none;transition:.15s;}
+    .ft-links a:hover{color:var(--red);}
+    .wrap{max-width:1200px;margin:0 auto;padding:56px 28px 80px;}
+    .page-hero{position:relative;min-height:380px;display:flex;align-items:center;justify-content:center;padding:74px 20px 64px;overflow:hidden;border-bottom:1px solid rgba(200,0,0,.18);}
+    .page-hero:before{content:"";position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(500px,82vw);height:min(500px,82vw);border-radius:50%;background:radial-gradient(circle,rgba(200,0,0,.34),rgba(200,0,0,.08) 48%,transparent 70%);filter:blur(2px);animation:breathe 3.8s ease-in-out infinite;}
+    .hero-inner{position:relative;z-index:1;text-align:center;max-width:900px;}
+    .fed{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:16px;}
+    .fed-bar{width:28px;height:1px;background:rgba(255,255,255,.12);}
+    .fed-dot{width:5px;height:5px;border-radius:50%;background:var(--red);box-shadow:0 0 8px var(--red);animation:pulse 2s ease-in-out infinite;}
+    .fed-txt{font-size:8px;font-weight:700;letter-spacing:.24em;text-transform:uppercase;color:rgba(255,255,255,.32);white-space:nowrap;}
+    h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(54px,10vw,106px);line-height:.86;letter-spacing:.03em;color:#fff;text-shadow:0 0 34px rgba(200,0,0,.48);}
+    h1 span{color:var(--red);}
+    .redsep{width:36px;height:3px;background:var(--red);box-shadow:0 0 12px rgba(200,0,0,.9);margin:20px auto 18px;}
+    .hero-sub{max-width:700px;margin:0 auto;color:rgba(240,240,240,.62);font-size:18px;line-height:1.55;}
+    .section-head{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;flex-wrap:wrap;border-bottom:2px solid rgba(255,255,255,.06);padding-bottom:16px;margin-bottom:28px;}
+    .section-kicker{display:flex;align-items:flex-end;gap:12px;}
+    .num{font-family:'Bebas Neue',sans-serif;font-size:56px;color:rgba(200,0,0,.18);line-height:1;}
+    .section-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(34px,4.5vw,54px);line-height:1;letter-spacing:.04em;color:#fff;}
+    .section-title span{color:var(--red);}
+    .section-sub{max-width:380px;text-align:right;font-size:14px;color:var(--muted);line-height:1.55;}
+    .card{background:var(--card);border:1px solid rgba(255,255,255,.06);padding:25px 20px;display:flex;flex-direction:column;gap:10px;position:relative;overflow:hidden;}
+    .card:before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--red);transform:scaleY(0);transform-origin:bottom;transition:transform .22s;}
+    .card:hover{border-color:rgba(200,0,0,.42);}
+    .card:hover:before{transform:scaleY(1);}
+    .card.featured{background:linear-gradient(135deg,rgba(200,0,0,.09),var(--card) 72%);border-color:rgba(200,0,0,.22);}
+    .card.featured:before{transform:scaleY(1);}
+    .badge{display:inline-flex;width:max-content;font-size:9px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--red);border:1px solid rgba(200,0,0,.35);padding:3px 10px;margin-bottom:4px;}
+    .card h2,.card h3{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:24px;letter-spacing:.04em;text-transform:uppercase;color:#fff;line-height:1.05;}
+    .card.featured h2{font-size:30px;}
+    .meta{font-size:14px;color:var(--red);font-weight:700;letter-spacing:.05em;text-transform:uppercase;}
+    .card p{font-size:15px;color:var(--muted);line-height:1.62;flex:1;}
+    .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px;}
+    .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:11px 20px;font-weight:900;font-size:12px;letter-spacing:.16em;text-transform:uppercase;text-decoration:none;cursor:pointer;border:0;transition:.15s ease;line-height:1;}
+    .btn.red{background:var(--red);color:#fff;clip-path:polygon(7px 0%,100% 0%,calc(100% - 7px) 100%,0% 100%);box-shadow:0 0 20px rgba(200,0,0,.55);}
+    .btn.red:hover{background:var(--red2);transform:translateY(-1px);}
+    .btn.ghost{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.14);color:rgba(255,255,255,.66);}
+    .btn.ghost:hover{background:rgba(255,255,255,.09);color:#fff;transform:translateY(-1px);}
+    .cards{display:grid;grid-template-columns:repeat(3,1fr);gap:3px;}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:3px;}
+    .highlight{background:var(--card);border:1px solid rgba(200,0,0,.18);padding:24px 22px;position:relative;overflow:hidden;display:flex;gap:20px;justify-content:space-between;align-items:center;}
+    .highlight:before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--red);box-shadow:0 0 20px rgba(200,0,0,.75);}
+    .h-tag{font-size:9px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:var(--red);margin-bottom:8px;}
+    .h-title{font-family:'Bebas Neue',sans-serif;font-size:28px;color:#fff;line-height:1;}
+    .h-desc{font-size:14px;color:var(--muted);line-height:1.55;margin-top:8px;max-width:560px;}
+    .strip{display:grid;grid-template-columns:repeat(4,1fr);gap:3px;margin-top:20px;}
+    .strip-item{background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.075);padding:20px 18px;}
+    .strip-item strong{display:block;font-family:'Bebas Neue',sans-serif;letter-spacing:.06em;font-size:26px;color:#fff;line-height:1;margin-bottom:8px;}
+    .strip-item span{display:block;color:var(--muted);font-size:14px;line-height:1.5;}
+    .tick-list{display:grid;gap:8px;margin-top:12px;}
+    .tick{background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.075);padding:12px 14px;color:var(--muted);font-size:15px;line-height:1.45;}
+    .tick:before{content:"✓";color:var(--red);font-weight:900;margin-right:9px;}
+    .sp-card{background:var(--card);border:1px solid rgba(200,0,0,.18);padding:38px 34px;position:relative;overflow:hidden;}
+    .sp-card:before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--red);box-shadow:0 0 24px rgba(200,0,0,.8);}
+    .sp-card:after{content:"RSL";position:absolute;right:28px;bottom:-10px;font-family:'Bebas Neue',sans-serif;font-size:120px;color:rgba(200,0,0,.045);pointer-events:none;line-height:1;}
+    .sp-title{font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:.05em;color:#fff;line-height:1;margin-bottom:22px;}
+    .sp-title span{color:var(--red);}
+    .sponsors-grid{position:relative;z-index:1;display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;}
+    .sponsor-card{min-width:190px;min-height:96px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;padding:18px 22px;text-decoration:none;transition:.18s;}
+    .sponsor-card:hover{border-color:rgba(200,0,0,.42);transform:translateY(-3px);}
+    .sponsor-card img{display:block;object-fit:contain;max-width:220px;max-height:70px;}
+    .form-field{display:flex;flex-direction:column;gap:6px;margin-bottom:14px;}
+    .form-field label{font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);}
+    .form-field input,.form-field textarea,.form-field select{background:#0d0d0d;border:1px solid rgba(255,255,255,.12);color:#fff;padding:11px 13px;font-family:'Barlow Condensed',sans-serif;font-size:15px;outline:none;transition:.15s;}
+    .form-field input:focus,.form-field textarea:focus{border-color:rgba(200,0,0,.55);}
+    .form-field textarea{resize:vertical;min-height:120px;}
+    @media(max-width:980px){.sitenav-links{display:none;}.snbtn:not(.red){display:none;}.sitenav{padding:0 14px;}.sitenav-tab{margin-left:-14px;}#menuBtn{display:block;}.cards{grid-template-columns:1fr 1fr;}.grid2{grid-template-columns:1fr;}.strip{grid-template-columns:1fr 1fr;}}
+    @media(max-width:620px){.page-hero{min-height:320px;padding:54px 16px 50px;}.wrap{padding:40px 16px 60px;}.cards{grid-template-columns:1fr;}.strip{grid-template-columns:1fr;}.highlight{flex-direction:column;align-items:flex-start;}.btn{width:100%;}footer{padding:20px 16px;flex-direction:column;align-items:flex-start;}}
+    @keyframes breathe{0%,100%{opacity:.55;transform:translate(-50%,-50%) scale(.92);}50%{opacity:1;transform:translate(-50%,-50%) scale(1.08);}}
+    @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.25;}}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
   </style>
 </head>
 <body>
-
-  <!-- Fond vidéo -->
-  <video class="site-bg-video" autoplay muted loop playsinline id="rslBg" poster="images/hero-poster.jpg"></video>
-  <div class="site-bg-dim" aria-hidden="true"></div>
-
-  <!-- NAV -->
-  <nav class="nav">
-    <div class="container">
-      <div class="row">
-        <a class="brand" href="index.html">
-          <img src="images/logo_rsl.png" alt="Logo RSL"/>
-          <span>RSL — Romandie Scooter League</span>
-        </a>
-
-        <ul>
-          <li><a href="cours.html">Cours</a></li>
-          <li><a href="formation.html">Formation RSL</a></li>
-          <li><a href="ou_rider.html">Où rider ?</a></li>
-          <li><a href="evenements.html">Événements</a></li>
-          <li><a href="disciplines.html">Disciplines</a></li>
-          <li><a href="shop-rsl.html">Shop</a></li>
-          <li><a href="comite.html">Comité</a></li>
-          <li><a href="contact.html">Contact</a></li>
-        </ul>
-
-        <div class="cta">
-          <button id="themeToggle" class="theme-toggle" aria-label="Changer le thème">🌙</button>
-
-          <a class="btn" id="btnLogin" href="access.html">Login</a>
-          <a class="btn" id="btnAccount" href="compte.html" style="display:none">Mon compte</a>
-
-          <a href="compte.html" aria-label="Mon compte">
-            <img id="navAvatar" class="nav-avatar" src="images/default-avatar.png" alt="Avatar" style="display:none;">
-          </a>
-
-          <a class="btn" id="btnCart" href="panier/panier.html">Panier</a>
-          <a class="btn green" href="membres.html" aria-current="page">Devenir membre</a>
-          <button id="menuBtn" aria-label="Menu">☰</button>
-        </div>
-      </div>
+  <video id="bg" autoplay muted loop playsinline poster="/images/hero-poster.jpg"></video>
+  <div class="vig"></div>
+  <div class="grain"></div>
+  <nav class="sitenav">
+    <a class="sitenav-brand" href="/">
+      <div class="sitenav-tab"><img src="/images/logo_rsl.png" alt="RSL"></div>
+      <div class="sitenav-name">RSL<small>Romandie Scooter League</small></div>
+    </a>
+    <ul class="sitenav-links">
+      <li><a href="/cours">Cours</a></li>
+      <li><a href="/formation">Formation</a></li>
+      <li><a href="/ou_rider">Où rider ?</a></li>
+      <li><a href="/evenements">Événements</a></li>
+      <li><a href="/disciplines">Disciplines</a></li>
+      <li><a href="/shop-rsl">Shop</a></li>
+      <li><a href="/comite">Comité</a></li>
+      <li><a href="/contact">Contact</a></li>
+    </ul>
+    <div class="sitenav-right">
+      <a class="snbtn" href="/access" id="btnLogin">Login</a>
+      <a class="snbtn" href="/compte" id="btnAccount" style="display:none">Compte</a>
+      <a class="snbtn red" href="/membres" aria-current="page">Devenir membre</a>
+      <button id="menuBtn" aria-label="Menu">☰</button>
     </div>
   </nav>
 
-  <!-- MENU MOBILE -->
   <div class="mobile-sheet" id="mobileMenu" aria-hidden="true">
     <div class="mobile-dim"></div>
     <nav class="mobile-panel">
-      <a href="index.html">Accueil</a>
-      <a href="cours.html">Cours</a>
-      <a href="membres.html" aria-current="page">Devenir membre</a>
-      <a href="formation.html">Formation RSL</a>
-      <a href="disciplines.html">Disciplines</a>
-      <a href="ou_rider.html">Où rider ?</a>
-      <a href="evenements.html">Événements</a>
-      <a href="game.html">Games</a>
-      <a href="shop-rsl.html">Shop</a>
-      <a href="comite.html">Comité</a>
-      <a href="contact.html">Contact</a>
-      <a href="conditions.html">Conditions générales</a>
-      <a href="access.html">Se connecter</a>
-      <a href="compte.html">Mon compte</a>
-      <a href="coach.html" class="coach-link">👨‍🏫 Je suis coach</a>
+      <button class="mp-close" type="button" id="closeMenu">×</button>
+      <div class="mp-title"><span>RSL</span> MENU</div>
+      <a href="/">Accueil</a>
+      <a href="/cours">Cours</a>
+      <a href="/membres" aria-current="page" class="mp-red">Devenir membre</a>
+      <a href="/formation">Formation RSL</a>
+      <a href="/disciplines">Disciplines</a>
+      <a href="/ou_rider">Où rider ?</a>
+      <a href="/evenements">Événements</a>
+      <a href="/game">Games</a>
+      <a href="/shop-rsl">Shop</a>
+      <a href="/comite">Comité</a>
+      <a href="/contact">Contact</a>
+      <a href="/conditions">Conditions générales</a>
+      <a href="/access">Se connecter</a>
+      <a href="/compte">Mon compte</a>
+      <a href="/coach">Je suis coach</a>
     </nav>
   </div>
 
-  <!-- CONTENU -->
-  <main>
-    <div class="shop-wrap" id="plans">
-      <section class="intro-card">
-        <div class="intro-inner">
-          <div class="shop-intro">
-            <div class="badge-partner">
-              <span></span> Devenir membre • Romandie Scooter League
-            </div>
-            <h1>Choisis ta formule RSL et rejoins la ligue</h1>
-            <p>
-              À la RSL, on a simplifié tous les tarifs pour arriver à <b>5 formules claires</b>.
-              Tu peux commencer petit, progresser avec le temps ou soutenir la scène comme un boss.
-            </p>
-            <p>
-              Que tu sois <b>rider</b>, <b>parent</b>, <b>coach</b> ou juste fan de trottinette freestyle,
-              il y a une formule pour toi. Le but : te donner un cadre, des cours, des events, et faire
-              grandir la scène ensemble.
-            </p>
-
-            <div class="why-block">
-              <div class="why-card">
-                <h3>Pourquoi devenir membre ?</h3>
-                <ul>
-                  <li>Accès prioritaire aux cours & events RSL</li>
-                  <li>Infos et préinscriptions avant le public</li>
-                  <li>Encadrement sécurisé & pédagogique</li>
-                  <li>Tu soutiens une ligue créée par des riders</li>
-                </ul>
-              </div>
-              <div class="why-card">
-                <h3>Concrètement, tu gagnes</h3>
-                <ul>
-                  <li>Une vraie structure pour progresser</li>
-                  <li>Un lien direct avec les coachs & l’asso</li>
-                  <li>Des réductions / avantages selon la formule</li>
-                  <li>Une communauté motivée, pas juste un club</li>
-                </ul>
-              </div>
-            </div>
-
-            <div class="plans-title">Les 5 formules membres RSL (ordre croissant)</div>
-          </div>
-
-          <div class="products-grid">
-
-            <!-- 1) STARTER -->
-            <article class="product-card">
-              <div class="product-img">Starter — entrer dans la ligue</div>
-              <div class="product-title">Starter — 50 CHF/an</div>
-              <div class="product-meta">
-                Le pack idéal pour <b>rejoindre officiellement la RSL</b>, soutenir la scène et profiter d’avantages concrets.
-                <ul>
-                  <li>Statut <b>membre officiel RSL</b></li>
-                  <li><b>Cours RSL à 20 CHF</b> au lieu de 30 CHF</li>
-                  <li><b>–10% sur le livret de tricks</b></li>
-                  <li><b>–10% dans les boutiques partenaires</b></li>
-                  <li>Sticker / support visuel RSL inclus</li>
-                </ul>
-              </div>
-              <div class="product-price">50 CHF/an <span>Pack d’entrée</span></div>
-
-              <!-- ✅ FIX: plus de startMembership ici, on ouvre juste le popup -->
-              <a href="#" class="product-btn js-open-plan">Choisir Starter</a>
-
-              <div class="badge-small">Pour commencer & soutenir</div>
-
-              <div class="product-popup-content" style="display:none">
-                <div class="product-modal-content">
-                  <h2>Formule STARTER — 50 CHF/an</h2>
-                  <p>La formule <b>Starter</b>, c’est le pack d’entrée pour faire partie de la RSL, soutenir la ligue et déjà bénéficier de vrais avantages.</p>
-                  <h3>Idéale pour</h3>
-                  <ul>
-                    <li>Parents / proches qui veulent soutenir la scène</li>
-                    <li>Riders qui débutent et veulent déjà être membres</li>
-                    <li>Ceux qui veulent aider sans encore s’engager sur un gros pack</li>
-                  </ul>
-                  <h3>Ce que tu reçois</h3>
-                  <ul>
-                    <li>Statut de <b>membre officiel RSL</b></li>
-                    <li><b>Cours RSL à 20 CHF</b> au lieu de 30 CHF</li>
-                    <li><b>–10% sur le livret de tricks</b></li>
-                    <li><b>–10% dans les boutiques partenaires</b></li>
-                    <li>Sticker / support visuel RSL inclus</li>
-                  </ul>
-                  <p style="margin-top:10px;">
-                    <a href="#" class="product-btn"
-                       onclick="startMembership('starter','yearly','https://buy.stripe.com/6oU6oA6Wt0gi8MK6RGeUU00'); return false;">
-                      Payer & devenir membre Starter — 50 CHF/an
-                    </a>
-                  </p>
-                </div>
-              </div>
-            </article>
-
-            <!-- 2) RIDER -->
-            <article class="product-card highlight">
-              <div class="product-ribbon">Populaire</div>
-              <div class="product-img">Rider — progresser toute l’année</div>
-              <div class="product-title">Rider — 80 CHF/an</div>
-              <div class="product-meta">
-                Pour <b>rider régulièrement</b> avec la RSL, profiter de sessions organisées et bénéficier d’avantages renforcés.
-                <ul>
-                  <li>Accès prioritaire à certaines sessions & événements</li>
-                  <li><b>Cours RSL à 20 CHF</b> au lieu de 30 CHF</li>
-                  <li><b>–15% sur le livret de tricks</b></li>
-                  <li><b>–15% dans les boutiques partenaires RSL</b></li>
-                  <li>Sticker / support visuel RSL inclus</li>
-                </ul>
-              </div>
-              <div class="product-price">80 CHF/an <span>Progression régulière</span></div>
-
-              <!-- ✅ FIX: plus de startMembership ici, on ouvre juste le popup -->
-              <a href="#" class="product-btn js-open-plan">Choisir Rider</a>
-
-              <div class="badge-small">Riders actifs & motivés</div>
-
-              <div class="product-popup-content" style="display:none">
-                <div class="product-modal-content">
-                  <h2>Formule RIDER — 80 CHF/an</h2>
-                  <p>La formule <b>Rider</b>, c’est pour ceux qui veulent participer régulièrement à la vie de la ligue et profiter d’un cadre pour progresser toute l’année.</p>
-                  <h3>Concrètement</h3>
-                  <ul>
-                    <li>Accès prioritaire à certaines sessions & événements RSL</li>
-                    <li><b>Cours RSL à 20 CHF</b> au lieu de 30 CHF</li>
-                    <li><b>–15% sur le livret de tricks</b></li>
-                    <li><b>–15% dans les boutiques partenaires RSL</b></li>
-                  </ul>
-                  <p style="margin-top:10px;">
-                    <a href="#" class="product-btn"
-                       onclick="startMembership('rider','yearly','https://buy.stripe.com/5kQaEQ5Sp3sufb8dg4eUU01'); return false;">
-                      Payer & devenir membre Rider — 80 CHF/an
-                    </a>
-                  </p>
-                </div>
-              </div>
-            </article>
-
-            <!-- 3) SUPPORT -->
-            <article class="product-card">
-              <div class="product-img">Pro / Soutien — financer la ligue</div>
-              <div class="product-title">Pro / Soutien — 15 CHF/mois ou 149 CHF/an</div>
-              <div class="product-meta">
-                Pour les <b>marques, commerces, parents, riders adultes</b> qui veulent soutenir financièrement la ligue.
-                <ul>
-                  <li><b>Livret de tricks offert</b></li>
-                  <li><b>Cours RSL à 20 CHF</b> au lieu de 30 CHF</li>
-                  <li><b>–15% dans les boutiques partenaires RSL</b></li>
-                  <li>Sticker / support visuel RSL inclus</li>
-                </ul>
-              </div>
-              <div class="product-price">15 CHF/mois ou 149 CHF/an <span>Soutien officiel</span></div>
-              <a href="#" class="product-btn js-open-plan">Choisir Soutien</a>
-              <div class="badge-small">Parents, commerces, partenaires</div>
-
-              <div class="product-popup-content" style="display:none">
-                <div class="product-modal-content">
-                  <h2>Formule PRO / SOUTIEN</h2>
-                  <p>Choisis ton type de soutien :</p>
-                  <p style="margin-top:10px; display:flex; flex-direction:column; gap:8px;">
-                    <a href="#" class="product-btn"
-                       onclick="startMembership('support','monthly','https://buy.stripe.com/dRm6oA5Spd34gfcfoceUU06'); return false;">
-                      Soutenir — 15 CHF/mois
-                    </a>
-                    <a href="#" class="product-btn"
-                       onclick="startMembership('support','yearly','https://buy.stripe.com/cNicMY3Kh8MO0gea3SeUU03'); return false;">
-                      Soutenir — 149 CHF/an
-                    </a>
-                  </p>
-                </div>
-              </div>
-            </article>
-
-            <!-- 4) PROGRESSION -->
-            <article class="product-card">
-              <div class="product-img">Progression — gros développement</div>
-              <div class="product-title">Progression — 289 CHF/an ou 25 CHF/mois</div>
-              <div class="product-meta">
-                Pour un <b>gros boost</b> : programme, suivi, et <b>15 cours inclus</b>.
-                <ul>
-                  <li><b>15 cours inclus</b></li>
-                  <li>Après : cours à <b>20 CHF</b></li>
-                  <li><b>–15% matériel</b> & partenaires</li>
-                  <li><b>T-shirt RSL offert</b></li>
-                </ul>
-              </div>
-              <div class="product-price">289 CHF/an ou 25 CHF/mois <span>Développement</span></div>
-              <a href="#" class="product-btn js-open-plan">Choisir Progression</a>
-              <div class="badge-small">Riders en développement</div>
-
-              <div class="product-popup-content" style="display:none">
-                <div class="product-modal-content">
-                  <h2>Formule PROGRESSION</h2>
-                  <p>Choisis ton mode de paiement :</p>
-                  <p style="margin-top:10px; display:flex; flex-direction:column; gap:8px;">
-                    <a href="#" class="product-btn"
-                       onclick="startMembership('progression','yearly','https://buy.stripe.com/8x26oAa8F1kmbYWgsgeUU08'); return false;">
-                      🔁 Payer — 289 CHF/an
-                    </a>
-                    <a href="#" class="product-btn"
-                       onclick="startMembership('progression','monthly','https://buy.stripe.com/00wfZa94Bfbc4wugsgeUU05'); return false;">
-                      🔥 Payer — 25 CHF/mois
-                    </a>
-                  </p>
-                </div>
-              </div>
-            </article>
-
-            <!-- 5) PREMIUM -->
-            <article class="product-card">
-              <div class="product-img">Premium — élite & encadrement maximal</div>
-              <div class="product-title">Premium — 490 CHF/an ou 43 CHF/mois</div>
-              <div class="product-meta">
-                Pour un <b>développement maximum</b> : <b>tous les cours gratuits</b> + avantages events.
-                <ul>
-                  <li><b>Tous les cours gratuits</b></li>
-                  <li><b>–50% sur events</b></li>
-                  <li><b>Suivi avancé</b></li>
-                  <li><b>T-shirt + Sweat</b> offerts</li>
-                </ul>
-              </div>
-              <div class="product-price">490 CHF/an ou 43 CHF/mois <span>Élite</span></div>
-              <a href="#" class="product-btn js-open-plan">Choisir Premium</a>
-              <div class="badge-small">Riders très engagés</div>
-
-              <div class="product-popup-content" style="display:none">
-                <div class="product-modal-content">
-                  <h2>Formule PREMIUM</h2>
-                  <p>Choisis ton mode de paiement :</p>
-                  <p style="margin-top:10px; display:flex; flex-direction:column; gap:8px;">
-                    <a href="#" class="product-btn"
-                       onclick="startMembership('premium','yearly','https://buy.stripe.com/5kQ7sE2Gd4wygfc1xmeUU07'); return false;">
-                      🔁 Payer — 490 CHF/an
-                    </a>
-                    <a href="#" class="product-btn"
-                       onclick="startMembership('premium','monthly','https://buy.stripe.com/3cIaEQ5Sp4wy5Ay5NCeUU04'); return false;">
-                      🔥 Payer — 43 CHF/mois
-                    </a>
-                  </p>
-                </div>
-              </div>
-            </article>
-
-          </div>
-        </div>
-      </section>
+  <header class="page-hero">
+    <div class="hero-inner">
+      <div class="fed">
+        <div class="fed-bar"></div><div class="fed-dot"></div>
+        <div class="fed-txt">Adhésion · carte fédérale · communauté</div>
+        <div class="fed-dot"></div><div class="fed-bar"></div>
+      </div>
+      <h1>DEVENIR <span>MEMBRE</span></h1>
+      <div class="redsep"></div>
+      <p class="hero-sub">Rejoins la Romandie Scooter League et fais partie de la communauté officielle de trottinette freestyle en Suisse romande.</p>
     </div>
+  </header>
+
+  <main>
+    <section class="wrap">
+      <div class="section-head">
+        <div class="section-kicker"><div class="num">01</div><div class="section-title">POURQUOI <span>REJOINDRE ?</span></div></div>
+        <p class="section-sub">Une adhésion simple, un impact concret sur la scène.</p>
+      </div>
+      <div class="strip" style="margin-bottom:42px;">
+        <div class="strip-item"><strong>15 CHF</strong><span>Cotisation annuelle, accessible à tous.</span></div>
+        <div class="strip-item"><strong>Carte</strong><span>Carte de membre officielle RSL / Swiss Scooter Federation.</span></div>
+        <div class="strip-item"><strong>Réseau</strong><span>Accès à la communauté RSL, events, infos en avant-première.</span></div>
+        <div class="strip-item"><strong>Impact</strong><span>Tu contribues à faire reconnaître le sport en Suisse.</span></div>
+      </div>
+
+      <div class="section-head" style="margin-top:50px;">
+        <div class="section-kicker"><div class="num">02</div><div class="section-title">COMMENT <span>S'INSCRIRE ?</span></div></div>
+        <p class="section-sub">Une démarche simple en 3 étapes.</p>
+      </div>
+      <div class="tick-list" style="max-width:700px;margin-bottom:32px;">
+        <div class="tick"><b>Étape 1 :</b> Remplis le formulaire d'inscription ci-dessous.</div>
+        <div class="tick"><b>Étape 2 :</b> Paie la cotisation de 15 CHF via Twint ou virement.</div>
+        <div class="tick"><b>Étape 3 :</b> Reçois ta carte de membre RSL par email ou en main propre.</div>
+      </div>
+      <div class="actions" style="margin-bottom:48px;">
+        <a class="btn red" href="https://wa.me/41783008043?text=Bonjour%2C%20je%20veux%20devenir%20membre%20RSL%20!" target="_blank" rel="noopener">S'inscrire via WhatsApp</a>
+        <a class="btn ghost" href="/contact">Contacter la RSL</a>
+      </div>
+
+      <div class="section-head" style="margin-top:10px;">
+        <div class="section-kicker"><div class="num">03</div><div class="section-title">OBJECTIF <span>1000 MEMBRES</span></div></div>
+        <p class="section-sub">Pour faire reconnaître la discipline en Suisse.</p>
+      </div>
+      <article class="highlight">
+        <div>
+          <div class="h-tag">Swiss Scooter Federation</div>
+          <div class="h-title">1000 membres = reconnaissance officielle</div>
+          <p class="h-desc">Plus on est nombreux, plus la trottinette freestyle est prise au sérieux par les fédérations, les communes et les institutions sportives. <b>Chaque membre compte.</b></p>
+        </div>
+        <a class="btn red" href="https://wa.me/41783008043?text=Bonjour%2C%20je%20veux%20devenir%20membre%20RSL%20!" target="_blank" rel="noopener">Je rejoins</a>
+      </article>
+    </section>
+  <section style="max-width:1200px;margin:0 auto;padding:0 28px 78px;">
+    <div class="sp-card">
+      <div class="sp-title">AVEC LE <span>SOUTIEN DE</span></div>
+      <div class="sponsors-grid">
+        <a class="sponsor-card" href="https://travaux-sur-bois.ch/" target="_blank" rel="noopener">
+          <img src="/images/sponsors/travaux-sur-bois.png" alt="Travaux sur Bois">
+        </a>
+        <a class="sponsor-card" href="https://www.jfrideshop.ch/" target="_blank" rel="noopener">
+          <img src="/images/logo_jf.png" alt="JF Rideshop">
+        </a>
+        <a class="sponsor-card" href="https://www.isaac-isaac.com/fr-ch" target="_blank" rel="noopener">
+          <img src="/images/sponsors/isaac.png" alt="Isaac">
+        </a>
+      </div>
+    </div>
+  </section>
   </main>
 
-  <footer class="footer-mini">
-    <p class="copy">© 2026 — Romandie Scooter League / Association Ride4Style Montreux. Tous droits réservés.</p>
-  </footer>
-
-  <!-- MODAL GLOBALE -->
-  <div class="product-modal" id="productModal">
-    <div class="product-modal-backdrop"></div>
-    <div class="product-modal-panel">
-      <button class="product-modal-close" aria-label="Fermer">✕</button>
-      <div id="productModalInner"></div>
+  <footer>
+    <div>
+      <div class="ft-brand">ROMANDIE <span>SCOOTER LEAGUE</span></div>
+      <div class="ft-copy">© 2026 RSL — Tous droits réservés.</div>
     </div>
-  </div>
-
+    <ul class="ft-links">
+      <li><a href="/cours">Cours</a></li>
+      <li><a href="/formation">Formation</a></li>
+      <li><a href="/evenements">Événements</a></li>
+      <li><a href="/membres">Membres</a></li>
+      <li><a href="/contact">Contact</a></li>
+      <li><a href="/access">Login</a></li>
+    </ul>
+  </footer>
   <script>
-    /* ===== Thème (clair/sombre) ===== */
     (function(){
-      const STORAGE_KEY='rsl-theme';
-      const body=document.body;
-      const btn=document.getElementById('themeToggle');
-
-      function applyTheme(theme){
-        if(theme==='light'){
-          body.classList.add('theme-light');
-          if(btn) btn.textContent='☀️';
-        }else{
-          body.classList.remove('theme-light');
-          if(btn) btn.textContent='🌙';
-        }
-      }
-
-      let saved=null;
-      try{ saved=localStorage.getItem(STORAGE_KEY); }catch(e){}
-      if(!saved){
-        const prefersLight=window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
-        saved=prefersLight?'light':'dark';
-      }
-      applyTheme(saved);
-
-      if(btn){
-        btn.addEventListener('click', ()=>{
-          const current=body.classList.contains('theme-light')?'light':'dark';
-          const next=current==='light'?'dark':'light';
-          applyTheme(next);
-          try{ localStorage.setItem(STORAGE_KEY,next); }catch(e){}
-        });
-      }
-    })();
-
-    /* ===== Supabase singleton + anti-doublon + lock ===== */
-    function waitForEnv(timeoutMs=3500){
-      return new Promise((resolve)=>{
-        const start=Date.now();
-        (function tick(){
-          const ok=!!(window.env && window.env.SUPABASE_URL && window.env.SUPABASE_ANON);
-          if(ok) return resolve(true);
-          if(Date.now()-start>timeoutMs) return resolve(false);
-          setTimeout(tick,30);
-        })();
-      });
-    }
-
-    function getSupa(){
-      if(window.__rslSupa) return window.__rslSupa;
-      const url  = window.env?.SUPABASE_URL  || "https://jynxifufaauoxwzjapzq.supabase.co";
-      const anon = window.env?.SUPABASE_ANON || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp5bnhpZnVmYWF1b3h3emphcHpxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEzODI2NzcsImV4cCI6MjA3Njk1ODY3N30.vFPGhGakPIM3Xg5rn8_BrAXl6oJMJOssO780C9nXmr4";
-      if(!window.supabase?.createClient) return null;
-      window.__rslSupa = window.supabase.createClient(url, anon);
-      return window.__rslSupa;
-    }
-
-    async function startMembership(planCode, billingPeriod, stripeUrl){
-      await waitForEnv(3500);
-      const sb=getSupa();
-
-      if(!sb){
-        alert("Erreur technique : Supabase n’est pas disponible. Réessaie plus tard.");
-        return;
-      }
-
-      try{
-        const { data, error } = await sb.auth.getUser();
-        const user = (!error && data?.user) ? data.user : null;
-
-        if(!user){
-          alert("Tu dois être connecté pour prendre un abonnement RSL.");
-          window.location.href="access.html";
-          return;
-        }
-
-        if(!stripeUrl){
-          alert("Lien de paiement indisponible pour cette formule. Contacte la RSL.");
-          return;
-        }
-
-        if(window.__rslMembershipLock) return;
-        window.__rslMembershipLock=true;
-
-        // réutilise une demande non payée (évite doublons)
-        let membershipId=null;
-        try{
-          const { data: existing } = await sb
-            .from("rsl_memberships")
-            .select("id, created_at")
-            .eq("user_id", user.id)
-            .eq("membership_code", planCode)
-            .eq("is_paid", false)
-            .order("created_at", { ascending:false })
-            .limit(1);
-
-          if(existing && existing[0]) membershipId = existing[0].id;
-        }catch(e){}
-
-        if(!membershipId){
-          const row={ user_id:user.id, membership_code:planCode, is_paid:false };
-          const { data: inserted, error: insertErr } = await sb
-            .from("rsl_memberships")
-            .insert(row)
-            .select("id")
-            .single();
-
-          if(insertErr){
-            console.error(insertErr);
-            alert("Impossible d’enregistrer ton abonnement. Réessaie ou contacte la RSL.");
-            window.__rslMembershipLock=false;
-            return;
-          }
-          membershipId = inserted?.id || null;
-        }
-
-        if(membershipId){
-          try{ localStorage.setItem("rsl_last_membership_id", String(membershipId)); }catch(e){}
-        }
-
-        window.location.href=stripeUrl;
-
-      }catch(e){
-        console.error("startMembership error:", e);
-        alert("Une erreur est survenue. Réessaie ou contacte la RSL.");
-      }finally{
-        window.__rslMembershipLock=false;
-      }
-    }
-
-    /* ===== Vidéo de fond ===== */
-    (function(){
+      const v=document.getElementById('bg');
+      if(!v) return;
       const vids=[
         "https://jynxifufaauoxwzjapzq.supabase.co/storage/v1/object/public/videos_rsl/trottvideo1.mp4",
         "https://jynxifufaauoxwzjapzq.supabase.co/storage/v1/object/public/videos_rsl/trottvideo2.mp4"
       ];
-      const v=document.getElementById('rslBg');
-      if(!v) return;
-      const s=document.createElement('source');
-      s.src=vids[Math.floor(Math.random()*vids.length)];
-      s.type="video/mp4";
-      v.appendChild(s);
-
-      const start=()=>{
-        try{
-          v.playbackRate=0.6;
-          const p=v.play();
-          if(p && p.catch) p.catch(()=>{});
-        }catch(e){}
-      };
-      start();
-
-      document.addEventListener('visibilitychange',()=>{
-        if(document.hidden){ v.pause(); } else { start(); }
-      });
+      v.src=vids[Math.floor(Math.random()*vids.length)];
+      v.playbackRate=0.5;
+      try{const p=v.play();if(p&&p.catch)p.catch(()=>{});}catch(e){}
+      document.addEventListener('visibilitychange',()=>{if(document.hidden)v.pause();else{v.playbackRate=0.5;try{v.play();}catch(e){}}});
     })();
-
-    /* ===== Menu mobile ===== */
     (function(){
       const menuBtn=document.getElementById('menuBtn');
       const mobile=document.getElementById('mobileMenu');
-      if(!menuBtn || !mobile) return;
-
-      menuBtn.addEventListener('click',e=>{
-        e.stopPropagation();
-        mobile.classList.add('open');
-        mobile.setAttribute('aria-hidden','false');
-      });
-      mobile.querySelector('.mobile-dim')?.addEventListener('click',()=>{
-        mobile.classList.remove('open');
-        mobile.setAttribute('aria-hidden','true');
-      });
-      document.addEventListener('keydown',e=>{
-        if(e.key==='Escape'){
-          mobile.classList.remove('open');
-          mobile.setAttribute('aria-hidden','true');
-        }
-      });
-    })();
-
-    /* ===== Modal plans ===== */
-    (function(){
-      const modal=document.getElementById('productModal');
-      const modalInner=document.getElementById('productModalInner');
-      if(!modal || !modalInner) return;
-
-      const openModal=(html)=>{
-        modalInner.innerHTML=html;
-        modal.classList.add('open');
-      };
-      const closeModal=()=>{
-        modal.classList.remove('open');
-        modalInner.innerHTML="";
-      };
-
-      document.addEventListener('click',function(e){
-        const btn=e.target.closest('.js-open-plan');
-        if(btn){
-          e.preventDefault();
-          const card=btn.closest('.product-card');
-          const popup=card?.querySelector('.product-popup-content');
-          if(popup) openModal(popup.innerHTML);
-        }
-        if(e.target.closest('.product-modal-close') || e.target.classList.contains('product-modal-backdrop')){
-          closeModal();
-        }
-      });
-
-      document.addEventListener('keydown',function(e){
-        if(e.key==="Escape"){
-          if(modal.classList.contains('open')) closeModal();
-        }
-      });
+      const close=document.getElementById('closeMenu');
+      if(!menuBtn||!mobile) return;
+      const open=()=>{mobile.classList.add('open');mobile.setAttribute('aria-hidden','false');};
+      const shut=()=>{mobile.classList.remove('open');mobile.setAttribute('aria-hidden','true');};
+      menuBtn.addEventListener('click',e=>{e.stopPropagation();open();});
+      close?.addEventListener('click',shut);
+      mobile.querySelector('.mobile-dim')?.addEventListener('click',shut);
+      document.addEventListener('keydown',e=>{if(e.key==='Escape') shut();});
     })();
   </script>
 </body>

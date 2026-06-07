@@ -1,399 +1,279 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="fr">
 <head>
-  <meta charset="utf-8">
-  <title>Montreux Scooter Time Machine</title>
-  <!-- Optimisé pour la réactivité sur TV / Kiosk -->
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>MontreuxTV — Romandie Scooter League</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <script defer src="/js/env.js"></script>
+  <script defer src="/js/auth.js"></script>
+  <script defer src="/js/site.js"></script>
   <style>
-    /* ---------------------------------------------------------------------- */
-    /* FOND & GÉNÉRAL */
-    /* ---------------------------------------------------------------------- */
-    html{
-      margin:0;
-      padding:0;
-      width:100vw;
-      height:100vh;
-      overflow:hidden;
-      background:#000;
-    }
-
-    /* Vidéo de fond : couvre tout l'écran, en dessous de tout */
-    #bgVideo{
-      position:fixed;inset:0;width:100vw;height:100vh;object-fit:cover;
-      z-index:-2;opacity:.7;filter:blur(2px) brightness(.85) contrast(1.1);
-    }
-    /* Filtre sombre pour améliorer le contraste du texte */
-    body::before{
-      content:"";position:fixed;inset:0;background:#00000060;z-index:-1;
-    }
-    body{
-      margin:0;min-height:100vh;display:flex;flex-direction:column;align-items:center;
-      justify-content:center;font-family:Arial,sans-serif;color:#00ff93;text-align:center;
-      padding:2vh 0;box-sizing:border-box;
-    }
-
-    /* ---------------------------------------------------------------------- */
-    /* HEADER ET TITRES (Styles Néon) */
-    /* ---------------------------------------------------------------------- */
-    .header{margin-bottom:2vh;}
-    h1{
-      margin:0;
-      font-size:4.5vmin;
-      letter-spacing:1.8px;
-      text-shadow:0 0 25px #00ffaf,0 0 8px #00ffaf;
-      white-space: nowrap;
-    }
-    .years-line{
-      margin-top:0.5vh;font-size:2.2vmin;color:#e5fff6;letter-spacing:0.15em;text-transform:uppercase;
-    }
-    .tagline{
-      margin-top:0.5vh;font-size:2vmin;color:#c4ffe8;padding-bottom:0.5vh;position:relative;display:inline-block;
-    }
-    .tagline::after{
-      content:"";position:absolute;left:0;right:0;bottom:0;height:2px;
-      background:linear-gradient(90deg,#00ffaf,transparent,#00ffaf);box-shadow:0 0 10px #00ffaf;
-    }
-
-    /* ---------------------------------------------------------------------- */
-    /* FRAME PRINCIPAL (Le "téléviseur" vert) */
-    /* ---------------------------------------------------------------------- */
-    .frame{
-      width:85vw;max-width:1100px;
-      aspect-ratio:16/9;
-      border-radius:1.5vw;
-      border:4px solid #00ffaf;
-      background:#000;
-      box-shadow:0 0 35px #00ffea,inset 0 0 25px #00ffc3;
-      position:relative;overflow:hidden;
-      display:flex;align-items:center;justify-content:center;
-    }
-    .layer{position:absolute;inset:0;display:none;align-items:center;justify-content:center;}
-    .layer.show{display:flex;}
-
-    /* ---------------------------------------------------------------------- */
-    /* LECTEUR VIDÉO */
-    /* ---------------------------------------------------------------------- */
-    #player{
-      width:100%;
-      height:100%;
-    }
-    #player iframe{
-      width:100% !important;
-      height:100% !important;
-      object-fit:cover;
-      border:0;
-    }
-
-    /* ---------------------------------------------------------------------- */
-    /* PUBLICITÉS (Deux flyers côte à côte) */
-    /* ---------------------------------------------------------------------- */
-    #adsWrapper{gap:2vw;padding:2vw;}
-    .flyer{
-      max-width:48%;
-      max-height:90%;
-      object-fit:contain;
-      border-radius:10px;
-    }
-
-    /* ---------------------------------------------------------------------- */
-    /* INTRO (Flyer et Texte) */
-    /* ---------------------------------------------------------------------- */
-    #introWrapper{padding:2vh 2vw;}
-    .intro-layout{
-      width:100%;
-      height:100%;
-      display:flex;
-      align-items:center;
-      justify-content:space-between; /* bien séparé gauche / droite */
-      gap:3vw;
-    }
-    .intro-flyer{
-      flex:0 0 35%;             /* colonne gauche fixe */
-      max-width:35%;
-      max-height:90%;
-      object-fit:contain;
-      border-radius:10px;
-      box-shadow:0 0 10px rgba(0, 255, 175, 0.5);
-    }
-    .intro-text{
-      flex:1;                   /* colonne droite qui prend le reste */
-      max-width:none;
-      height:90%;
-      overflow:hidden;
-      position:relative;
-      text-align:left;
-      font-size:2vmin;
-      line-height:1.5;
-      color:#eafff5;
-    }
-
-    #introContent {
-      position:relative;
-      top:0;left:0;right:0;bottom:0;
-      width:100%;height:100%;
-      transition:none;
-    }
-
-    .intro-slide {
-      position:absolute;
-      inset:0;
-      opacity:0;
-      transition:opacity 1s ease-in-out;
-      padding:10px;
-      text-align:left;
-      display:flex;
-      flex-direction:column;
-      justify-content:center;
-    }
-
-    .intro-slide.show-slide {
-      opacity:1;
-    }
-
-    .intro-slide h2 {
-      font-size:2.8vmin;
-      color:#00ffaf;
-      text-shadow:0 0 10px rgba(0, 255, 175, 0.5);
-      margin-bottom:1.5vh;
-    }
-    .intro-slide p {
-      margin-bottom:1vh;
-    }
-
-    /* ---------------------------------------------------------------------- */
-    /* RESPONSIVITÉ */
-    /* ---------------------------------------------------------------------- */
-    @media(max-width:900px){
-      .frame{width:95vw;max-width:95vw;}
-      h1{font-size:6vmin; white-space: normal;}
-      .years-line{font-size:3vmin;}
-      .intro-text{font-size:2.5vmin;}
-      .intro-slide h2 {font-size:4vmin;}
-
-      .intro-layout{
-        flex-direction:column;
-        gap:1.5vh;
-      }
-      .intro-flyer{
-        flex:0 0 auto;
-        max-width:50%;
-        max-height:auto;
-      }
-      .intro-text{
-        max-width:90%;
-        text-align:center;
-      }
-      .intro-slide{text-align:center;}
-
-      #adsWrapper{flex-direction:column;gap:1.5vh;}
-      .flyer{max-width:90%;max-height:45%;}
-    }
-
-    /* ---------------------------------------------------------------------- */
-    /* BOUTON START */
-    /* ---------------------------------------------------------------------- */
-    #startBtn{
-      margin-top:2vh;padding:1.5vh 4vw;font-size:2.5vmin;font-weight:bold;background:#00ffaf;color:#000;
-      border:none;border-radius:8px;cursor:pointer;box-shadow:0 0 24px #00ffaf;
-      transition:transform 0.2s, box-shadow 0.2s;
-    }
-    #startBtn:hover{transform:scale(1.05);box-shadow:0 0 40px #00ffe1;}
-
-    /* ---------------------------------------------------------------------- */
-    /* SPONSORS */
-    /* ---------------------------------------------------------------------- */
-    .sponsor-bar{
-      margin-top:2vh;width:95vw;max-width:1200px;
-      padding:1.5vh 2vw;border-radius:1.5vw;
-      border:3px solid #00ffaf;
-      background:#EDEDEE;box-shadow:0 0 15px #00ffaf40;
-      display:flex;align-items:center;justify-content:center;
-      gap:2vw;flex-wrap:wrap;
-    }
-    .sponsor-logo{
-      max-height:8vh;
-      max-width:20vw;
-      object-fit:contain;
-      filter:drop-shadow(0 0 4px #00ffaf40);
-    }
+    :root{--red:#cc0000;--red2:#e51010;--bg:#080808;--fg:#f0f0f0;--muted:#777;--border:rgba(255,255,255,.08);--card:#111;}
+    *,*:before,*:after{margin:0;padding:0;box-sizing:border-box;}
+    html{scroll-behavior:smooth;}
+    body{min-height:100vh;background:var(--bg);color:var(--fg);font-family:'Barlow Condensed',system-ui,sans-serif;overflow-x:hidden;}
+    a{color:inherit;text-decoration:none;}
+    b,strong{color:#fff;}
+    #bg{position:fixed;inset:0;width:100%;height:100%;object-fit:cover;z-index:-3;filter:brightness(.18) saturate(.18) contrast(1.2);background:#000;}
+    .vig{position:fixed;inset:0;z-index:-2;pointer-events:none;background:radial-gradient(ellipse 60% 55% at 50% 15%, transparent 0%, rgba(0,0,0,.55) 55%, rgba(0,0,0,.97) 100%),linear-gradient(180deg,rgba(0,0,0,.2),#080808 70%);}
+    .grain{position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:.33;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.055'/%3E%3C/svg%3E");}
+    .sitenav{position:sticky;top:0;z-index:500;background:#000;border-bottom:3px solid var(--red);padding:0 28px;display:flex;align-items:center;justify-content:space-between;height:54px;}
+    .sitenav-brand{display:flex;align-items:center;text-decoration:none;}
+    .sitenav-tab{background:var(--red);height:54px;width:58px;display:flex;align-items:center;justify-content:center;margin-left:-28px;margin-right:16px;flex:0 0 auto;}
+    .sitenav-tab img{height:34px;object-fit:contain;}
+    .sitenav-name{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:.1em;color:#fff;line-height:1;}
+    .sitenav-name small{display:block;font-family:'Barlow Condensed',sans-serif;font-size:9px;font-weight:700;letter-spacing:.22em;color:var(--red);margin-top:-1px;}
+    .sitenav-links{display:flex;align-items:center;gap:0;list-style:none;height:54px;}
+    .sitenav-links li{height:100%;}
+    .sitenav-links a{display:flex;align-items:center;height:100%;padding:0 14px;font-weight:700;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:rgba(240,240,240,.5);text-decoration:none;border-bottom:3px solid transparent;margin-bottom:-3px;transition:.15s;}
+    .sitenav-links a:hover,.sitenav-links a[aria-current="page"]{color:#fff;border-bottom-color:var(--red);}
+    .sitenav-right{display:flex;align-items:center;gap:8px;}
+    .snbtn{padding:7px 14px;font-weight:700;font-size:11px;letter-spacing:.14em;text-transform:uppercase;text-decoration:none;cursor:pointer;border:1px solid rgba(255,255,255,.14);background:transparent;color:rgba(240,240,240,.6);transition:.15s;}
+    .snbtn:hover{border-color:rgba(255,255,255,.35);color:#fff;}
+    .snbtn.red{background:var(--red);border-color:var(--red);color:#fff;box-shadow:0 0 16px rgba(200,0,0,.45);}
+    .snbtn.red:hover{background:var(--red2);}
+    #menuBtn{display:none;background:transparent;border:1px solid rgba(255,255,255,.15);color:#fff;padding:6px 10px;font-size:18px;cursor:pointer;}
+    .mobile-sheet{position:fixed;inset:0;display:none;z-index:600;}
+    .mobile-sheet.open{display:block;}
+    .mobile-dim{position:absolute;inset:0;background:rgba(0,0,0,.6);}
+    .mobile-panel{position:absolute;top:0;right:0;height:100%;width:80vw;max-width:320px;background:#0f0f0f;border-left:3px solid var(--red);padding:20px 18px;display:flex;flex-direction:column;gap:2px;overflow-y:auto;}
+    .mobile-panel .mp-title{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:.1em;color:#fff;margin-bottom:12px;border-bottom:1px solid rgba(255,255,255,.08);padding-bottom:10px;}
+    .mobile-panel .mp-title span{color:var(--red);}
+    .mobile-panel a{color:rgba(240,240,240,.6);text-decoration:none;font-weight:700;font-size:15px;letter-spacing:.1em;text-transform:uppercase;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.05);transition:.15s;}
+    .mobile-panel a:hover{color:#fff;padding-left:6px;}
+    .mobile-panel .mp-red{color:var(--red);}
+    .mp-close{position:absolute;top:14px;right:14px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);color:#fff;width:32px;height:32px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;}
+    footer{background:#000;border-top:3px solid var(--red);padding:28px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;}
+    .ft-brand{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:.1em;color:#fff;}
+    .ft-brand span{color:var(--red);}
+    .ft-copy{font-size:11px;color:var(--muted);margin-top:3px;}
+    .ft-links{display:flex;gap:16px;list-style:none;flex-wrap:wrap;}
+    .ft-links a{font-weight:700;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);text-decoration:none;transition:.15s;}
+    .ft-links a:hover{color:var(--red);}
+    .wrap{max-width:1200px;margin:0 auto;padding:56px 28px 80px;}
+    .page-hero{position:relative;min-height:380px;display:flex;align-items:center;justify-content:center;padding:74px 20px 64px;overflow:hidden;border-bottom:1px solid rgba(200,0,0,.18);}
+    .page-hero:before{content:"";position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(500px,82vw);height:min(500px,82vw);border-radius:50%;background:radial-gradient(circle,rgba(200,0,0,.34),rgba(200,0,0,.08) 48%,transparent 70%);filter:blur(2px);animation:breathe 3.8s ease-in-out infinite;}
+    .hero-inner{position:relative;z-index:1;text-align:center;max-width:900px;}
+    .fed{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:16px;}
+    .fed-bar{width:28px;height:1px;background:rgba(255,255,255,.12);}
+    .fed-dot{width:5px;height:5px;border-radius:50%;background:var(--red);box-shadow:0 0 8px var(--red);animation:pulse 2s ease-in-out infinite;}
+    .fed-txt{font-size:8px;font-weight:700;letter-spacing:.24em;text-transform:uppercase;color:rgba(255,255,255,.32);white-space:nowrap;}
+    h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(54px,10vw,106px);line-height:.86;letter-spacing:.03em;color:#fff;text-shadow:0 0 34px rgba(200,0,0,.48);}
+    h1 span{color:var(--red);}
+    .redsep{width:36px;height:3px;background:var(--red);box-shadow:0 0 12px rgba(200,0,0,.9);margin:20px auto 18px;}
+    .hero-sub{max-width:700px;margin:0 auto;color:rgba(240,240,240,.62);font-size:18px;line-height:1.55;}
+    .section-head{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;flex-wrap:wrap;border-bottom:2px solid rgba(255,255,255,.06);padding-bottom:16px;margin-bottom:28px;}
+    .section-kicker{display:flex;align-items:flex-end;gap:12px;}
+    .num{font-family:'Bebas Neue',sans-serif;font-size:56px;color:rgba(200,0,0,.18);line-height:1;}
+    .section-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(34px,4.5vw,54px);line-height:1;letter-spacing:.04em;color:#fff;}
+    .section-title span{color:var(--red);}
+    .section-sub{max-width:380px;text-align:right;font-size:14px;color:var(--muted);line-height:1.55;}
+    .card{background:var(--card);border:1px solid rgba(255,255,255,.06);padding:25px 20px;display:flex;flex-direction:column;gap:10px;position:relative;overflow:hidden;}
+    .card:before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--red);transform:scaleY(0);transform-origin:bottom;transition:transform .22s;}
+    .card:hover{border-color:rgba(200,0,0,.42);}
+    .card:hover:before{transform:scaleY(1);}
+    .card.featured{background:linear-gradient(135deg,rgba(200,0,0,.09),var(--card) 72%);border-color:rgba(200,0,0,.22);}
+    .card.featured:before{transform:scaleY(1);}
+    .badge{display:inline-flex;width:max-content;font-size:9px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--red);border:1px solid rgba(200,0,0,.35);padding:3px 10px;margin-bottom:4px;}
+    .card h2,.card h3{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:24px;letter-spacing:.04em;text-transform:uppercase;color:#fff;line-height:1.05;}
+    .card.featured h2{font-size:30px;}
+    .meta{font-size:14px;color:var(--red);font-weight:700;letter-spacing:.05em;text-transform:uppercase;}
+    .card p{font-size:15px;color:var(--muted);line-height:1.62;flex:1;}
+    .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px;}
+    .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:11px 20px;font-weight:900;font-size:12px;letter-spacing:.16em;text-transform:uppercase;text-decoration:none;cursor:pointer;border:0;transition:.15s ease;line-height:1;}
+    .btn.red{background:var(--red);color:#fff;clip-path:polygon(7px 0%,100% 0%,calc(100% - 7px) 100%,0% 100%);box-shadow:0 0 20px rgba(200,0,0,.55);}
+    .btn.red:hover{background:var(--red2);transform:translateY(-1px);}
+    .btn.ghost{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.14);color:rgba(255,255,255,.66);}
+    .btn.ghost:hover{background:rgba(255,255,255,.09);color:#fff;transform:translateY(-1px);}
+    .cards{display:grid;grid-template-columns:repeat(3,1fr);gap:3px;}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:3px;}
+    .highlight{background:var(--card);border:1px solid rgba(200,0,0,.18);padding:24px 22px;position:relative;overflow:hidden;display:flex;gap:20px;justify-content:space-between;align-items:center;}
+    .highlight:before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--red);box-shadow:0 0 20px rgba(200,0,0,.75);}
+    .h-tag{font-size:9px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:var(--red);margin-bottom:8px;}
+    .h-title{font-family:'Bebas Neue',sans-serif;font-size:28px;color:#fff;line-height:1;}
+    .h-desc{font-size:14px;color:var(--muted);line-height:1.55;margin-top:8px;max-width:560px;}
+    .strip{display:grid;grid-template-columns:repeat(4,1fr);gap:3px;margin-top:20px;}
+    .strip-item{background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.075);padding:20px 18px;}
+    .strip-item strong{display:block;font-family:'Bebas Neue',sans-serif;letter-spacing:.06em;font-size:26px;color:#fff;line-height:1;margin-bottom:8px;}
+    .strip-item span{display:block;color:var(--muted);font-size:14px;line-height:1.5;}
+    .tick-list{display:grid;gap:8px;margin-top:12px;}
+    .tick{background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.075);padding:12px 14px;color:var(--muted);font-size:15px;line-height:1.45;}
+    .tick:before{content:"✓";color:var(--red);font-weight:900;margin-right:9px;}
+    .sp-card{background:var(--card);border:1px solid rgba(200,0,0,.18);padding:38px 34px;position:relative;overflow:hidden;}
+    .sp-card:before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--red);box-shadow:0 0 24px rgba(200,0,0,.8);}
+    .sp-card:after{content:"RSL";position:absolute;right:28px;bottom:-10px;font-family:'Bebas Neue',sans-serif;font-size:120px;color:rgba(200,0,0,.045);pointer-events:none;line-height:1;}
+    .sp-title{font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:.05em;color:#fff;line-height:1;margin-bottom:22px;}
+    .sp-title span{color:var(--red);}
+    .sponsors-grid{position:relative;z-index:1;display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;}
+    .sponsor-card{min-width:190px;min-height:96px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;padding:18px 22px;text-decoration:none;transition:.18s;}
+    .sponsor-card:hover{border-color:rgba(200,0,0,.42);transform:translateY(-3px);}
+    .sponsor-card img{display:block;object-fit:contain;max-width:220px;max-height:70px;}
+    .form-field{display:flex;flex-direction:column;gap:6px;margin-bottom:14px;}
+    .form-field label{font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);}
+    .form-field input,.form-field textarea,.form-field select{background:#0d0d0d;border:1px solid rgba(255,255,255,.12);color:#fff;padding:11px 13px;font-family:'Barlow Condensed',sans-serif;font-size:15px;outline:none;transition:.15s;}
+    .form-field input:focus,.form-field textarea:focus{border-color:rgba(200,0,0,.55);}
+    .form-field textarea{resize:vertical;min-height:120px;}
+    @media(max-width:980px){.sitenav-links{display:none;}.snbtn:not(.red){display:none;}.sitenav{padding:0 14px;}.sitenav-tab{margin-left:-14px;}#menuBtn{display:block;}.cards{grid-template-columns:1fr 1fr;}.grid2{grid-template-columns:1fr;}.strip{grid-template-columns:1fr 1fr;}}
+    @media(max-width:620px){.page-hero{min-height:320px;padding:54px 16px 50px;}.wrap{padding:40px 16px 60px;}.cards{grid-template-columns:1fr;}.strip{grid-template-columns:1fr;}.highlight{flex-direction:column;align-items:flex-start;}.btn{width:100%;}footer{padding:20px 16px;flex-direction:column;align-items:flex-start;}}
+    @keyframes breathe{0%,100%{opacity:.55;transform:translate(-50%,-50%) scale(.92);}50%{opacity:1;transform:translate(-50%,-50%) scale(1.08);}}
+    @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.25;}}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
   </style>
 </head>
 <body>
+  <video id="bg" autoplay muted loop playsinline poster="/images/hero-poster.jpg"></video>
+  <div class="vig"></div>
+  <div class="grain"></div>
+  <nav class="sitenav">
+    <a class="sitenav-brand" href="/">
+      <div class="sitenav-tab"><img src="/images/logo_rsl.png" alt="RSL"></div>
+      <div class="sitenav-name">RSL<small>Romandie Scooter League</small></div>
+    </a>
+    <ul class="sitenav-links">
+      <li><a href="/cours">Cours</a></li>
+      <li><a href="/formation">Formation</a></li>
+      <li><a href="/ou_rider">Où rider ?</a></li>
+      <li><a href="/evenements">Événements</a></li>
+      <li><a href="/disciplines">Disciplines</a></li>
+      <li><a href="/shop-rsl">Shop</a></li>
+      <li><a href="/comite">Comité</a></li>
+      <li><a href="/contact">Contact</a></li>
+    </ul>
+    <div class="sitenav-right">
+      <a class="snbtn" href="/access" id="btnLogin">Login</a>
+      <a class="snbtn" href="/compte" id="btnAccount" style="display:none">Compte</a>
+      <a class="snbtn red" href="/membres">Devenir membre</a>
+      <button id="menuBtn" aria-label="Menu">☰</button>
+    </div>
+  </nav>
 
-<!-- Vidéo de fond -->
-<video id="bgVideo" autoplay loop muted playsinline>
-  <source src="https://jynxifufaauoxwzjapzq.supabase.co/storage/v1/object/public/videos_rsl/trottvideo2.mp4">
-</video>
-
-<!-- Header -->
-<div class="header">
-  <h1>Montreux Scooter Time Machine</h1>
-  <div class="years-line">2005 → 2025 · 20 ans de ride</div>
-  <div class="tagline">On remonte le temps</div>
-</div>
-
-<!-- Frame principal -->
-<div class="frame">
-
-  <!-- Vidéos -->
-  <div id="playerWrapper" class="layer"><div id="player"></div></div>
-
-  <!-- PUB au démarrage -->
-  <div id="adsWrapper" class="layer show">
-    <img src="https://jynxifufaauoxwzjapzq.supabase.co/storage/v1/object/public/Flyers%20RSL/Flyer_Montreux_Scooter_Contest_A3.pdf%20(1240%20x%201748%20px).png" class="flyer" alt="Publicité Flyer 1">
-    <img src="https://jynxifufaauoxwzjapzq.supabase.co/storage/v1/object/public/Flyers%20RSL/Copie%20de%20Flyer_Montreux_Scooter_Contest_A3.pdf%20(1240%20x%201748%20px).png" class="flyer" alt="Publicité Flyer 2">
+  <div class="mobile-sheet" id="mobileMenu" aria-hidden="true">
+    <div class="mobile-dim"></div>
+    <nav class="mobile-panel">
+      <button class="mp-close" type="button" id="closeMenu">×</button>
+      <div class="mp-title"><span>RSL</span> MENU</div>
+      <a href="/">Accueil</a>
+      <a href="/cours">Cours</a>
+      <a href="/membres" class="mp-red">Devenir membre</a>
+      <a href="/formation">Formation RSL</a>
+      <a href="/disciplines">Disciplines</a>
+      <a href="/ou_rider">Où rider ?</a>
+      <a href="/evenements">Événements</a>
+      <a href="/game">Games</a>
+      <a href="/shop-rsl">Shop</a>
+      <a href="/comite">Comité</a>
+      <a href="/contact">Contact</a>
+      <a href="/conditions">Conditions générales</a>
+      <a href="/access">Se connecter</a>
+      <a href="/compte">Mon compte</a>
+      <a href="/coach">Je suis coach</a>
+    </nav>
   </div>
 
-  <!-- INTRO : Flyer 2005 à gauche, texte à droite -->
-  <div id="introWrapper" class="layer">
-    <div class="intro-layout">
-      <!-- FLYER (Gauche) -->
-      <img src="https://jynxifufaauoxwzjapzq.supabase.co/storage/v1/object/public/Flyes%20mtx%20histoire/2005.png" class="intro-flyer" alt="Flyer 2005">
-      <!-- TEXTE (Droite) -->
-      <div class="intro-text" id="introText">
-        <div id="introContent">
-          <!-- SLIDE 1 -->
-          <div class="intro-slide slide-1 show-slide">
-            <h2>L'Origine du Mouvement</h2>
-            <p>🛴 Montreux — là où tout a commencé. Avril 2005 marque le tout premier Scooter Contest connu en Suisse, au bord du lac, dans un skatepark qui allait marquer l'histoire.</p>
-            <p>C'était le point de départ d’une culture mondiale. Un moment historique qui a initié l’aventure du freestyle moderne.</p>
+  <header class="page-hero">
+    <div class="hero-inner">
+      <div class="fed">
+        <div class="fed-bar"></div><div class="fed-dot"></div>
+        <div class="fed-txt">Histoire · vidéos · archives</div>
+        <div class="fed-dot"></div><div class="fed-bar"></div>
+      </div>
+      <h1>MONTREUX <span>TV</span></h1>
+      <div class="redsep"></div>
+      <p class="hero-sub">L'histoire du Montreux Scooter Contest en images et vidéos, depuis 2005.</p>
+    </div>
+  </header>
+
+  <main>
+    <section class="wrap">
+      <div class="section-head">
+        <div class="section-kicker"><div class="num">📺</div><div class="section-title">HISTORY <span>VIDEO</span></div></div>
+        <p class="section-sub">20 ans de freestyle à Montreux.</p>
+      </div>
+      <div class="grid2" style="margin-bottom:42px;">
+        <article class="highlight">
+          <div>
+            <div class="h-tag">Depuis 2005</div>
+            <div class="h-title">Le contest pionnier suisse</div>
+            <p class="h-desc"><b>Le Montreux Scooter Contest</b> est l'un des plus anciens contests de trottinette freestyle en Suisse. 20 éditions, des centaines de riders, une scène qui a grandi ici.</p>
           </div>
-          <!-- SLIDE 2 -->
-          <div class="intro-slide slide-2">
-            <h2>L'Esprit des Pionniers</h2>
-            <p>Avant YouTube, avant les decks forgés, avant les tricks de folie… il y avait l’essentiel.</p>
-            <p>Pas de caméras 4K, pas de réseaux sociaux. Juste des passionnés, du rap, des riders motivés, des figures improvisées, et une seule certitude : l’énergie était là.</p>
+        </article>
+        <article class="highlight">
+          <div>
+            <div class="h-tag">Archives</div>
+            <div class="h-title">20e édition — 2025</div>
+            <p class="h-desc">Un moment historique pour la scène romande. Retrouve les highlights et le classement de l'édition anniversaire.</p>
           </div>
-          <!-- SLIDE 3 -->
-          <div class="intro-slide slide-3">
-            <h2>20 Ans d'Héritage</h2>
-            <p>Aujourd’hui, le scooter freestyle remplit des skateparks partout dans le monde. Les tricks volent plus haut, les riders vont plus loin, mais l’ADN reste le même :</p>
-            <p>Liberté, Créativité, Famille. Montreux – 2005 → 2025. 20 ans de ride. 20 ans d’histoire.</p>
-          </div>
-        </div>
+          <a class="btn red" href="/evenements/resultats-montreux-2026">Résultats 2025</a>
+        </article>
+      </div>
+      <div class="strip">
+        <div class="strip-item"><strong>2005</strong><span>Première édition du Montreux Scooter Contest.</span></div>
+        <div class="strip-item"><strong>2018</strong><span>Création de Ride4Style, structure de la RSL.</span></div>
+        <div class="strip-item"><strong>2021</strong><span>Lancement officiel de la RSL.</span></div>
+        <div class="strip-item"><strong>2025</strong><span>20e édition — contest historique en Romandie.</span></div>
+      </div>
+    </section>
+  <section style="max-width:1200px;margin:0 auto;padding:0 28px 78px;">
+    <div class="sp-card">
+      <div class="sp-title">AVEC LE <span>SOUTIEN DE</span></div>
+      <div class="sponsors-grid">
+        <a class="sponsor-card" href="https://travaux-sur-bois.ch/" target="_blank" rel="noopener">
+          <img src="/images/sponsors/travaux-sur-bois.png" alt="Travaux sur Bois">
+        </a>
+        <a class="sponsor-card" href="https://www.jfrideshop.ch/" target="_blank" rel="noopener">
+          <img src="/images/logo_jf.png" alt="JF Rideshop">
+        </a>
+        <a class="sponsor-card" href="https://www.isaac-isaac.com/fr-ch" target="_blank" rel="noopener">
+          <img src="/images/sponsors/isaac.png" alt="Isaac">
+        </a>
       </div>
     </div>
-  </div>
+  </section>
+  </main>
 
-</div>
-
-<!-- Bouton start -->
-<button id="startBtn">▶ Lancer la Time Machine</button>
-
-<!-- SPONSORS -->
-<div class="sponsor-bar">
-  <img src="https://jynxifufaauoxwzjapzq.supabase.co/storage/v1/object/public/Flyes%20mtx%20histoire/1logo_ridly.png" class="sponsor-logo" alt="Logo Sponsor Ridly">
-  <img src="https://jynxifufaauoxwzjapzq.supabase.co/storage/v1/object/public/Flyes%20mtx%20histoire/Design%20sans%20titre%20(10).png" class="sponsor-logo" alt="Logo Sponsor 10">
-  <img src="https://jynxifufaauoxwzjapzq.supabase.co/storage/v1/object/public/Flyes%20mtx%20histoire/Design%20sans%20titre%20(11).png" class="sponsor-logo" alt="Logo Sponsor 11">
-  <img src="https://jynxifufaauoxwzjapzq.supabase.co/storage/v1/object/public/Flyes%20mtx%20histoire/Design%20sans%20titre%20(2).png" class="sponsor-logo" alt="Logo Sponsor 2">
-  <img src="https://jynxifufaauoxwzjapzq.supabase.co/storage/v1/object/public/Flyes%20mtx%20histoire/Design%20sans%20titre%20(5).png" class="sponsor-logo" alt="Logo Sponsor 5">
-  <img src="https://jynxifufaauoxwzjapzq.supabase.co/storage/v1/object/public/Flyes%20mtx%20histoire/Design%20sans%20titre%20(6).png" class="sponsor-logo" alt="Logo Sponsor 6">
-  <img src="https://jynxifufaauoxwzjapzq.supabase.co/storage/v1/object/public/Flyes%20mtx%20histoire/Design%20sans%20titre%20(7).png" class="sponsor-logo" alt="Logo Sponsor 7">
-  <img src="https://jynxifufaauoxwzjapzq.supabase.co/storage/v1/object/public/Flyes%20mtx%20histoire/Design%20sans%20titre%20(8).png" class="sponsor-logo" alt="Logo Sponsor 8">
-  <img src="https://jynxifufaauoxwzjapzq.supabase.co/storage/v1/object/public/Flyes%20mtx%20histoire/Design%20sans%20titre%20(9).png" class="sponsor-logo" alt="Logo Sponsor 9">
-</div>
-
-<!-- Script YouTube -->
-<script src="https://www.youtube.com/iframe_api"></script>
-<script>
-const VIDEO_IDS=[
-  "w5j7cIC7IVk","ByhXJUUjV1U","BWRR-rKD46c","v0D2qziOqjQ","H48vxTdkrNc","V_IrrBfwUR0",
-  "jpnapT5UdrA","zwV63b2DGbM","JNtj5nPOghs","RLwUh3C59LM","xVZcGVUEU3M","v1qPdsOCDRw",
-  "PjrFJI5AZZA","ZiE4_CRrIfA","tSo7db52dDk","P6lj1FyPV3w","5INog8467bM","xF3zFSwHrlI","0z0Ly25eSdY"
-];
-
-let currentVideoIndex = 0;
-let player;
-const PUB_DURATION = 20000;
-const INTRO_DURATION = 30000;
-const SLIDE_DURATION = 10000;
-
-let introText;
-let introContent;
-let adsWrapper;
-let introWrapper;
-let playerWrapper;
-let startBtn;
-
-function onYouTubeIframeAPIReady(){
-  player = new YT.Player("player", {
-    videoId: VIDEO_IDS[0],
-    playerVars:{autoplay:0,controls:1},
-    events:{
-      onStateChange:(e)=>{
-        if(e.data === 0){
-          currentVideoIndex = (currentVideoIndex + 1) % VIDEO_IDS.length;
-          runCycle();
-        }
-      }
-    }
-  });
-}
-
-function startIntroSlides() {
-  const slides = introContent.querySelectorAll('.intro-slide');
-  const totalSlides = slides.length;
-  let slideIndex = 0;
-
-  function showNextSlide() {
-    slides.forEach(slide => slide.classList.remove('show-slide'));
-    if (slides[slideIndex]) {
-      slides[slideIndex].classList.add('show-slide');
-    }
-    slideIndex++;
-    if (slideIndex < totalSlides) {
-      setTimeout(showNextSlide, SLIDE_DURATION);
-    }
-  }
-
-  showNextSlide();
-
-  setTimeout(() => {
-    introWrapper.classList.remove("show");
-    playerWrapper.classList.add("show");
-    if (player && player.loadVideoById) {
-      player.loadVideoById(VIDEO_IDS[currentVideoIndex]);
-    } else {
-      console.error("Le lecteur YouTube n'est pas prêt à charger la vidéo.");
-    }
-  }, INTRO_DURATION);
-}
-
-function runCycle(){
-  playerWrapper.classList.remove("show");
-  introWrapper.classList.remove("show");
-  adsWrapper.classList.add("show");
-
-  setTimeout(() => {
-    adsWrapper.classList.remove("show");
-    introWrapper.classList.add("show");
-    startIntroSlides();
-  }, PUB_DURATION);
-}
-
-document.addEventListener("DOMContentLoaded", () => {
-  introText = document.getElementById("introText");
-  introContent = document.getElementById("introContent");
-  adsWrapper = document.getElementById("adsWrapper");
-  introWrapper = document.getElementById("introWrapper");
-  playerWrapper = document.getElementById("playerWrapper");
-  startBtn = document.getElementById("startBtn");
-
-  startBtn.addEventListener("click", () => {
-    startBtn.style.display = "none";
-    if (player || (typeof YT !== 'undefined' && YT.Player)) {
-      if (!player) {
-        onYouTubeIframeAPIReady();
-      }
-      runCycle();
-    } else {
-      console.log("API YouTube non prête.");
-      startBtn.style.display = "block";
-    }
-  });
-});
-</script>
+  <footer>
+    <div>
+      <div class="ft-brand">ROMANDIE <span>SCOOTER LEAGUE</span></div>
+      <div class="ft-copy">© 2026 RSL — Tous droits réservés.</div>
+    </div>
+    <ul class="ft-links">
+      <li><a href="/cours">Cours</a></li>
+      <li><a href="/formation">Formation</a></li>
+      <li><a href="/evenements">Événements</a></li>
+      <li><a href="/membres">Membres</a></li>
+      <li><a href="/contact">Contact</a></li>
+      <li><a href="/access">Login</a></li>
+    </ul>
+  </footer>
+  <script>
+    (function(){
+      const v=document.getElementById('bg');
+      if(!v) return;
+      const vids=[
+        "https://jynxifufaauoxwzjapzq.supabase.co/storage/v1/object/public/videos_rsl/trottvideo1.mp4",
+        "https://jynxifufaauoxwzjapzq.supabase.co/storage/v1/object/public/videos_rsl/trottvideo2.mp4"
+      ];
+      v.src=vids[Math.floor(Math.random()*vids.length)];
+      v.playbackRate=0.5;
+      try{const p=v.play();if(p&&p.catch)p.catch(()=>{});}catch(e){}
+      document.addEventListener('visibilitychange',()=>{if(document.hidden)v.pause();else{v.playbackRate=0.5;try{v.play();}catch(e){}}});
+    })();
+    (function(){
+      const menuBtn=document.getElementById('menuBtn');
+      const mobile=document.getElementById('mobileMenu');
+      const close=document.getElementById('closeMenu');
+      if(!menuBtn||!mobile) return;
+      const open=()=>{mobile.classList.add('open');mobile.setAttribute('aria-hidden','false');};
+      const shut=()=>{mobile.classList.remove('open');mobile.setAttribute('aria-hidden','true');};
+      menuBtn.addEventListener('click',e=>{e.stopPropagation();open();});
+      close?.addEventListener('click',shut);
+      mobile.querySelector('.mobile-dim')?.addEventListener('click',shut);
+      document.addEventListener('keydown',e=>{if(e.key==='Escape') shut();});
+    })();
+  </script>
 </body>
 </html>

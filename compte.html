@@ -4,1249 +4,273 @@
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>Mon compte — Romandie Scooter League</title>
-  <!-- Fonts + Styles globaux -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/common.css"/>
-  <!-- Supabase + scripts du site -->
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;900&display=swap" rel="stylesheet">
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-  <script defer src="js/env.js"></script>
-  <script defer src="js/auth.js"></script>
-  <script defer src="js/site.js"></script>
+  <script defer src="/js/env.js"></script>
+  <script defer src="/js/auth.js"></script>
+  <script defer src="/js/site.js"></script>
   <style>
-    :root{
-      --rsl-bg: #020617;
-      --rsl-fg: #e5e7eb;
-      --rsl-muted: #9ca3af;
-      --rsl-card: rgba(15,23,42,.96);
-      --rsl-card-soft: rgba(15,23,42,.9);
-      --rsl-border: rgba(148,163,184,.45);
-      --rsl-accent: #22c55e;
-      --rsl-accent-soft: rgba(34,197,94,.14);
-    }
-    body.theme-light{
-      --rsl-bg: #f3f4f6;
-      --rsl-fg: #0f172a;
-      --rsl-muted: #6b7280;
-      --rsl-card: #ffffff;
-      --rsl-card-soft: #f9fafb;
-      --rsl-border: rgba(148,163,184,.35);
-      --rsl-accent: #16a34a;
-      --rsl-accent-soft: rgba(22,163,74,.12);
-    }
-    html, body{
-      height:100%;
-      margin:0;
-      font-family:"Outfit",system-ui,-apple-system,Segoe UI,Roboto,Arial;
-      background:transparent !important;
-      color:var(--rsl-fg);
-      display:flex;
-      flex-direction:column;
-      overflow-x:hidden;
-    }
-    main{
-      flex:1;
-      position:relative;
-      z-index:10;
-    }
-    /* ======= Vidéo de fond ======= */
-    .site-bg-video{
-      position:fixed;
-      inset:0;
-      width:100%;
-      height:100%;
-      object-fit:cover;
-      z-index:-2;
-      background:#000;
-    }
-    .site-bg-dim{
-      position:fixed;
-      inset:0;
-      z-index:-1;
-      background:linear-gradient(180deg,rgba(0,0,0,.55),rgba(0,0,0,.9));
-      transition:background .25s ease;
-    }
-    body.theme-light .site-bg-dim{
-      background:linear-gradient(180deg,rgba(249,250,251,.9),rgba(15,23,42,.85));
-    }
-    /* ======= NAVBAR (copie index) ======= */
-    nav.nav{
-      background: rgba(0,0,0,.65);
-      backdrop-filter: blur(10px);
-      position: sticky;
-      top:0;
-      z-index:100;
-      transition:background .25s ease, border-color .25s ease, box-shadow .25s ease;
-      border-bottom:1px solid rgba(15,23,42,.8);
-    }
-    nav.nav .container{ max-width:1320px; margin:0 auto; padding:10px 18px; }
-    nav.nav .row{ display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
-    body.theme-light nav.nav{
-      background:rgba(248,250,252,.96);
-      border-bottom:1px solid rgba(148,163,184,.5);
-      box-shadow:0 10px 30px rgba(15,23,42,.06);
-    }
-    .brand{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      color:inherit;
-      text-decoration:none;
-    }
-    .brand img{
-      height:42px;
-      border-radius:10px;
-      display:block;
-      background:#fff;
-      padding:3px;
-      box-shadow:0 10px 28px rgba(0,0,0,.35);
-    }
-    .brand span{
-      font-weight:800;
-      letter-spacing:.2px;
-      font-size:16px;
-      white-space:nowrap;
-    }
-    nav.nav ul{
-      display:flex;
-      align-items:center;
-      gap:20px;
-    }
-    nav.nav ul li{list-style:none;}
-    nav.nav ul li a{
-      font-weight:600;
-      color:var(--rsl-fg);
-      font-size:15px;
-      letter-spacing:.02em;
-      white-space:nowrap;
-      text-decoration:none;
-      opacity:.9;
-      transition:.2s ease;
-    }
-    nav.nav ul li a:hover{
-      color:var(--rsl-accent);
-      opacity:1;
-    }
-    .cta{
-      display:flex;
-      align-items:center;
-      gap:10px;
-    }
-    .btn{
-      border-radius:999px;
-      padding:8px 14px;
-      font-size:14px;
-      font-weight:700;
-      border:1px solid rgba(148,163,184,.5);
-      text-decoration:none;
-      cursor:pointer;
-      display:inline-flex;
-      align-items:center;
-      gap:6px;
-      background:rgba(15,23,42,.9);
-      color:#f9fafb;
-      transition:.2s ease;
-    }
-    body.theme-light .btn{
-      background:#0f172a;
-      color:#f9fafb;
-      border-color:#0f172a;
-    }
-    .btn.green{
-      background:var(--rsl-accent);
-      color:#052e16;
-      border-color:transparent;
-      box-shadow:0 10px 26px rgba(22,163,74,.45);
-    }
-    .btn:hover{
-      transform:translateY(-1px);
-      filter:brightness(1.05);
-    }
-    /* Avatar dans la navbar */
-    .nav-avatar{
-      width:34px;
-      height:34px;
-      border-radius:999px;
-      object-fit:cover;
-      border:2px solid var(--rsl-accent);
-      box-shadow:0 0 10px rgba(34,197,94,.5);
-    }
-    /* Toggle thème */
-    .theme-toggle{
-      border-radius:999px;
-      border:1px solid rgba(148,163,184,.6);
-      background:rgba(15,23,42,.9);
-      color:#e5e7eb;
-      width:34px;
-      height:34px;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      font-size:17px;
-      cursor:pointer;
-      padding:0;
-      transition:.2s ease;
-    }
-    .theme-toggle:hover{
-      transform:translateY(-1px);
-      filter:brightness(1.08);
-    }
-    body.theme-light .theme-toggle{
-      background:#ffffff;
-      color:#0f172a;
-      border-color:rgba(148,163,184,.7);
-    }
-    #menuBtn{
-      display:none;
-      align-items:center;
-      justify-content:center;
-      padding:7px 10px;
-      font-size:18px;
-      line-height:1;
-      border-radius:10px;
-      border:1px solid rgba(148,163,184,.4);
-      background:rgba(15,23,42,.9);
-      color:#e5e7eb;
-      cursor:pointer;
-      transition:.2s ease;
-    }
-    #menuBtn:hover { filter:brightness(1.1); }
-    body.theme-light #menuBtn{
-      background:#0f172a;
-      color:#f9fafb;
-      border-color:#0f172a;
-    }
-    .container{ max-width:1200px; margin:0 auto; padding:0 16px; }
-    /* MENU MOBILE */
-    .mobile-sheet{
-      position:fixed;
-      inset:0;
-      display:none;
-      z-index:120;
-    }
-    .mobile-sheet.open{ display:block; }
-    .mobile-dim{
-      position:absolute;
-      inset:0;
-      background:rgba(0,0,0,.5);
-    }
-    .mobile-panel{
-      position:absolute;
-      top:0;
-      right:0;
-      height:100%;
-      width:82vw;
-      max-width:360px;
-      background:var(--rsl-card);
-      padding:20px 18px 24px;
-      display:flex;
-      flex-direction:column;
-      gap:10px;
-      border-left:1px solid rgba(255,255,255,.08);
-      box-shadow:-12px 0 30px rgba(0,0,0,.5);
-    }
-    .mobile-panel a{
-      color:var(--rsl-fg);
-      text-decoration:none;
-      font-weight:600;
-      padding:6px 0;
-      font-size:14px;
-    }
-    /* FOOTER */
-    .footer-mini .copy{
-      text-align:center;
-      color:var(--rsl-muted);
-      font-size:13px;
-      padding:20px 0 24px;
-      margin:0;
-      border-top:1px solid rgba(15,23,42,.7);
-      background:rgba(15,23,42,.85);
-    }
-    body.theme-light .footer-mini .copy{
-      background:rgba(248,250,252,.96);
-      border-top-color:rgba(148,163,184,.5);
-    }
-    @media (max-width:990px){
-      nav.nav ul{ display:none !important; }
-      #btnCart,
-      .btn.green{
-        display:none !important;
-      }
-      #menuBtn{ display:inline-flex; }
-    }
-    /* ======= CONTENU COMPTE ======= */
-    .wrap{
-      max-width:1120px;
-      margin:0 auto;
-      padding:28px 18px 60px;
-      display:flex;
-      flex-direction:column;
-      gap:24px;
-      box-sizing:border-box;
-    }
-    @media(max-width:990px){
-      .wrap{
-        padding:20px 14px 50px;
-      }
-    }
-    h1{
-      font-size:28px;
-      font-weight:800;
-      margin:0 0 6px;
-      letter-spacing:.02em;
-      color:var(--rsl-fg);
-    }
-    p.sub{
-      color:var(--rsl-muted);
-      margin:0 0 20px;
-      font-size:14px;
-    }
-    .top-grid{
-      display:grid;
-      grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);
-      gap:18px;
-    }
-    @media(max-width:900px){
-      .top-grid{
-        grid-template-columns:1fr;
-      }
-    }
-    .card{
-      background:var(--rsl-card);
-      border:1px solid var(--rsl-border);
-      border-radius:18px;
-      box-shadow:0 18px 40px rgba(0,0,0,.75);
-      padding:16px 16px 14px;
-    }
-    body.theme-light .card{
-      box-shadow:0 18px 40px rgba(15,23,42,.12);
-    }
-    .card h2{
-      font-size:16px;
-      font-weight:700;
-      margin:0 0 4px;
-      color:var(--rsl-fg);
-    }
-    .card p.small{
-      color:var(--rsl-muted);
-      font-size:13px;
-      margin:0 0 8px;
-    }
-    .profile-row{
-      display:flex;
-      align-items:flex-start;
-      gap:12px;
-      margin-top:10px;
-      flex-wrap:wrap;
-    }
-    .profile-infos{
-      font-size:13px;
-      color:var(--rsl-fg);
-      flex:1;
-      min-width:200px;
-    }
-    .profile-infos div{
-      margin-bottom:2px;
-    }
-    .pill{
-      display:inline-flex;
-      align-items:center;
-      gap:6px;
-      padding:4px 9px;
-      border-radius:999px;
-      font-size:11px;
-      background:rgba(15,23,42,1);
-      border:1px solid rgba(148,163,184,.6);
-      color:#e5e7eb;
-      margin-top:6px;
-    }
-    .pill.green{
-      border-color:rgba(34,197,94,.9);
-      color:#bbf7d0;
-      background:rgba(22,163,74,.16);
-    }
-    .pill.red{
-      border-color:rgba(248,113,113,.9);
-      color:#fecaca;
-      background:rgba(127,29,29,.7);
-    }
-    .pill.orange{
-      border-color:rgba(251,191,36,.9);
-      color:#fef3c7;
-      background:rgba(146,64,14,.7);
-    }
-    /* Formulaire profil */
-    .profile-form{
-      margin-top:14px;
-      display:flex;
-      flex-direction:column;
-      gap:8px;
-      max-width:420px;
-    }
-    .profile-form label{
-      font-size:12px;
-      color:var(--rsl-muted);
-      display:flex;
-      flex-direction:column;
-      gap:4px;
-    }
-    .profile-form input{
-      border-radius:10px;
-      border:1px solid rgba(148,163,184,.6);
-      background:rgba(15,23,42,.9);
-      color:#e5e7eb;
-      padding:7px 9px;
-      font-size:13px;
-      outline:none;
-    }
-    body.theme-light .profile-form input{
-      background:#ffffff;
-      color:#0f172a;
-    }
-    .profile-form input:focus{
-      border-color:var(--rsl-accent);
-      box-shadow:0 0 0 1px rgba(34,197,94,.55);
-    }
-    .profile-actions{
-      margin-top:10px;
-      display:flex;
-      flex-wrap:wrap;
-      align-items:center;
-      gap:8px;
-    }
-    .profile-btn{
-      border-radius:999px;
-      padding:7px 12px;
-      font-size:12px;
-      font-weight:600;
-      border:1px solid rgba(148,163,184,.7);
-      background:rgba(15,23,42,.95);
-      color:#e5e7eb;
-      cursor:pointer;
-    }
-    body.theme-light .profile-btn{
-      background:#0f172a;
-      color:#f9fafb;
-      border-color:#0f172a;
-    }
-    .profile-btn.primary{
-      background:linear-gradient(135deg,#22c55e,#16a34a);
-      border-color:transparent;
-      color:#022c22;
-      box-shadow:0 8px 20px rgba(22,163,74,.6);
-    }
-    .profile-status{
-      font-size:12px;
-      color:var(--rsl-muted);
-      margin-top:4px;
-    }
-    .profile-status.ok{ color:#bbf7d0; }
-    .profile-status.err{ color:#fecaca; }
-    .membership-main{
-      font-size:13px;
-      color:var(--rsl-fg);
-    }
-    .membership-main div{ margin-bottom:2px; }
-    .courses-grid{
-      display:grid;
-      grid-template-columns:repeat(3, minmax(0,1fr));
-      gap:18px;
-    }
-    @media(max-width:1100px){
-      .courses-grid{ grid-template-columns:repeat(2, minmax(0,1fr)); }
-    }
-    @media(max-width:780px){
-      .courses-grid{ grid-template-columns:1fr; }
-    }
-    .course-list{
-      margin-top:10px;
-      max-height:420px;
-      overflow:auto;
-      padding-right:4px;
-    }
-    .course-item{
-      border-radius:12px;
-      border:1px solid rgba(148,163,184,.4);
-      padding:7px 9px;
-      margin-bottom:7px;
-      font-size:12px;
-      background:rgba(15,23,42,1);
-    }
-    body.theme-light .course-item{ background:#ffffff; }
-    .course-item-header{
-      display:flex;
-      justify-content:space-between;
-      align-items:flex-start;
-      gap:6px;
-      margin-bottom:3px;
-    }
-    .course-spot{ font-weight:700; font-size:13px; }
-    .course-date{
-      font-size:11px;
-      color:var(--rsl-muted);
-      white-space:nowrap;
-    }
-    .course-title{ font-size:12px; margin-bottom:3px; }
-    .course-foot{
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      gap:6px;
-      margin-top:3px;
-    }
-    .course-price{ font-weight:600; font-size:12px; }
-    .text-muted{ color:var(--rsl-muted); font-size:12px; }
+    :root{--red:#cc0000;--red2:#e51010;--bg:#080808;--fg:#f0f0f0;--muted:#777;--border:rgba(255,255,255,.08);--card:#111;}
+    *,*:before,*:after{margin:0;padding:0;box-sizing:border-box;}
+    html{scroll-behavior:smooth;}
+    body{min-height:100vh;background:var(--bg);color:var(--fg);font-family:'Barlow Condensed',system-ui,sans-serif;overflow-x:hidden;}
+    a{color:inherit;text-decoration:none;}
+    b,strong{color:#fff;}
+    #bg{position:fixed;inset:0;width:100%;height:100%;object-fit:cover;z-index:-3;filter:brightness(.18) saturate(.18) contrast(1.2);background:#000;}
+    .vig{position:fixed;inset:0;z-index:-2;pointer-events:none;background:radial-gradient(ellipse 60% 55% at 50% 15%, transparent 0%, rgba(0,0,0,.55) 55%, rgba(0,0,0,.97) 100%),linear-gradient(180deg,rgba(0,0,0,.2),#080808 70%);}
+    .grain{position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:.33;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.055'/%3E%3C/svg%3E");}
+    .sitenav{position:sticky;top:0;z-index:500;background:#000;border-bottom:3px solid var(--red);padding:0 28px;display:flex;align-items:center;justify-content:space-between;height:54px;}
+    .sitenav-brand{display:flex;align-items:center;text-decoration:none;}
+    .sitenav-tab{background:var(--red);height:54px;width:58px;display:flex;align-items:center;justify-content:center;margin-left:-28px;margin-right:16px;flex:0 0 auto;}
+    .sitenav-tab img{height:34px;object-fit:contain;}
+    .sitenav-name{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:.1em;color:#fff;line-height:1;}
+    .sitenav-name small{display:block;font-family:'Barlow Condensed',sans-serif;font-size:9px;font-weight:700;letter-spacing:.22em;color:var(--red);margin-top:-1px;}
+    .sitenav-links{display:flex;align-items:center;gap:0;list-style:none;height:54px;}
+    .sitenav-links li{height:100%;}
+    .sitenav-links a{display:flex;align-items:center;height:100%;padding:0 14px;font-weight:700;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:rgba(240,240,240,.5);text-decoration:none;border-bottom:3px solid transparent;margin-bottom:-3px;transition:.15s;}
+    .sitenav-links a:hover,.sitenav-links a[aria-current="page"]{color:#fff;border-bottom-color:var(--red);}
+    .sitenav-right{display:flex;align-items:center;gap:8px;}
+    .snbtn{padding:7px 14px;font-weight:700;font-size:11px;letter-spacing:.14em;text-transform:uppercase;text-decoration:none;cursor:pointer;border:1px solid rgba(255,255,255,.14);background:transparent;color:rgba(240,240,240,.6);transition:.15s;}
+    .snbtn:hover{border-color:rgba(255,255,255,.35);color:#fff;}
+    .snbtn.red{background:var(--red);border-color:var(--red);color:#fff;box-shadow:0 0 16px rgba(200,0,0,.45);}
+    .snbtn.red:hover{background:var(--red2);}
+    #menuBtn{display:none;background:transparent;border:1px solid rgba(255,255,255,.15);color:#fff;padding:6px 10px;font-size:18px;cursor:pointer;}
+    .mobile-sheet{position:fixed;inset:0;display:none;z-index:600;}
+    .mobile-sheet.open{display:block;}
+    .mobile-dim{position:absolute;inset:0;background:rgba(0,0,0,.6);}
+    .mobile-panel{position:absolute;top:0;right:0;height:100%;width:80vw;max-width:320px;background:#0f0f0f;border-left:3px solid var(--red);padding:20px 18px;display:flex;flex-direction:column;gap:2px;overflow-y:auto;}
+    .mobile-panel .mp-title{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:.1em;color:#fff;margin-bottom:12px;border-bottom:1px solid rgba(255,255,255,.08);padding-bottom:10px;}
+    .mobile-panel .mp-title span{color:var(--red);}
+    .mobile-panel a{color:rgba(240,240,240,.6);text-decoration:none;font-weight:700;font-size:15px;letter-spacing:.1em;text-transform:uppercase;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.05);transition:.15s;}
+    .mobile-panel a:hover{color:#fff;padding-left:6px;}
+    .mobile-panel .mp-red{color:var(--red);}
+    .mp-close{position:absolute;top:14px;right:14px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);color:#fff;width:32px;height:32px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;}
+    footer{background:#000;border-top:3px solid var(--red);padding:28px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;}
+    .ft-brand{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:.1em;color:#fff;}
+    .ft-brand span{color:var(--red);}
+    .ft-copy{font-size:11px;color:var(--muted);margin-top:3px;}
+    .ft-links{display:flex;gap:16px;list-style:none;flex-wrap:wrap;}
+    .ft-links a{font-weight:700;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);text-decoration:none;transition:.15s;}
+    .ft-links a:hover{color:var(--red);}
+    .wrap{max-width:1200px;margin:0 auto;padding:56px 28px 80px;}
+    .page-hero{position:relative;min-height:380px;display:flex;align-items:center;justify-content:center;padding:74px 20px 64px;overflow:hidden;border-bottom:1px solid rgba(200,0,0,.18);}
+    .page-hero:before{content:"";position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(500px,82vw);height:min(500px,82vw);border-radius:50%;background:radial-gradient(circle,rgba(200,0,0,.34),rgba(200,0,0,.08) 48%,transparent 70%);filter:blur(2px);animation:breathe 3.8s ease-in-out infinite;}
+    .hero-inner{position:relative;z-index:1;text-align:center;max-width:900px;}
+    .fed{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:16px;}
+    .fed-bar{width:28px;height:1px;background:rgba(255,255,255,.12);}
+    .fed-dot{width:5px;height:5px;border-radius:50%;background:var(--red);box-shadow:0 0 8px var(--red);animation:pulse 2s ease-in-out infinite;}
+    .fed-txt{font-size:8px;font-weight:700;letter-spacing:.24em;text-transform:uppercase;color:rgba(255,255,255,.32);white-space:nowrap;}
+    h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(54px,10vw,106px);line-height:.86;letter-spacing:.03em;color:#fff;text-shadow:0 0 34px rgba(200,0,0,.48);}
+    h1 span{color:var(--red);}
+    .redsep{width:36px;height:3px;background:var(--red);box-shadow:0 0 12px rgba(200,0,0,.9);margin:20px auto 18px;}
+    .hero-sub{max-width:700px;margin:0 auto;color:rgba(240,240,240,.62);font-size:18px;line-height:1.55;}
+    .section-head{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;flex-wrap:wrap;border-bottom:2px solid rgba(255,255,255,.06);padding-bottom:16px;margin-bottom:28px;}
+    .section-kicker{display:flex;align-items:flex-end;gap:12px;}
+    .num{font-family:'Bebas Neue',sans-serif;font-size:56px;color:rgba(200,0,0,.18);line-height:1;}
+    .section-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(34px,4.5vw,54px);line-height:1;letter-spacing:.04em;color:#fff;}
+    .section-title span{color:var(--red);}
+    .section-sub{max-width:380px;text-align:right;font-size:14px;color:var(--muted);line-height:1.55;}
+    .card{background:var(--card);border:1px solid rgba(255,255,255,.06);padding:25px 20px;display:flex;flex-direction:column;gap:10px;position:relative;overflow:hidden;}
+    .card:before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--red);transform:scaleY(0);transform-origin:bottom;transition:transform .22s;}
+    .card:hover{border-color:rgba(200,0,0,.42);}
+    .card:hover:before{transform:scaleY(1);}
+    .card.featured{background:linear-gradient(135deg,rgba(200,0,0,.09),var(--card) 72%);border-color:rgba(200,0,0,.22);}
+    .card.featured:before{transform:scaleY(1);}
+    .badge{display:inline-flex;width:max-content;font-size:9px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--red);border:1px solid rgba(200,0,0,.35);padding:3px 10px;margin-bottom:4px;}
+    .card h2,.card h3{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:24px;letter-spacing:.04em;text-transform:uppercase;color:#fff;line-height:1.05;}
+    .card.featured h2{font-size:30px;}
+    .meta{font-size:14px;color:var(--red);font-weight:700;letter-spacing:.05em;text-transform:uppercase;}
+    .card p{font-size:15px;color:var(--muted);line-height:1.62;flex:1;}
+    .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px;}
+    .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:11px 20px;font-weight:900;font-size:12px;letter-spacing:.16em;text-transform:uppercase;text-decoration:none;cursor:pointer;border:0;transition:.15s ease;line-height:1;}
+    .btn.red{background:var(--red);color:#fff;clip-path:polygon(7px 0%,100% 0%,calc(100% - 7px) 100%,0% 100%);box-shadow:0 0 20px rgba(200,0,0,.55);}
+    .btn.red:hover{background:var(--red2);transform:translateY(-1px);}
+    .btn.ghost{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.14);color:rgba(255,255,255,.66);}
+    .btn.ghost:hover{background:rgba(255,255,255,.09);color:#fff;transform:translateY(-1px);}
+    .cards{display:grid;grid-template-columns:repeat(3,1fr);gap:3px;}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:3px;}
+    .highlight{background:var(--card);border:1px solid rgba(200,0,0,.18);padding:24px 22px;position:relative;overflow:hidden;display:flex;gap:20px;justify-content:space-between;align-items:center;}
+    .highlight:before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--red);box-shadow:0 0 20px rgba(200,0,0,.75);}
+    .h-tag{font-size:9px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:var(--red);margin-bottom:8px;}
+    .h-title{font-family:'Bebas Neue',sans-serif;font-size:28px;color:#fff;line-height:1;}
+    .h-desc{font-size:14px;color:var(--muted);line-height:1.55;margin-top:8px;max-width:560px;}
+    .strip{display:grid;grid-template-columns:repeat(4,1fr);gap:3px;margin-top:20px;}
+    .strip-item{background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.075);padding:20px 18px;}
+    .strip-item strong{display:block;font-family:'Bebas Neue',sans-serif;letter-spacing:.06em;font-size:26px;color:#fff;line-height:1;margin-bottom:8px;}
+    .strip-item span{display:block;color:var(--muted);font-size:14px;line-height:1.5;}
+    .tick-list{display:grid;gap:8px;margin-top:12px;}
+    .tick{background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.075);padding:12px 14px;color:var(--muted);font-size:15px;line-height:1.45;}
+    .tick:before{content:"✓";color:var(--red);font-weight:900;margin-right:9px;}
+    .sp-card{background:var(--card);border:1px solid rgba(200,0,0,.18);padding:38px 34px;position:relative;overflow:hidden;}
+    .sp-card:before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--red);box-shadow:0 0 24px rgba(200,0,0,.8);}
+    .sp-card:after{content:"RSL";position:absolute;right:28px;bottom:-10px;font-family:'Bebas Neue',sans-serif;font-size:120px;color:rgba(200,0,0,.045);pointer-events:none;line-height:1;}
+    .sp-title{font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:.05em;color:#fff;line-height:1;margin-bottom:22px;}
+    .sp-title span{color:var(--red);}
+    .sponsors-grid{position:relative;z-index:1;display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;}
+    .sponsor-card{min-width:190px;min-height:96px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;padding:18px 22px;text-decoration:none;transition:.18s;}
+    .sponsor-card:hover{border-color:rgba(200,0,0,.42);transform:translateY(-3px);}
+    .sponsor-card img{display:block;object-fit:contain;max-width:220px;max-height:70px;}
+    .form-field{display:flex;flex-direction:column;gap:6px;margin-bottom:14px;}
+    .form-field label{font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);}
+    .form-field input,.form-field textarea,.form-field select{background:#0d0d0d;border:1px solid rgba(255,255,255,.12);color:#fff;padding:11px 13px;font-family:'Barlow Condensed',sans-serif;font-size:15px;outline:none;transition:.15s;}
+    .form-field input:focus,.form-field textarea:focus{border-color:rgba(200,0,0,.55);}
+    .form-field textarea{resize:vertical;min-height:120px;}
+    @media(max-width:980px){.sitenav-links{display:none;}.snbtn:not(.red){display:none;}.sitenav{padding:0 14px;}.sitenav-tab{margin-left:-14px;}#menuBtn{display:block;}.cards{grid-template-columns:1fr 1fr;}.grid2{grid-template-columns:1fr;}.strip{grid-template-columns:1fr 1fr;}}
+    @media(max-width:620px){.page-hero{min-height:320px;padding:54px 16px 50px;}.wrap{padding:40px 16px 60px;}.cards{grid-template-columns:1fr;}.strip{grid-template-columns:1fr;}.highlight{flex-direction:column;align-items:flex-start;}.btn{width:100%;}footer{padding:20px 16px;flex-direction:column;align-items:flex-start;}}
+    @keyframes breathe{0%,100%{opacity:.55;transform:translate(-50%,-50%) scale(.92);}50%{opacity:1;transform:translate(-50%,-50%) scale(1.08);}}
+    @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.25;}}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
   </style>
 </head>
 <body>
-  <!-- VIDÉO DE FOND -->
-  <video class="site-bg-video" autoplay muted loop playsinline id="rslBg"></video>
-  <div class="site-bg-dim" aria-hidden="true"></div>
-
-  <!-- NAV -->
-  <nav class="nav">
-    <div class="container">
-      <div class="row">
-        <a class='brand' href='/'>
-          <img src="images/logo_rsl.png" alt="Logo RSL"/>
-          <span>RSL — Romandie Scooter League</span>
-        </a>
-        <ul>
-          <li><a href='/cours.html'>Cours</a></li>
-          <li><a href='/formation.html'>Formation RSL</a></li>
-          <li><a href='/ou_rider.html'>Où rider ?</a></li>
-          <li><a href='/evenements.html'>Événements</a></li>
-          <li><a href='/disciplines.html'>Disciplines</a></li>
-          <li><a href='/shop-rsl.html'>Shop</a></li>
-          <li><a href='/comite.html'>Comité</a></li>
-          <li><a href='/contact.html'>Contact</a></li>
-        </ul>
-        <div class="cta">
-          <button id="themeToggle" class="theme-toggle" aria-label="Changer le thème">🌙</button>
-          <a class='btn' href='/access.html' id='btnLogin'>Login</a>
-          <a class='btn' href='/compte.html' id='btnAccount' style='display:none'>Mon compte</a>
-          <button class="btn" id="btnLogout" style="display:none;">Déconnexion</button>
-          <a href='/compte.html'>
-            <img id="navAvatar" class="nav-avatar" src="images/logo_rsl.png" alt="Avatar" style="display:none;">
-          </a>
-          <a class='btn' href='/panier/panier.html' id='btnCart'>Panier</a>
-          <a class='btn green' href='/membres.html'>Devenir membre</a>
-          <button id="menuBtn">☰</button>
-        </div>
-      </div>
+  <video id="bg" autoplay muted loop playsinline poster="/images/hero-poster.jpg"></video>
+  <div class="vig"></div>
+  <div class="grain"></div>
+  <nav class="sitenav">
+    <a class="sitenav-brand" href="/">
+      <div class="sitenav-tab"><img src="/images/logo_rsl.png" alt="RSL"></div>
+      <div class="sitenav-name">RSL<small>Romandie Scooter League</small></div>
+    </a>
+    <ul class="sitenav-links">
+      <li><a href="/cours">Cours</a></li>
+      <li><a href="/formation">Formation</a></li>
+      <li><a href="/ou_rider">Où rider ?</a></li>
+      <li><a href="/evenements">Événements</a></li>
+      <li><a href="/disciplines">Disciplines</a></li>
+      <li><a href="/shop-rsl">Shop</a></li>
+      <li><a href="/comite">Comité</a></li>
+      <li><a href="/contact">Contact</a></li>
+    </ul>
+    <div class="sitenav-right">
+      <a class="snbtn" href="/access" id="btnLogin">Login</a>
+      <a class="snbtn" href="/compte" aria-current="page" id="btnAccount" style="display:none">Compte</a>
+      <a class="snbtn red" href="/membres">Devenir membre</a>
+      <button id="menuBtn" aria-label="Menu">☰</button>
     </div>
   </nav>
 
-  <!-- MENU MOBILE -->
-  <div class="mobile-sheet" id="mobileMenu">
+  <div class="mobile-sheet" id="mobileMenu" aria-hidden="true">
     <div class="mobile-dim"></div>
     <nav class="mobile-panel">
-      <a href='/'>Accueil</a>
-      <a href='/cours.html'>Cours</a>
-      <a href='/membres.html'>Devenir membre</a>
-      <a href='/formation.html'>Formation RSL</a>
-      <a href='/disciplines.html'>Disciplines</a>
-      <a href='/ou_rider.html'>Où rider ?</a>
-      <a href='/evenements.html'>Événements</a>
-      <a href='/game.html'>Games</a>
-      <a href='/shop-rsl.html'>Shop</a>
-      <a href='/comite.html'>Comité</a>
-      <a href='/contact.html'>Contact</a>
-      <a href='/conditions.html'>Conditions générales</a>
-      <a aria-current='page' href='/compte.html'>Mon compte</a>
-      <a class='coach-link' href='/coach.html'>👨‍🏫 Je suis coach</a>
-      <a id="mobileLogout" style="display:none; color:#f87171; font-weight:700; cursor:pointer;">Déconnexion</a>
+      <button class="mp-close" type="button" id="closeMenu">×</button>
+      <div class="mp-title"><span>RSL</span> MENU</div>
+      <a href="/">Accueil</a>
+      <a href="/cours">Cours</a>
+      <a href="/membres" class="mp-red">Devenir membre</a>
+      <a href="/formation">Formation RSL</a>
+      <a href="/disciplines">Disciplines</a>
+      <a href="/ou_rider">Où rider ?</a>
+      <a href="/evenements">Événements</a>
+      <a href="/game">Games</a>
+      <a href="/shop-rsl">Shop</a>
+      <a href="/comite">Comité</a>
+      <a href="/contact">Contact</a>
+      <a href="/conditions">Conditions générales</a>
+      <a href="/access">Se connecter</a>
+      <a href="/compte" aria-current="page">Mon compte</a>
+      <a href="/coach">Je suis coach</a>
     </nav>
   </div>
 
-  <!-- CONTENU -->
-  <main>
-    <div class="wrap">
-      <header>
-        <h1>Mon compte</h1>
-        <p class="sub">Retrouve ton profil, ton abonnement et tous tes cours enregistrés (réservés, payés ou inclus dans ton abo).</p>
-      </header>
-      <div class="top-grid">
-        <!-- Infos profil -->
-        <section class="card">
-          <h2>Mes infos</h2>
-          <p class="small">Renseignements de base liés à ton compte RSL.</p>
-          <div class="profile-row">
-            <img id="profileAvatar" class="nav-avatar" src="images/logo_rsl.png" alt="Avatar">
-            <div class="profile-infos">
-              <div id="profileName">Non connecté</div>
-              <div id="profileEmail" class="text-muted">—</div>
-              <div id="profilePhone" class="text-muted">Téléphone : —</div>
-              <span id="loginHint" class="pill orange" style="display:none;">
-                ⚠️ Connecte-toi pour voir et modifier ton profil
-              </span>
-              <form id="profileForm" class="profile-form">
-                <label>
-                  Pseudo / Rider name
-                  <input id="fieldPseudo" type="text" placeholder="Ex: JF_Rider">
-                </label>
-                <label>
-                  Prénom du rider
-                  <input id="fieldRiderFirst" type="text" placeholder="Prénom du rider">
-                </label>
-                <label>
-                  Nom du rider
-                  <input id="fieldRiderLast" type="text" placeholder="Nom du rider">
-                </label>
-                <label>
-                  Téléphone du parent
-                  <input id="fieldParentPhone" type="tel" placeholder="+41 ...">
-                </label>
-                <div class="profile-actions">
-                  <button type="button" id="btnSaveProfile" class="profile-btn primary">Enregistrer mes infos</button>
-                  <button type="button" id="btnChangeAvatar" class="profile-btn">Changer la photo de profil</button>
-                  <input type="file" id="avatarInput" accept="image/*" style="display:none;">
-                </div>
-                <div id="profileSaveStatus" class="profile-status"></div>
-              </form>
-            </div>
-          </div>
-        </section>
-        <!-- Abonnement -->
-        <section class="card">
-          <h2>Mon abonnement RSL</h2>
-          <p class="small">Abo en cours et cours inclus automatiquement.</p>
-          <div id="membershipBox" class="membership-main text-muted">Chargement de l’abonnement...</div>
-        </section>
+  <header class="page-hero">
+    <div class="hero-inner">
+      <div class="fed">
+        <div class="fed-bar"></div><div class="fed-dot"></div>
+        <div class="fed-txt">Profil · inscriptions · carte membre</div>
+        <div class="fed-dot"></div><div class="fed-bar"></div>
       </div>
-      <!-- Cours -->
-      <section class="card">
-        <h2>Mes cours</h2>
-        <p class="small">Tous les cours enregistrés via le panier s’affichent ici automatiquement.</p>
-        <div class="courses-grid">
-          <div>
-            <div class="pill green">✅ Inclus dans ton abonnement</div>
-            <div id="membershipCourses" class="course-list text-muted">Chargement...</div>
-          </div>
-          <div>
-            <div class="pill">💳 Réservés et payés</div>
-            <div id="paidCourses" class="course-list text-muted">Chargement...</div>
-          </div>
-          <div>
-            <div class="pill red">⏳ Réservés, en attente de paiement</div>
-            <div id="pendingCourses" class="course-list text-muted">Chargement...</div>
-          </div>
-        </div>
-      </section>
+      <h1>MON <span>COMPTE</span></h1>
+      <div class="redsep"></div>
+      <p class="hero-sub">Ton espace membre RSL : profil, inscriptions aux cours, carte fédérale et historique.</p>
     </div>
+  </header>
+
+  <main>
+    <section class="wrap">
+      <div id="accountBox" style="display:none">
+        <div class="section-head">
+          <div class="section-kicker"><div class="num">👤</div><div class="section-title">MON <span>PROFIL</span></div></div>
+        </div>
+        <div class="tick-list" style="max-width:600px;">
+          <div class="tick" id="infoEmail">Email : chargement...</div>
+          <div class="tick" id="infoDate">Membre depuis : chargement...</div>
+        </div>
+        <div class="actions" style="margin-top:28px;">
+          <a class="btn red" href="/cours">Voir les cours</a>
+          <a class="btn ghost" href="/evenements">Événements</a>
+          <button class="btn ghost" onclick="doLogout()">Se déconnecter</button>
+        </div>
+      </div>
+      <div id="notLoggedBox" style="display:none;text-align:center;padding:40px 0;">
+        <p style="color:#777;font-size:18px;margin-bottom:20px;">Tu n'es pas connecté.</p>
+        <a class="btn red" href="/access">Se connecter</a>
+      </div>
+    </section>
+  <script>
+    async function initAccount(){
+      function waitEnv(ms=3000){return new Promise(r=>{const s=Date.now();(function t(){if(window.env?.SUPABASE_URL&&window.env?.SUPABASE_ANON)return r(true);if(Date.now()-s>ms)return r(false);setTimeout(t,30);})();});}
+      await waitEnv();
+      if(!window.env?.SUPABASE_URL){document.getElementById('notLoggedBox').style.display='block';return;}
+      const supa=supabase.createClient(window.env.SUPABASE_URL,window.env.SUPABASE_ANON);
+      const {data:{user}}=await supa.auth.getUser();
+      if(!user){document.getElementById('notLoggedBox').style.display='block';return;}
+      document.getElementById('accountBox').style.display='block';
+      document.getElementById('infoEmail').innerHTML='Email : <b>'+user.email+'</b>';
+      const d=new Date(user.created_at);
+      document.getElementById('infoDate').innerHTML='Membre depuis : <b>'+d.toLocaleDateString('fr-CH')+'</b>';
+    }
+    async function doLogout(){
+      function waitEnv(ms=3000){return new Promise(r=>{const s=Date.now();(function t(){if(window.env?.SUPABASE_URL&&window.env?.SUPABASE_ANON)return r(true);if(Date.now()-s>ms)return r(false);setTimeout(t,30);})();});}
+      await waitEnv();
+      const supa=supabase.createClient(window.env.SUPABASE_URL,window.env.SUPABASE_ANON);
+      await supa.auth.signOut();
+      window.location.href='/access';
+    }
+    initAccount();
+  </script>
+
   </main>
 
-  <footer class="footer-mini">
-    <p class="copy">© 2026 — RSL Romandie Scooter League. Tous droits réservés.</p>
+  <footer>
+    <div>
+      <div class="ft-brand">ROMANDIE <span>SCOOTER LEAGUE</span></div>
+      <div class="ft-copy">© 2026 RSL — Tous droits réservés.</div>
+    </div>
+    <ul class="ft-links">
+      <li><a href="/cours">Cours</a></li>
+      <li><a href="/formation">Formation</a></li>
+      <li><a href="/evenements">Événements</a></li>
+      <li><a href="/membres">Membres</a></li>
+      <li><a href="/contact">Contact</a></li>
+      <li><a href="/access">Login</a></li>
+    </ul>
   </footer>
-
   <script>
-    // ==== Thème (copié index) ====
     (function(){
-      const STORAGE_KEY = 'rsl-theme';
-      const body = document.body;
-      const btn = document.getElementById('themeToggle');
-      function applyTheme(theme){
-        if(theme === 'light'){
-          body.classList.add('theme-light');
-          if(btn) btn.textContent = '☀️';
-        }else{
-          body.classList.remove('theme-light');
-          if(btn) btn.textContent = '🌙';
-        }
-      }
-      let saved = null;
-      try{ saved = localStorage.getItem(STORAGE_KEY); }catch(e){}
-      if(!saved){
-        const prefersLight = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
-        saved = prefersLight ? 'light' : 'dark';
-      }
-      applyTheme(saved);
-      if(btn){
-        btn.addEventListener('click', ()=>{
-          const current = body.classList.contains('theme-light') ? 'light' : 'dark';
-          const next = current === 'light' ? 'dark' : 'light';
-          applyTheme(next);
-          try{ localStorage.setItem(STORAGE_KEY, next); }catch(e){}
-        });
-      }
-    })();
-
-    // ==== Vidéo de fond (copié index) ====
-    (function(){
-      const vids = [
+      const v=document.getElementById('bg');
+      if(!v) return;
+      const vids=[
         "https://jynxifufaauoxwzjapzq.supabase.co/storage/v1/object/public/videos_rsl/trottvideo1.mp4",
         "https://jynxifufaauoxwzjapzq.supabase.co/storage/v1/object/public/videos_rsl/trottvideo2.mp4"
       ];
-      const pick = vids[Math.floor(Math.random()*vids.length)];
-      const v = document.getElementById('rslBg');
-      if(!v) return;
-      const s = document.createElement('source');
-      s.src = pick;
-      s.type = 'video/mp4';
-      v.appendChild(s);
-      const start = () => {
-        try{
-          v.playbackRate = 0.6;
-          const p = v.play();
-          if(p && p.catch) p.catch(()=>{});
-        }catch(e){}
-      };
-      start();
-      document.addEventListener('visibilitychange', () => {
-        if(document.hidden) v.pause(); else start();
-      });
+      v.src=vids[Math.floor(Math.random()*vids.length)];
+      v.playbackRate=0.5;
+      try{const p=v.play();if(p&&p.catch)p.catch(()=>{});}catch(e){}
+      document.addEventListener('visibilitychange',()=>{if(document.hidden)v.pause();else{v.playbackRate=0.5;try{v.play();}catch(e){}}});
     })();
-
-    // ==== Menu mobile (copié index) ====
     (function(){
       const menuBtn=document.getElementById('menuBtn');
       const mobile=document.getElementById('mobileMenu');
-      if(!menuBtn || !mobile) return;
-      menuBtn.addEventListener('click',e=>{
-        e.stopPropagation();
-        mobile.classList.add('open');
-        mobile.setAttribute('aria-hidden','false');
-      });
-      mobile.querySelector('.mobile-dim')?.addEventListener('click',()=>{
-        mobile.classList.remove('open');
-        mobile.setAttribute('aria-hidden','true');
-      });
-      document.addEventListener('keydown',e=>{
-        if(e.key==='Escape'){
-          mobile.classList.remove('open');
-          mobile.setAttribute('aria-hidden','true');
-        }
-      });
-    })();
-
-    // ==== Supabase / mappings profils (ADAPTÉ À TA TABLE) ====
-    const AVATAR_BUCKET = "avatars";
-    const PROFILE_TABLE = "profiles";
-    const AVATAR_TABLE = "rsl_avatars";
-    const PROFILE_PK = "id";
-    const COL_PSEUDO = "pseudo";
-    const COL_FULLNAME = "full_name";
-    const COL_RIDERNAME = "rider_name";
-    const COL_PHONE = "phone";
-
-    let sb = null;
-    if (window.supabaseClient) {
-      sb = window.supabaseClient;
-    } else if (window.supabase && window.supabase.createClient && window.env?.SUPABASE_URL && window.env?.SUPABASE_ANON) {
-      sb = window.supabase.createClient(window.env.SUPABASE_URL, window.env.SUPABASE_ANON);
-      window.supabaseClient = sb;
-    } else if (window.supabase && window.supabase.createClient) {
-      const SUPABASE_URL = "https://jynxifufaauoxwzjapzq.supabase.co";
-      const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp5bnhpZnVmYWF1b3h3emphcHpxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEzODI2NzcsImV4cCI6MjA3Njk1ODY3N30.vFPGhGakPIM3Xg5rn8_BrAXl6oJMJOssO780C9nXmr4";
-      sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-      window.supabaseClient = sb;
-    }
-
-    let currentUser = null;
-    let currentMembership = null;
-
-    // ==== Avatar nav / profil depuis localStorage ====
-    const navAvatar = document.getElementById('navAvatar');
-    const profileAvatar = document.getElementById('profileAvatar');
-
-    function getAvatarLS(){
-      try{ return localStorage.getItem('rsl_avatar') || null; }catch(e){ return null; }
-    }
-
-    function setAvatarLS(url){
-      try{
-        if(url) localStorage.setItem('rsl_avatar', url);
-        else localStorage.removeItem('rsl_avatar');
-      }catch(e){}
-    }
-
-    function applyAvatar(){
-      const stored = getAvatarLS();
-      const src = stored || "images/logo_rsl.png";
-      if(navAvatar){
-        navAvatar.src = src;
-        navAvatar.style.display = stored ? "inline-block" : "none";
-      }
-      if(profileAvatar) profileAvatar.src = src;
-    }
-
-    function getProfileLS(){
-      try{ return JSON.parse(localStorage.getItem('rsl_profile')||'{}'); }
-      catch(e){ return {}; }
-    }
-
-    function setProfileLS(p){
-      try{ localStorage.setItem('rsl_profile', JSON.stringify(p || {})); }catch(e){}
-    }
-
-    // ==== DOM profil / abo / cours ====
-    const profileName = document.getElementById("profileName");
-    const profileEmail = document.getElementById("profileEmail");
-    const profilePhone = document.getElementById("profilePhone");
-    const loginHint = document.getElementById("loginHint");
-    const fieldPseudo = document.getElementById("fieldPseudo");
-    const fieldRiderFirst = document.getElementById("fieldRiderFirst");
-    const fieldRiderLast = document.getElementById("fieldRiderLast");
-    const fieldParentPhone = document.getElementById("fieldParentPhone");
-    const btnSaveProfile = document.getElementById("btnSaveProfile");
-    const btnChangeAvatar = document.getElementById("btnChangeAvatar");
-    const avatarInput = document.getElementById("avatarInput");
-    const profileSaveStatus = document.getElementById("profileSaveStatus");
-    const membershipBox = document.getElementById("membershipBox");
-    const membershipCoursesEl = document.getElementById("membershipCourses");
-    const paidCoursesEl = document.getElementById("paidCourses");
-    const pendingCoursesEl = document.getElementById("pendingCourses");
-    const btnLogout = document.getElementById("btnLogout");
-    const btnAccount = document.getElementById("btnAccount");
-    const mobileLogout = document.getElementById("mobileLogout");
-    const btnLoginEl = document.getElementById("btnLogin");
-
-    // ==== Abonnement (CORRIGÉ POUR PREMIUM À 0.–) ====
-    async function fetchMembership(sbClient, userId){
-      if(!sbClient || !sbClient.from || !userId) return null;
-      try{
-        const { data: profile, error: profErr } = await sbClient
-          .from('profiles')
-          .select('membership_code')
-          .eq('id', userId)
-          .maybeSingle();
-        if (profErr) {
-          console.warn("Erreur lecture profiles:", profErr);
-          return null;
-        }
-        const code = profile?.membership_code?.trim() || 'aucun';
-
-        const { data: rules, error: rulesErr } = await sbClient
-          .from('rsl_membership_types')
-          .select('code, course_price_chf, free_courses_quota, is_unlimited')
-          .eq('code', code)
-          .maybeSingle();
-        if (rulesErr) {
-          console.warn("Erreur lecture rsl_membership_types:", rulesErr);
-          return null;
-        }
-        const finalRules = rules || {
-          code: 'aucun',
-          course_price_chf: 30,
-          free_courses_quota: 0,
-          is_unlimited: false
-        };
-
-        let remaining = 0;
-        if (finalRules.code.toLowerCase() === 'progression' && finalRules.free_courses_quota > 0) {
-          const { count } = await sbClient
-            .from('rsl_course_registrations')
-            .select('*', { count: 'exact', head: true })
-            .eq('user_id', userId)
-            .eq('membership_included', true);
-          remaining = Math.max(0, finalRules.free_courses_quota - (count || 0));
-        }
-
-        return {
-          membership_code: finalRules.code,
-          expires_at: null,
-          course_price_chf: Number(finalRules.course_price_chf || 30),
-          free_courses_quota: Number(finalRules.free_courses_quota || 0),
-          is_unlimited: !!finalRules.is_unlimited,
-          remaining_quota: remaining
-        };
-      }catch(e){
-        console.warn("Erreur fetch abo:", e);
-        return null;
-      }
-    }
-
-    function formatDate(dStr){
-      if(!dStr) return "";
-      const d = new Date(dStr);
-      if(isNaN(d.getTime())) return dStr;
-      const day = String(d.getDate()).padStart(2,"0");
-      const month = String(d.getMonth()+1).padStart(2,"0");
-      const year = d.getFullYear();
-      return `${day}.${month}.${year}`;
-    }
-
-    function renderMembershipBox(m){
-      if(!m){
-        membershipBox.innerHTML = `
-          <div>Pas d’abonnement actif actuellement.</div>
-          <div class="text-muted" style="margin-top:4px;">Tu peux prendre un abonnement directement sur la page <a href="/membres.html" style="color:#a5b4fc; text-decoration:underline;">Devenir membre</a>.</div>
-        `;
-        return;
-      }
-      const code = (m.membership_code || "aucun").toUpperCase();
-      const isPremiumOrUnlimited = code === "PREMIUM" || m.is_unlimited === true;
-      const displayedPrice = isPremiumOrUnlimited ? 0 : (m.course_price_chf || 30);
-      const quota = m.free_courses_quota || 0;
-      const remaining = m.remaining_quota || 0;
-      let infoTxt = "";
-      let quotaTxt = "";
-      if (isPremiumOrUnlimited) {
-        infoTxt = "Cours RSL illimités et gratuits sur la période de ton abonnement.";
-      } else if (code === "PROGRESSION") {
-        infoTxt = `Tarif réduit à CHF ${displayedPrice}.– après épuisement du quota.`;
-        quotaTxt = remaining > 0
-          ? `Il te reste ${remaining} cours gratuit${remaining > 1 ? 's' : ''} sur ${quota}.`
-          : "Quota épuisé – tarif réduit appliqué.";
-      } else {
-        infoTxt = `Tarif membre : CHF ${displayedPrice}.– par cours.`;
-      }
-      membershipBox.innerHTML = `
-        <div><strong>Type :</strong> ${code}</div>
-        <div><strong>Tarif cours :</strong> CHF ${displayedPrice}.–</div>
-        ${quota > 0 ? `<div><strong>Quota gratuit :</strong> ${quota} cours</div>` : ''}
-        ${quotaTxt ? `<div class="text-muted" style="margin-top:4px;">${quotaTxt}</div>` : ''}
-        <div class="text-muted" style="margin-top:6px;">${infoTxt}</div>
-      `;
-    }
-
-    // ==== Charger les cours (inchangé) ====
-    async function loadCourses(){
-      if(!currentUser || !sb || !sb.from){
-        membershipCoursesEl.textContent = "Connecte-toi pour voir tes cours.";
-        paidCoursesEl.textContent = "Connecte-toi pour voir tes cours.";
-        pendingCoursesEl.textContent = "Connecte-toi pour voir tes cours.";
-        return;
-      }
-      membershipCoursesEl.textContent = "Chargement...";
-      paidCoursesEl.textContent = "Chargement...";
-      pendingCoursesEl.textContent = "Chargement...";
-      try{
-        const { data, error } = await sb
-          .from("rsl_course_registrations")
-          .select(`
-            id, date, date_label,
-            spot_name, title, price_chf, is_paid,
-            course_spot_name, course_title, course_price_chf, course_is_paid,
-            membership_included, payment_status, twint_ref, created_at
-          `)
-          .eq("user_id", currentUser.id)
-          .order("date", { ascending:true });
-        if(error){
-          console.warn("Erreur fetch cours:", error);
-          membershipCoursesEl.textContent = "Impossible de charger les cours.";
-          paidCoursesEl.textContent = "Impossible de charger les cours.";
-          pendingCoursesEl.textContent = "Impossible de charger les cours.";
-          return;
-        }
-        const rows = data || [];
-        const membershipCourses = [];
-        const paidCourses = [];
-        const pendingCourses = [];
-        rows.forEach(r=>{
-          const isIncluded = r.membership_included === true;
-          const isPaidFlag =
-            r.is_paid === true ||
-            r.course_is_paid === true ||
-            (r.payment_status && r.payment_status.toLowerCase().includes("pay"));
-          const spot = r.course_spot_name || r.spot_name || "Lieu inconnu";
-          const title = r.course_title || r.title || "";
-          const price = (r.course_price_chf ?? r.price_chf ?? 0);
-          const dateLabel = r.date_label || (r.date ? formatDate(r.date) : "Date à confirmer");
-          const item = { id:r.id, spot, title, price, membership_included:isIncluded, isPaid:isPaidFlag, payment_status:r.payment_status||"", dateLabel };
-          if(isIncluded) membershipCourses.push(item);
-          if(!isIncluded && isPaidFlag) paidCourses.push(item);
-          if(!isIncluded && !isPaidFlag) pendingCourses.push(item);
-        });
-        function renderList(targetEl, list, emptyText){
-          if(!list.length){
-            targetEl.innerHTML = `<p class="text-muted">${emptyText}</p>`;
-            return;
-          }
-          targetEl.innerHTML = list.map(c=>{
-            let statusText = "";
-            if(c.membership_included){
-              statusText = "Inclus dans ton abo";
-            }else if(c.isPaid){
-              statusText = c.payment_status && c.payment_status.toLowerCase().includes("twint")
-                ? "Payé (TWINT / caisse)"
-                : "Payé";
-            }else{
-              statusText = "À payer (Stripe / caisse)";
-            }
-            const priceLabel = c.price ? `CHF ${c.price}.–` : "CHF 0.–";
-            return `
-              <div class="course-item">
-                <div class="course-item-header">
-                  <div class="course-spot">${c.spot}</div>
-                  <div class="course-date">${c.dateLabel}</div>
-                </div>
-                ${c.title ? `<div class="course-title">${c.title}</div>` : ""}
-                <div class="course-foot">
-                  <div class="course-price">${priceLabel}</div>
-                  <div class="text-muted">${statusText}</div>
-                </div>
-              </div>
-            `;
-          }).join("");
-        }
-        renderList(membershipCoursesEl, membershipCourses, "Aucun cours inclus dans ton abonnement pour l’instant.");
-        renderList(paidCoursesEl, paidCourses, "Aucun cours payant enregistré pour l’instant.");
-        renderList(pendingCoursesEl, pendingCourses, "Aucun cours en attente de paiement pour l’instant.");
-      }catch(e){
-        console.warn("Exception loadCourses:", e);
-        membershipCoursesEl.textContent = "Erreur lors du chargement des cours.";
-        paidCoursesEl.textContent = "Erreur lors du chargement des cours.";
-        pendingCoursesEl.textContent = "Erreur lors du chargement des cours.";
-      }
-    }
-
-    // ==== Gestion profil (inchangé) ====
-    function setProfileStatus(msg, type){
-      if(!profileSaveStatus) return;
-      profileSaveStatus.textContent = msg || "";
-      profileSaveStatus.classList.remove("ok","err");
-      if(type) profileSaveStatus.classList.add(type);
-    }
-
-    function hydrateProfileFormFromObj(p){
-      if(!p) return;
-      if(fieldPseudo) fieldPseudo.value = p.pseudo || "";
-      if(fieldRiderFirst) fieldRiderFirst.value = p.riderFirst || "";
-      if(fieldRiderLast) fieldRiderLast.value = p.riderLast || "";
-      if(fieldParentPhone) fieldParentPhone.value = p.parentPhone || "";
-    }
-
-    function updateProfileTextsFromObj(p){
-      const pseudo = (p?.pseudo || "").trim();
-      const first = (p?.riderFirst || "").trim();
-      const last = (p?.riderLast || "").trim();
-      const phone = (p?.parentPhone || "").trim();
-      let displayName = pseudo || `${first} ${last}`.trim();
-      if(!displayName && currentUser){
-        displayName =
-          (currentUser.user_metadata?.full_name || currentUser.user_metadata?.name || "").trim()
-          || (currentUser.email || "").trim()
-          || "Connecté";
-      }
-      if(profileName) profileName.textContent = displayName || "Connecté";
-      if(profileEmail && currentUser?.email) profileEmail.textContent = currentUser.email;
-      if(profilePhone){
-        profilePhone.textContent = "Téléphone : " + (phone || "—");
-      }
-    }
-
-    async function loadProfileFromSupabase(userId){
-      if(!sb || !sb.from || !userId) return;
-      try{
-        const { data, error } = await sb
-          .from(PROFILE_TABLE)
-          .select(`${COL_PSEUDO}, ${COL_FULLNAME}, ${COL_RIDERNAME}, ${COL_PHONE}`)
-          .eq(PROFILE_PK, userId)
-          .maybeSingle();
-        if(error){
-          console.warn("Erreur load profile:", error);
-        }
-        const local = getProfileLS();
-        const merged = {
-          pseudo: data?.[COL_PSEUDO] ?? local.pseudo,
-          riderFirst: data?.[COL_FULLNAME] ?? local.riderFirst,
-          riderLast: data?.[COL_RIDERNAME] ?? local.riderLast,
-          parentPhone: data?.[COL_PHONE] ?? local.parentPhone
-        };
-        hydrateProfileFormFromObj(merged);
-        updateProfileTextsFromObj(merged);
-        setProfileLS(merged);
-        applyAvatar();
-      }catch(e){
-        console.warn("Exception load profile:", e);
-      }
-    }
-
-    async function loadAvatarFromDb(userId){
-      if(!sb || !sb.from || !userId) return;
-      try{
-        const { data, error } = await sb
-          .from(AVATAR_TABLE)
-          .select("avatar_url")
-          .eq("user_id", userId)
-          .maybeSingle();
-        if(error){
-          console.warn("Erreur load avatar (rsl_avatars):", error);
-          return;
-        }
-        if(data && data.avatar_url){
-          const url = data.avatar_url;
-          if(navAvatar){
-            navAvatar.src = url;
-            navAvatar.style.display = "inline-block";
-          }
-          if(profileAvatar) profileAvatar.src = url;
-          setAvatarLS(url);
-        }
-      }catch(e){
-        console.warn("Exception loadAvatarFromDb:", e);
-      }
-    }
-
-    async function saveProfileToSupabase(){
-      if(!currentUser || !sb || !sb.from){
-        setProfileStatus("Tu dois être connecté pour modifier ton profil.", "err");
-        return;
-      }
-      const pseudo = fieldPseudo?.value.trim() || "";
-      const riderFirst = fieldRiderFirst?.value.trim() || "";
-      const riderLast = fieldRiderLast?.value.trim() || "";
-      const parentPhone = fieldParentPhone?.value.trim() || "";
-      const payload = {
-        [PROFILE_PK]: currentUser.id,
-        [COL_PSEUDO]: pseudo,
-        [COL_FULLNAME]: riderFirst,
-        [COL_RIDERNAME]: riderLast,
-        [COL_PHONE]: parentPhone,
-        updated_at: new Date().toISOString()
-      };
-      setProfileStatus("Enregistrement en cours...", null);
-      try{
-        const { error } = await sb
-          .from(PROFILE_TABLE)
-          .upsert(payload, { onConflict: PROFILE_PK });
-        if(error){
-          console.warn("Erreur save profile:", error);
-          setProfileStatus("Erreur lors de l’enregistrement du profil.", "err");
-          return;
-        }
-        const stored = { pseudo, riderFirst, riderLast, parentPhone };
-        setProfileLS(stored);
-        updateProfileTextsFromObj(stored);
-        setProfileStatus("Profil mis à jour ✅", "ok");
-      }catch(e){
-        console.warn("Exception save profile:", e);
-        setProfileStatus("Erreur lors de l’enregistrement du profil.", "err");
-      }
-    }
-
-    async function uploadAvatar(file){
-      if(!currentUser || !sb || !sb.storage){
-        setProfileStatus("Tu dois être connecté pour changer ta photo.", "err");
-        return;
-      }
-      if(!file) return;
-      setProfileStatus("Upload de la photo en cours...", null);
-      const fileExt = file.name.split(".").pop();
-      const fileName = `avatar_${Date.now()}.${fileExt}`;
-      const filePath = `${currentUser.id}/${fileName}`;
-      try{
-        const { error: uploadError } = await sb
-          .storage
-          .from(AVATAR_BUCKET)
-          .upload(filePath, file, { upsert: true });
-        if(uploadError){
-          console.warn("Erreur upload avatar:", uploadError);
-          setProfileStatus("Erreur lors de l’upload de la photo.", "err");
-          return;
-        }
-        const { data: publicData } = sb
-          .storage
-          .from(AVATAR_BUCKET)
-          .getPublicUrl(filePath);
-        const publicUrl = publicData?.publicUrl;
-        if(!publicUrl){
-          setProfileStatus("Impossible de récupérer l’URL de la photo.", "err");
-          return;
-        }
-        const { error: upsertError } = await sb
-          .from(AVATAR_TABLE)
-          .upsert({
-            user_id: currentUser.id,
-            avatar_url: publicUrl,
-            updated_at: new Date().toISOString()
-          }, { onConflict: "user_id" });
-        if(upsertError){
-          console.warn("Erreur upsert avatar table:", upsertError);
-          setProfileStatus("Erreur lors de l’enregistrement de la photo.", "err");
-          return;
-        }
-        if(navAvatar){
-          navAvatar.src = publicUrl;
-          navAvatar.style.display = "inline-block";
-        }
-        if(profileAvatar) profileAvatar.src = publicUrl;
-        setAvatarLS(publicUrl);
-        setProfileStatus("Photo de profil mise à jour ✅", "ok");
-      }catch(e){
-        console.warn("Exception upload avatar:", e);
-        setProfileStatus("Erreur lors de l’upload de la photo.", "err");
-      }
-    }
-
-    // ==== Logout ====
-    async function logout(){
-      try{ if(sb && sb.auth) await sb.auth.signOut(); }catch(e){ console.warn("Erreur logout:", e); }
-      localStorage.removeItem("rsl_profile");
-      localStorage.removeItem("rsl_avatar");
-      window.location.href = "/index.html";
-    }
-
-    btnLogout?.addEventListener("click", logout);
-    mobileLogout?.addEventListener("click", logout);
-
-    // ==== Events profil ====
-    btnSaveProfile?.addEventListener("click", saveProfileToSupabase);
-    btnChangeAvatar?.addEventListener("click", ()=>{
-      if(!currentUser){
-        setProfileStatus("Connecte-toi avant de changer la photo.", "err");
-        return;
-      }
-      avatarInput?.click();
-    });
-
-    avatarInput?.addEventListener("change", (e)=>{
-      const file = e.target.files?.[0];
-      if(file) uploadAvatar(file);
-    });
-
-    // ==== Init ====
-    (async ()=>{
-      applyAvatar();
-      const profLS = getProfileLS();
-      hydrateProfileFormFromObj(profLS);
-      updateProfileTextsFromObj(profLS);
-      if(!sb || !sb.auth){
-        if(loginHint) loginHint.style.display = "inline-flex";
-        return;
-      }
-      try{
-        const { data:{ user } } = await sb.auth.getUser();
-        currentUser = user || null;
-        if(!user){
-          if(profileName) profileName.textContent = "Non connecté";
-          if(profileEmail) profileEmail.textContent = "—";
-          if(profilePhone) profilePhone.textContent = "Téléphone : —";
-          if(loginHint) loginHint.style.display = "inline-flex";
-          if(btnLoginEl) btnLoginEl.style.display = "inline-flex";
-          if(btnAccount) btnAccount.style.display = "none";
-          if(btnLogout) btnLogout.style.display = "none";
-          if(mobileLogout) mobileLogout.style.display = "none";
-          if(navAvatar) navAvatar.style.display = "none";
-          membershipBox.textContent = "Connecte-toi pour voir ton abonnement.";
-          membershipCoursesEl.textContent = "Connecte-toi pour voir tes cours.";
-          paidCoursesEl.textContent = "Connecte-toi pour voir tes cours.";
-          pendingCoursesEl.textContent = "Connecte-toi pour voir tes cours.";
-          return;
-        }
-        if(btnLoginEl) btnLoginEl.style.display = "none";
-        if(btnAccount) btnAccount.style.display = "inline-flex";
-        if(btnLogout) btnLogout.style.display = "inline-flex";
-        if(mobileLogout) mobileLogout.style.display = "block";
-        if(loginHint) loginHint.style.display = "none";
-        if(navAvatar){
-          const av = getAvatarLS();
-          navAvatar.style.display = av ? "inline-block" : "none";
-        }
-        if(profileEmail) profileEmail.textContent = user.email || "—";
-        await loadProfileFromSupabase(user.id);
-        await loadAvatarFromDb(user.id);
-        const membership = await fetchMembership(sb, user.id);
-        currentMembership = membership;
-        renderMembershipBox(membership);
-        await loadCourses();
-      }catch(e){
-        console.warn("Erreur init compte:", e);
-        membershipBox.textContent = "Erreur lors du chargement de ton compte.";
-      }
+      const close=document.getElementById('closeMenu');
+      if(!menuBtn||!mobile) return;
+      const open=()=>{mobile.classList.add('open');mobile.setAttribute('aria-hidden','false');};
+      const shut=()=>{mobile.classList.remove('open');mobile.setAttribute('aria-hidden','true');};
+      menuBtn.addEventListener('click',e=>{e.stopPropagation();open();});
+      close?.addEventListener('click',shut);
+      mobile.querySelector('.mobile-dim')?.addEventListener('click',shut);
+      document.addEventListener('keydown',e=>{if(e.key==='Escape') shut();});
     })();
   </script>
 </body>

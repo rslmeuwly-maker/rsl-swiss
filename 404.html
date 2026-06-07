@@ -1,34 +1,242 @@
-<!doctype html><html lang="fr"><head>
-<meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Page introuvable — RSL</title>
-<link rel="stylesheet" href="css/style.css"/>
-<link rel="stylesheet" href="css/common.css"/>
-</head><body>
-<header class="hero"><div class="container hero-inner">
-<h1>Page introuvable</h1>
-<p class="muted">Cette page n’existe pas.</p>
-<p><a class="btn" href="/">Retour à l’accueil</a></p>
-</div></header>
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Page introuvable — Romandie Scooter League</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <script defer src="/js/env.js"></script>
+  <script defer src="/js/auth.js"></script>
+  <script defer src="/js/site.js"></script>
+  <style>
+    :root{--red:#cc0000;--red2:#e51010;--bg:#080808;--fg:#f0f0f0;--muted:#777;--border:rgba(255,255,255,.08);--card:#111;}
+    *,*:before,*:after{margin:0;padding:0;box-sizing:border-box;}
+    html{scroll-behavior:smooth;}
+    body{min-height:100vh;background:var(--bg);color:var(--fg);font-family:'Barlow Condensed',system-ui,sans-serif;overflow-x:hidden;}
+    a{color:inherit;text-decoration:none;}
+    b,strong{color:#fff;}
+    #bg{position:fixed;inset:0;width:100%;height:100%;object-fit:cover;z-index:-3;filter:brightness(.18) saturate(.18) contrast(1.2);background:#000;}
+    .vig{position:fixed;inset:0;z-index:-2;pointer-events:none;background:radial-gradient(ellipse 60% 55% at 50% 15%, transparent 0%, rgba(0,0,0,.55) 55%, rgba(0,0,0,.97) 100%),linear-gradient(180deg,rgba(0,0,0,.2),#080808 70%);}
+    .grain{position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:.33;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.055'/%3E%3C/svg%3E");}
+    .sitenav{position:sticky;top:0;z-index:500;background:#000;border-bottom:3px solid var(--red);padding:0 28px;display:flex;align-items:center;justify-content:space-between;height:54px;}
+    .sitenav-brand{display:flex;align-items:center;text-decoration:none;}
+    .sitenav-tab{background:var(--red);height:54px;width:58px;display:flex;align-items:center;justify-content:center;margin-left:-28px;margin-right:16px;flex:0 0 auto;}
+    .sitenav-tab img{height:34px;object-fit:contain;}
+    .sitenav-name{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:.1em;color:#fff;line-height:1;}
+    .sitenav-name small{display:block;font-family:'Barlow Condensed',sans-serif;font-size:9px;font-weight:700;letter-spacing:.22em;color:var(--red);margin-top:-1px;}
+    .sitenav-links{display:flex;align-items:center;gap:0;list-style:none;height:54px;}
+    .sitenav-links li{height:100%;}
+    .sitenav-links a{display:flex;align-items:center;height:100%;padding:0 14px;font-weight:700;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:rgba(240,240,240,.5);text-decoration:none;border-bottom:3px solid transparent;margin-bottom:-3px;transition:.15s;}
+    .sitenav-links a:hover,.sitenav-links a[aria-current="page"]{color:#fff;border-bottom-color:var(--red);}
+    .sitenav-right{display:flex;align-items:center;gap:8px;}
+    .snbtn{padding:7px 14px;font-weight:700;font-size:11px;letter-spacing:.14em;text-transform:uppercase;text-decoration:none;cursor:pointer;border:1px solid rgba(255,255,255,.14);background:transparent;color:rgba(240,240,240,.6);transition:.15s;}
+    .snbtn:hover{border-color:rgba(255,255,255,.35);color:#fff;}
+    .snbtn.red{background:var(--red);border-color:var(--red);color:#fff;box-shadow:0 0 16px rgba(200,0,0,.45);}
+    .snbtn.red:hover{background:var(--red2);}
+    #menuBtn{display:none;background:transparent;border:1px solid rgba(255,255,255,.15);color:#fff;padding:6px 10px;font-size:18px;cursor:pointer;}
+    .mobile-sheet{position:fixed;inset:0;display:none;z-index:600;}
+    .mobile-sheet.open{display:block;}
+    .mobile-dim{position:absolute;inset:0;background:rgba(0,0,0,.6);}
+    .mobile-panel{position:absolute;top:0;right:0;height:100%;width:80vw;max-width:320px;background:#0f0f0f;border-left:3px solid var(--red);padding:20px 18px;display:flex;flex-direction:column;gap:2px;overflow-y:auto;}
+    .mobile-panel .mp-title{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:.1em;color:#fff;margin-bottom:12px;border-bottom:1px solid rgba(255,255,255,.08);padding-bottom:10px;}
+    .mobile-panel .mp-title span{color:var(--red);}
+    .mobile-panel a{color:rgba(240,240,240,.6);text-decoration:none;font-weight:700;font-size:15px;letter-spacing:.1em;text-transform:uppercase;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.05);transition:.15s;}
+    .mobile-panel a:hover{color:#fff;padding-left:6px;}
+    .mobile-panel .mp-red{color:var(--red);}
+    .mp-close{position:absolute;top:14px;right:14px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);color:#fff;width:32px;height:32px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;}
+    footer{background:#000;border-top:3px solid var(--red);padding:28px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;}
+    .ft-brand{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:.1em;color:#fff;}
+    .ft-brand span{color:var(--red);}
+    .ft-copy{font-size:11px;color:var(--muted);margin-top:3px;}
+    .ft-links{display:flex;gap:16px;list-style:none;flex-wrap:wrap;}
+    .ft-links a{font-weight:700;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);text-decoration:none;transition:.15s;}
+    .ft-links a:hover{color:var(--red);}
+    .wrap{max-width:1200px;margin:0 auto;padding:56px 28px 80px;}
+    .page-hero{position:relative;min-height:380px;display:flex;align-items:center;justify-content:center;padding:74px 20px 64px;overflow:hidden;border-bottom:1px solid rgba(200,0,0,.18);}
+    .page-hero:before{content:"";position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(500px,82vw);height:min(500px,82vw);border-radius:50%;background:radial-gradient(circle,rgba(200,0,0,.34),rgba(200,0,0,.08) 48%,transparent 70%);filter:blur(2px);animation:breathe 3.8s ease-in-out infinite;}
+    .hero-inner{position:relative;z-index:1;text-align:center;max-width:900px;}
+    .fed{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:16px;}
+    .fed-bar{width:28px;height:1px;background:rgba(255,255,255,.12);}
+    .fed-dot{width:5px;height:5px;border-radius:50%;background:var(--red);box-shadow:0 0 8px var(--red);animation:pulse 2s ease-in-out infinite;}
+    .fed-txt{font-size:8px;font-weight:700;letter-spacing:.24em;text-transform:uppercase;color:rgba(255,255,255,.32);white-space:nowrap;}
+    h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(54px,10vw,106px);line-height:.86;letter-spacing:.03em;color:#fff;text-shadow:0 0 34px rgba(200,0,0,.48);}
+    h1 span{color:var(--red);}
+    .redsep{width:36px;height:3px;background:var(--red);box-shadow:0 0 12px rgba(200,0,0,.9);margin:20px auto 18px;}
+    .hero-sub{max-width:700px;margin:0 auto;color:rgba(240,240,240,.62);font-size:18px;line-height:1.55;}
+    .section-head{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;flex-wrap:wrap;border-bottom:2px solid rgba(255,255,255,.06);padding-bottom:16px;margin-bottom:28px;}
+    .section-kicker{display:flex;align-items:flex-end;gap:12px;}
+    .num{font-family:'Bebas Neue',sans-serif;font-size:56px;color:rgba(200,0,0,.18);line-height:1;}
+    .section-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(34px,4.5vw,54px);line-height:1;letter-spacing:.04em;color:#fff;}
+    .section-title span{color:var(--red);}
+    .section-sub{max-width:380px;text-align:right;font-size:14px;color:var(--muted);line-height:1.55;}
+    .card{background:var(--card);border:1px solid rgba(255,255,255,.06);padding:25px 20px;display:flex;flex-direction:column;gap:10px;position:relative;overflow:hidden;}
+    .card:before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--red);transform:scaleY(0);transform-origin:bottom;transition:transform .22s;}
+    .card:hover{border-color:rgba(200,0,0,.42);}
+    .card:hover:before{transform:scaleY(1);}
+    .card.featured{background:linear-gradient(135deg,rgba(200,0,0,.09),var(--card) 72%);border-color:rgba(200,0,0,.22);}
+    .card.featured:before{transform:scaleY(1);}
+    .badge{display:inline-flex;width:max-content;font-size:9px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--red);border:1px solid rgba(200,0,0,.35);padding:3px 10px;margin-bottom:4px;}
+    .card h2,.card h3{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:24px;letter-spacing:.04em;text-transform:uppercase;color:#fff;line-height:1.05;}
+    .card.featured h2{font-size:30px;}
+    .meta{font-size:14px;color:var(--red);font-weight:700;letter-spacing:.05em;text-transform:uppercase;}
+    .card p{font-size:15px;color:var(--muted);line-height:1.62;flex:1;}
+    .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px;}
+    .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:11px 20px;font-weight:900;font-size:12px;letter-spacing:.16em;text-transform:uppercase;text-decoration:none;cursor:pointer;border:0;transition:.15s ease;line-height:1;}
+    .btn.red{background:var(--red);color:#fff;clip-path:polygon(7px 0%,100% 0%,calc(100% - 7px) 100%,0% 100%);box-shadow:0 0 20px rgba(200,0,0,.55);}
+    .btn.red:hover{background:var(--red2);transform:translateY(-1px);}
+    .btn.ghost{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.14);color:rgba(255,255,255,.66);}
+    .btn.ghost:hover{background:rgba(255,255,255,.09);color:#fff;transform:translateY(-1px);}
+    .cards{display:grid;grid-template-columns:repeat(3,1fr);gap:3px;}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:3px;}
+    .highlight{background:var(--card);border:1px solid rgba(200,0,0,.18);padding:24px 22px;position:relative;overflow:hidden;display:flex;gap:20px;justify-content:space-between;align-items:center;}
+    .highlight:before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--red);box-shadow:0 0 20px rgba(200,0,0,.75);}
+    .h-tag{font-size:9px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:var(--red);margin-bottom:8px;}
+    .h-title{font-family:'Bebas Neue',sans-serif;font-size:28px;color:#fff;line-height:1;}
+    .h-desc{font-size:14px;color:var(--muted);line-height:1.55;margin-top:8px;max-width:560px;}
+    .strip{display:grid;grid-template-columns:repeat(4,1fr);gap:3px;margin-top:20px;}
+    .strip-item{background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.075);padding:20px 18px;}
+    .strip-item strong{display:block;font-family:'Bebas Neue',sans-serif;letter-spacing:.06em;font-size:26px;color:#fff;line-height:1;margin-bottom:8px;}
+    .strip-item span{display:block;color:var(--muted);font-size:14px;line-height:1.5;}
+    .tick-list{display:grid;gap:8px;margin-top:12px;}
+    .tick{background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.075);padding:12px 14px;color:var(--muted);font-size:15px;line-height:1.45;}
+    .tick:before{content:"✓";color:var(--red);font-weight:900;margin-right:9px;}
+    .sp-card{background:var(--card);border:1px solid rgba(200,0,0,.18);padding:38px 34px;position:relative;overflow:hidden;}
+    .sp-card:before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--red);box-shadow:0 0 24px rgba(200,0,0,.8);}
+    .sp-card:after{content:"RSL";position:absolute;right:28px;bottom:-10px;font-family:'Bebas Neue',sans-serif;font-size:120px;color:rgba(200,0,0,.045);pointer-events:none;line-height:1;}
+    .sp-title{font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:.05em;color:#fff;line-height:1;margin-bottom:22px;}
+    .sp-title span{color:var(--red);}
+    .sponsors-grid{position:relative;z-index:1;display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;}
+    .sponsor-card{min-width:190px;min-height:96px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;padding:18px 22px;text-decoration:none;transition:.18s;}
+    .sponsor-card:hover{border-color:rgba(200,0,0,.42);transform:translateY(-3px);}
+    .sponsor-card img{display:block;object-fit:contain;max-width:220px;max-height:70px;}
+    .form-field{display:flex;flex-direction:column;gap:6px;margin-bottom:14px;}
+    .form-field label{font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);}
+    .form-field input,.form-field textarea,.form-field select{background:#0d0d0d;border:1px solid rgba(255,255,255,.12);color:#fff;padding:11px 13px;font-family:'Barlow Condensed',sans-serif;font-size:15px;outline:none;transition:.15s;}
+    .form-field input:focus,.form-field textarea:focus{border-color:rgba(200,0,0,.55);}
+    .form-field textarea{resize:vertical;min-height:120px;}
+    @media(max-width:980px){.sitenav-links{display:none;}.snbtn:not(.red){display:none;}.sitenav{padding:0 14px;}.sitenav-tab{margin-left:-14px;}#menuBtn{display:block;}.cards{grid-template-columns:1fr 1fr;}.grid2{grid-template-columns:1fr;}.strip{grid-template-columns:1fr 1fr;}}
+    @media(max-width:620px){.page-hero{min-height:320px;padding:54px 16px 50px;}.wrap{padding:40px 16px 60px;}.cards{grid-template-columns:1fr;}.strip{grid-template-columns:1fr;}.highlight{flex-direction:column;align-items:flex-start;}.btn{width:100%;}footer{padding:20px 16px;flex-direction:column;align-items:flex-start;}}
+    @keyframes breathe{0%,100%{opacity:.55;transform:translate(-50%,-50%) scale(.92);}50%{opacity:1;transform:translate(-50%,-50%) scale(1.08);}}
+    @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.25;}}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
+  </style>
+</head>
+<body>
+  <video id="bg" autoplay muted loop playsinline poster="/images/hero-poster.jpg"></video>
+  <div class="vig"></div>
+  <div class="grain"></div>
+  <nav class="sitenav">
+    <a class="sitenav-brand" href="/">
+      <div class="sitenav-tab"><img src="/images/logo_rsl.png" alt="RSL"></div>
+      <div class="sitenav-name">RSL<small>Romandie Scooter League</small></div>
+    </a>
+    <ul class="sitenav-links">
+      <li><a href="/cours">Cours</a></li>
+      <li><a href="/formation">Formation</a></li>
+      <li><a href="/ou_rider">Où rider ?</a></li>
+      <li><a href="/evenements">Événements</a></li>
+      <li><a href="/disciplines">Disciplines</a></li>
+      <li><a href="/shop-rsl">Shop</a></li>
+      <li><a href="/comite">Comité</a></li>
+      <li><a href="/contact">Contact</a></li>
+    </ul>
+    <div class="sitenav-right">
+      <a class="snbtn" href="/access" id="btnLogin">Login</a>
+      <a class="snbtn" href="/compte" id="btnAccount" style="display:none">Compte</a>
+      <a class="snbtn red" href="/membres">Devenir membre</a>
+      <button id="menuBtn" aria-label="Menu">☰</button>
+    </div>
+  </nav>
 
-<!-- HelpBot (RSL) -->
-<link rel="stylesheet" href="css/helpbot.css">
-<div id="hb-root">
-  <button class="hb-launcher" id="hbOpen" aria-label="Ouvrir l’aide">💬</button>
-  <div class="hb-panel" id="hbPanel" role="dialog" aria-modal="true" aria-labelledby="hbTitle">
-    <div class="hb-head">
-      <div class="title" id="hbTitle">Aide — RSL</div>
-      <div class="actions">
-        <button class="hb-icon-btn" id="hbMin" title="Réduire">▁</button>
-        <button class="hb-icon-btn" id="hbClose" title="Fermer">✕</button>
-      </div>
-    </div>
-    <div class="hb-body" id="hbBody"></div>
-    <div class="hb-foot">
-      <input id="hbInput" class="hb-input" type="text" placeholder="Pose ta question… (ex: prix des cours, remboursement)">
-      <button id="hbSend" class="hb-send">Envoyer</button>
-    </div>
+  <div class="mobile-sheet" id="mobileMenu" aria-hidden="true">
+    <div class="mobile-dim"></div>
+    <nav class="mobile-panel">
+      <button class="mp-close" type="button" id="closeMenu">×</button>
+      <div class="mp-title"><span>RSL</span> MENU</div>
+      <a href="/">Accueil</a>
+      <a href="/cours">Cours</a>
+      <a href="/membres" class="mp-red">Devenir membre</a>
+      <a href="/formation">Formation RSL</a>
+      <a href="/disciplines">Disciplines</a>
+      <a href="/ou_rider">Où rider ?</a>
+      <a href="/evenements">Événements</a>
+      <a href="/game">Games</a>
+      <a href="/shop-rsl">Shop</a>
+      <a href="/comite">Comité</a>
+      <a href="/contact">Contact</a>
+      <a href="/conditions">Conditions générales</a>
+      <a href="/access">Se connecter</a>
+      <a href="/compte">Mon compte</a>
+      <a href="/coach">Je suis coach</a>
+    </nav>
   </div>
-</div>
-<script defer src="js/helpbot.js"></script>
 
-</body></html>
+  <header class="page-hero">
+    <div class="hero-inner">
+      <div class="fed">
+        <div class="fed-bar"></div><div class="fed-dot"></div>
+        <div class="fed-txt">Erreur · page manquante</div>
+        <div class="fed-dot"></div><div class="fed-bar"></div>
+      </div>
+      <h1>404 <span>NOT FOUND</span></h1>
+      <div class="redsep"></div>
+      <p class="hero-sub">Cette page n'existe pas ou a été déplacée.</p>
+    </div>
+  </header>
+
+  <main>
+    <section class="wrap" style="text-align:center;">
+      <p style="color:#777;font-size:18px;margin-bottom:32px;">La page que tu cherches n'existe pas ou a été déplacée.</p>
+      <div class="actions" style="justify-content:center;">
+        <a class="btn red" href="/">Retour à l'accueil</a>
+        <a class="btn ghost" href="/cours">Voir les cours</a>
+      </div>
+    </section>
+
+  </main>
+
+  <footer>
+    <div>
+      <div class="ft-brand">ROMANDIE <span>SCOOTER LEAGUE</span></div>
+      <div class="ft-copy">© 2026 RSL — Tous droits réservés.</div>
+    </div>
+    <ul class="ft-links">
+      <li><a href="/cours">Cours</a></li>
+      <li><a href="/formation">Formation</a></li>
+      <li><a href="/evenements">Événements</a></li>
+      <li><a href="/membres">Membres</a></li>
+      <li><a href="/contact">Contact</a></li>
+      <li><a href="/access">Login</a></li>
+    </ul>
+  </footer>
+  <script>
+    (function(){
+      const v=document.getElementById('bg');
+      if(!v) return;
+      const vids=[
+        "https://jynxifufaauoxwzjapzq.supabase.co/storage/v1/object/public/videos_rsl/trottvideo1.mp4",
+        "https://jynxifufaauoxwzjapzq.supabase.co/storage/v1/object/public/videos_rsl/trottvideo2.mp4"
+      ];
+      v.src=vids[Math.floor(Math.random()*vids.length)];
+      v.playbackRate=0.5;
+      try{const p=v.play();if(p&&p.catch)p.catch(()=>{});}catch(e){}
+      document.addEventListener('visibilitychange',()=>{if(document.hidden)v.pause();else{v.playbackRate=0.5;try{v.play();}catch(e){}}});
+    })();
+    (function(){
+      const menuBtn=document.getElementById('menuBtn');
+      const mobile=document.getElementById('mobileMenu');
+      const close=document.getElementById('closeMenu');
+      if(!menuBtn||!mobile) return;
+      const open=()=>{mobile.classList.add('open');mobile.setAttribute('aria-hidden','false');};
+      const shut=()=>{mobile.classList.remove('open');mobile.setAttribute('aria-hidden','true');};
+      menuBtn.addEventListener('click',e=>{e.stopPropagation();open();});
+      close?.addEventListener('click',shut);
+      mobile.querySelector('.mobile-dim')?.addEventListener('click',shut);
+      document.addEventListener('keydown',e=>{if(e.key==='Escape') shut();});
+    })();
+  </script>
+</body>
+</html>

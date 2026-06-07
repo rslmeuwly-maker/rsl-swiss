@@ -4,897 +4,263 @@
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>Connexion — Romandie Scooter League</title>
-
-  <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
-
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <script defer src="/js/env.js"></script>
+  <script defer src="/js/auth.js"></script>
+  <script defer src="/js/site.js"></script>
   <style>
-    :root{
-      --green:#22c55e;
-      --green-dark:#16a34a;
-      --panel-bg:rgba(9,13,23,.78);
-      --panel-border:rgba(255,255,255,.12);
-      --txt-main:#fff;
-      --txt-dim:#cdd6ff;
-    }
-    *{box-sizing:border-box;}
-
-    html, body { height:100%; }
-    body{
-      margin:0;
-      background: transparent !important;
-      color:var(--txt-main);
-      font-family:"Outfit",system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
-    }
-
-    /* ===== VIDÉO DE FOND ===== */
-    .site-bg-video{
-      position:fixed;
-      inset:0;
-      width:100%;
-      height:100%;
-      object-fit:cover;
-      z-index:-2;
-      background:#000;
-    }
-    .site-bg-dim{
-      position:fixed;
-      inset:0;
-      z-index:-1;
-      background:linear-gradient(180deg, rgba(0,0,0,.55), rgba(0,0,0,.78));
-    }
-
-    /* ===== MINI HEADER ===== */
-    .mini-header{
-      position:fixed;
-      top:16px;
-      left:16px;
-      z-index:10;
-      display:flex;
-      align-items:center;
-      gap:10px;
-      background:rgba(0,0,0,.55);
-      border:1px solid rgba(255,255,255,.12);
-      border-radius:12px;
-      padding:10px 14px;
-      box-shadow:0 20px 60px rgba(0,0,0,.6);
-      backdrop-filter:blur(8px) saturate(140%);
-      user-select:none;
-    }
-    .mini-header img{
-      height:44px;
-      width:auto;
-      border-radius:10px;
-      display:block;
-      filter:brightness(1.1);
-      background:#fff;
-      padding:6px;
-      box-shadow:0 2px 10px rgba(0,0,0,.35);
-    }
-    .mini-header .brand-text{
-      display:flex;
-      flex-direction:column;
-      line-height:1.2;
-    }
-    .mini-header .brand-main{
-      font-size:15px;
-      font-weight:700;
-      color:#fff;
-    }
-    .mini-header .brand-sub{
-      font-size:12px;
-      font-weight:600;
-      color:#22c55e;
-      opacity:.9;
-    }
-
-    /* ===== PAGE WRAP ===== */
-    .page-wrap{
-      max-width:480px;
-      margin:0 auto;
-      padding:120px 20px 80px;
-      color:#fff;
-      position:relative;
-      z-index:10;
-      text-align:center;
-    }
-
-    .logo-wrap{
-      width:84px;
-      height:84px;
-      border-radius:16px;
-      background:#fff;
-      padding:10px;
-      margin:0 auto 16px;
-      box-shadow:0 6px 20px rgba(0,0,0,.6);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-    }
-    .logo-wrap img{
-      max-width:100%;
-      max-height:100%;
-      object-fit:contain;
-      display:block;
-    }
-
-    .eyebrow{
-      display:inline-block;
-      background:linear-gradient(180deg,var(--green),var(--green-dark));
-      color:#062312;
-      font-weight:800;
-      font-size:12px;
-      line-height:1.2;
-      border-radius:8px;
-      padding:4px 8px;
-      box-shadow:0 10px 24px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.2);
-    }
-
-    h1.title{
-      margin:16px 0 8px;
-      font-size:clamp(24px,4vw,32px);
-      font-weight:800;
-      color:#fff;
-      line-height:1.2;
-    }
-
-    .subtitle{
-      font-size:15px;
-      font-weight:500;
-      line-height:1.45;
-      color:#fff;
-      opacity:.9;
-      max-width:460px;
-      margin:0 auto;
-    }
-    .subtitle b{
-      color:var(--green);
-      font-weight:700;
-    }
-
-    /* PANNEAU (login/signup + compte) */
-    .panel{
-      background:var(--panel-bg);
-      border:1px solid var(--panel-border);
-      border-radius:14px;
-      box-shadow:0 20px 60px rgba(0,0,0,.6);
-      padding:20px;
-      margin:24px auto 0;
-      text-align:left;
-      max-width:480px;
-    }
-    .panel h2{
-      margin:0 0 16px;
-      font-size:16px;
-      line-height:1.3;
-      font-weight:700;
-      color:#fff;
-    }
-    .tag-free{
-      font-size:12px;
-      line-height:1.2;
-      font-weight:700;
-      background:rgba(255,255,255,.08);
-      border:1px solid rgba(255,255,255,.15);
-      color:#fff;
-      border-radius:6px;
-      padding:3px 6px;
-      margin-left:8px;
-    }
-
-    .field{margin-bottom:14px;}
-    .field label{
-      display:block;
-      font-size:13px;
-      font-weight:600;
-      color:#fff;
-      margin-bottom:6px;
-    }
-    .input{
-      width:100%;
-      background:rgba(0,0,0,.6);
-      border:1px solid rgba(255,255,255,.25);
-      border-radius:10px;
-      color:#fff;
-      font-size:14px;
-      font-weight:600;
-      padding:10px 12px;
-      outline:none;
-    }
-    .input:focus{
-      border-color:var(--green);
-      box-shadow:0 0 0 3px rgba(34,197,94,.25);
-    }
-
-    .checkline{
-      display:flex;
-      align-items:flex-start;
-      gap:10px;
-      font-size:12px;
-      line-height:1.4;
-      font-weight:500;
-      color:#fff;
-      margin-bottom:10px;
-    }
-    .checkline input[type="checkbox"]{
-      width:18px;
-      height:18px;
-      flex:0 0 18px;
-      margin-top:2px;
-    }
-    .checkline span b{
-      color:var(--green);
-      font-weight:700;
-    }
-
-    .btn-main,
-    .btn-alt,
-    .btn-small,
-    .btn-change{
-      width:100%;
-      background:linear-gradient(180deg,var(--green),var(--green-dark));
-      border:0;
-      border-radius:10px;
-      color:#062312;
-      font-weight:800;
-      font-size:15px;
-      line-height:1.2;
-      padding:12px 14px;
-      cursor:pointer;
-      box-shadow:0 10px 24px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.2);
-      text-align:center;
-    }
-    .btn-main:disabled,
-    .btn-change:disabled{
-      filter:grayscale(1) brightness(.6);
-      cursor:default;
-    }
-
-    .btn-alt{
-      background:rgba(255,255,255,.08);
-      color:#fff;
-      font-size:13px;
-      line-height:1.2;
-      padding:10px 12px;
-      font-weight:700;
-      border:1px solid rgba(255,255,255,.25);
-      box-shadow:0 10px 24px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.1);
-    }
-
-    .btn-small{
-      font-size:13px;
-      padding:10px 12px;
-    }
-
-    .msg-err,
-    .msg-ok{
-      display:none;
-      margin-top:10px;
-      border-radius:10px;
-      font-size:13px;
-      font-weight:600;
-      line-height:1.4;
-      padding:10px 12px;
-    }
-    .msg-err{
-      background:rgba(255,80,80,.12);
-      border:1px solid rgba(255,80,80,.4);
-      color:#ff9f9f;
-    }
-    .msg-ok{
-      background:rgba(34,197,94,.12);
-      border:1px solid rgba(34,197,94,.4);
-      color:#7cffb0;
-    }
-
-    .switch-link{
-      text-align:center;
-      font-size:13px;
-      font-weight:500;
-      color:#fff;
-      opacity:.9;
-      margin-top:16px;
-      text-align:center;
-    }
-    .switch-link button{
-      background:none;
-      border:0;
-      color:var(--green);
-      font-weight:700;
-      cursor:pointer;
-    }
-
-    .footnote{
-      margin-top:24px;
-      font-size:12px;
-      line-height:1.45;
-      color:var(--txt-dim);
-      font-weight:500;
-      max-width:460px;
-      text-align:center;
-      margin-left:auto;
-      margin-right:auto;
-    }
-    .footnote b{
-      color:#fff;
-      font-weight:600;
-    }
-
-    .copy{
-      text-align:center;
-      color:#9aa5b1;
-      font-size:12px;
-      padding:40px 0 30px;
-      margin:0;
-      position:relative;
-      z-index:10;
-    }
-
-    .hide{ display:none; }
-
-    /* === petit bloc pour compte déjà connecté === */
-    .acc-email{
-      font-size:13px;
-      font-weight:500;
-      color:#9aa5b1;
-      margin-bottom:16px;
-    }
-    .acc-email b{
-      color:#fff;
-      font-weight:600;
-    }
-
-    .pw-block-label{
-      font-size:13px;
-      font-weight:600;
-      color:#fff;
-      margin:16px 0 8px;
-    }
-
-    .pw-msg-err,
-    .pw-msg-ok{
-      display:none;
-      border-radius:10px;
-      font-size:13px;
-      font-weight:600;
-      line-height:1.4;
-      padding:10px 12px;
-      margin-top:10px;
-    }
-    .pw-msg-err{
-      background:rgba(255,80,80,.12);
-      border:1px solid rgba(255,80,80,.4);
-      color:#ff9f9f;
-    }
-    .pw-msg-ok{
-      background:rgba(34,197,94,.12);
-      border:1px solid rgba(34,197,94,.4);
-      color:#7cffb0;
-    }
+    :root{--red:#cc0000;--red2:#e51010;--bg:#080808;--fg:#f0f0f0;--muted:#777;--border:rgba(255,255,255,.08);--card:#111;}
+    *,*:before,*:after{margin:0;padding:0;box-sizing:border-box;}
+    html{scroll-behavior:smooth;}
+    body{min-height:100vh;background:var(--bg);color:var(--fg);font-family:'Barlow Condensed',system-ui,sans-serif;overflow-x:hidden;}
+    a{color:inherit;text-decoration:none;}
+    b,strong{color:#fff;}
+    #bg{position:fixed;inset:0;width:100%;height:100%;object-fit:cover;z-index:-3;filter:brightness(.18) saturate(.18) contrast(1.2);background:#000;}
+    .vig{position:fixed;inset:0;z-index:-2;pointer-events:none;background:radial-gradient(ellipse 60% 55% at 50% 15%, transparent 0%, rgba(0,0,0,.55) 55%, rgba(0,0,0,.97) 100%),linear-gradient(180deg,rgba(0,0,0,.2),#080808 70%);}
+    .grain{position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:.33;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.055'/%3E%3C/svg%3E");}
+    .sitenav{position:sticky;top:0;z-index:500;background:#000;border-bottom:3px solid var(--red);padding:0 28px;display:flex;align-items:center;justify-content:space-between;height:54px;}
+    .sitenav-brand{display:flex;align-items:center;text-decoration:none;}
+    .sitenav-tab{background:var(--red);height:54px;width:58px;display:flex;align-items:center;justify-content:center;margin-left:-28px;margin-right:16px;flex:0 0 auto;}
+    .sitenav-tab img{height:34px;object-fit:contain;}
+    .sitenav-name{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:.1em;color:#fff;line-height:1;}
+    .sitenav-name small{display:block;font-family:'Barlow Condensed',sans-serif;font-size:9px;font-weight:700;letter-spacing:.22em;color:var(--red);margin-top:-1px;}
+    .sitenav-links{display:flex;align-items:center;gap:0;list-style:none;height:54px;}
+    .sitenav-links li{height:100%;}
+    .sitenav-links a{display:flex;align-items:center;height:100%;padding:0 14px;font-weight:700;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:rgba(240,240,240,.5);text-decoration:none;border-bottom:3px solid transparent;margin-bottom:-3px;transition:.15s;}
+    .sitenav-links a:hover,.sitenav-links a[aria-current="page"]{color:#fff;border-bottom-color:var(--red);}
+    .sitenav-right{display:flex;align-items:center;gap:8px;}
+    .snbtn{padding:7px 14px;font-weight:700;font-size:11px;letter-spacing:.14em;text-transform:uppercase;text-decoration:none;cursor:pointer;border:1px solid rgba(255,255,255,.14);background:transparent;color:rgba(240,240,240,.6);transition:.15s;}
+    .snbtn:hover{border-color:rgba(255,255,255,.35);color:#fff;}
+    .snbtn.red{background:var(--red);border-color:var(--red);color:#fff;box-shadow:0 0 16px rgba(200,0,0,.45);}
+    .snbtn.red:hover{background:var(--red2);}
+    #menuBtn{display:none;background:transparent;border:1px solid rgba(255,255,255,.15);color:#fff;padding:6px 10px;font-size:18px;cursor:pointer;}
+    .mobile-sheet{position:fixed;inset:0;display:none;z-index:600;}
+    .mobile-sheet.open{display:block;}
+    .mobile-dim{position:absolute;inset:0;background:rgba(0,0,0,.6);}
+    .mobile-panel{position:absolute;top:0;right:0;height:100%;width:80vw;max-width:320px;background:#0f0f0f;border-left:3px solid var(--red);padding:20px 18px;display:flex;flex-direction:column;gap:2px;overflow-y:auto;}
+    .mobile-panel .mp-title{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:.1em;color:#fff;margin-bottom:12px;border-bottom:1px solid rgba(255,255,255,.08);padding-bottom:10px;}
+    .mobile-panel .mp-title span{color:var(--red);}
+    .mobile-panel a{color:rgba(240,240,240,.6);text-decoration:none;font-weight:700;font-size:15px;letter-spacing:.1em;text-transform:uppercase;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.05);transition:.15s;}
+    .mobile-panel a:hover{color:#fff;padding-left:6px;}
+    .mobile-panel .mp-red{color:var(--red);}
+    .mp-close{position:absolute;top:14px;right:14px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);color:#fff;width:32px;height:32px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;}
+    footer{background:#000;border-top:3px solid var(--red);padding:28px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;}
+    .ft-brand{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:.1em;color:#fff;}
+    .ft-brand span{color:var(--red);}
+    .ft-copy{font-size:11px;color:var(--muted);margin-top:3px;}
+    .ft-links{display:flex;gap:16px;list-style:none;flex-wrap:wrap;}
+    .ft-links a{font-weight:700;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);text-decoration:none;transition:.15s;}
+    .ft-links a:hover{color:var(--red);}
+    .wrap{max-width:1200px;margin:0 auto;padding:56px 28px 80px;}
+    .page-hero{position:relative;min-height:380px;display:flex;align-items:center;justify-content:center;padding:74px 20px 64px;overflow:hidden;border-bottom:1px solid rgba(200,0,0,.18);}
+    .page-hero:before{content:"";position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(500px,82vw);height:min(500px,82vw);border-radius:50%;background:radial-gradient(circle,rgba(200,0,0,.34),rgba(200,0,0,.08) 48%,transparent 70%);filter:blur(2px);animation:breathe 3.8s ease-in-out infinite;}
+    .hero-inner{position:relative;z-index:1;text-align:center;max-width:900px;}
+    .fed{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:16px;}
+    .fed-bar{width:28px;height:1px;background:rgba(255,255,255,.12);}
+    .fed-dot{width:5px;height:5px;border-radius:50%;background:var(--red);box-shadow:0 0 8px var(--red);animation:pulse 2s ease-in-out infinite;}
+    .fed-txt{font-size:8px;font-weight:700;letter-spacing:.24em;text-transform:uppercase;color:rgba(255,255,255,.32);white-space:nowrap;}
+    h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(54px,10vw,106px);line-height:.86;letter-spacing:.03em;color:#fff;text-shadow:0 0 34px rgba(200,0,0,.48);}
+    h1 span{color:var(--red);}
+    .redsep{width:36px;height:3px;background:var(--red);box-shadow:0 0 12px rgba(200,0,0,.9);margin:20px auto 18px;}
+    .hero-sub{max-width:700px;margin:0 auto;color:rgba(240,240,240,.62);font-size:18px;line-height:1.55;}
+    .section-head{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;flex-wrap:wrap;border-bottom:2px solid rgba(255,255,255,.06);padding-bottom:16px;margin-bottom:28px;}
+    .section-kicker{display:flex;align-items:flex-end;gap:12px;}
+    .num{font-family:'Bebas Neue',sans-serif;font-size:56px;color:rgba(200,0,0,.18);line-height:1;}
+    .section-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(34px,4.5vw,54px);line-height:1;letter-spacing:.04em;color:#fff;}
+    .section-title span{color:var(--red);}
+    .section-sub{max-width:380px;text-align:right;font-size:14px;color:var(--muted);line-height:1.55;}
+    .card{background:var(--card);border:1px solid rgba(255,255,255,.06);padding:25px 20px;display:flex;flex-direction:column;gap:10px;position:relative;overflow:hidden;}
+    .card:before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--red);transform:scaleY(0);transform-origin:bottom;transition:transform .22s;}
+    .card:hover{border-color:rgba(200,0,0,.42);}
+    .card:hover:before{transform:scaleY(1);}
+    .card.featured{background:linear-gradient(135deg,rgba(200,0,0,.09),var(--card) 72%);border-color:rgba(200,0,0,.22);}
+    .card.featured:before{transform:scaleY(1);}
+    .badge{display:inline-flex;width:max-content;font-size:9px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--red);border:1px solid rgba(200,0,0,.35);padding:3px 10px;margin-bottom:4px;}
+    .card h2,.card h3{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:24px;letter-spacing:.04em;text-transform:uppercase;color:#fff;line-height:1.05;}
+    .card.featured h2{font-size:30px;}
+    .meta{font-size:14px;color:var(--red);font-weight:700;letter-spacing:.05em;text-transform:uppercase;}
+    .card p{font-size:15px;color:var(--muted);line-height:1.62;flex:1;}
+    .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px;}
+    .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:11px 20px;font-weight:900;font-size:12px;letter-spacing:.16em;text-transform:uppercase;text-decoration:none;cursor:pointer;border:0;transition:.15s ease;line-height:1;}
+    .btn.red{background:var(--red);color:#fff;clip-path:polygon(7px 0%,100% 0%,calc(100% - 7px) 100%,0% 100%);box-shadow:0 0 20px rgba(200,0,0,.55);}
+    .btn.red:hover{background:var(--red2);transform:translateY(-1px);}
+    .btn.ghost{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.14);color:rgba(255,255,255,.66);}
+    .btn.ghost:hover{background:rgba(255,255,255,.09);color:#fff;transform:translateY(-1px);}
+    .cards{display:grid;grid-template-columns:repeat(3,1fr);gap:3px;}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:3px;}
+    .highlight{background:var(--card);border:1px solid rgba(200,0,0,.18);padding:24px 22px;position:relative;overflow:hidden;display:flex;gap:20px;justify-content:space-between;align-items:center;}
+    .highlight:before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--red);box-shadow:0 0 20px rgba(200,0,0,.75);}
+    .h-tag{font-size:9px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:var(--red);margin-bottom:8px;}
+    .h-title{font-family:'Bebas Neue',sans-serif;font-size:28px;color:#fff;line-height:1;}
+    .h-desc{font-size:14px;color:var(--muted);line-height:1.55;margin-top:8px;max-width:560px;}
+    .strip{display:grid;grid-template-columns:repeat(4,1fr);gap:3px;margin-top:20px;}
+    .strip-item{background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.075);padding:20px 18px;}
+    .strip-item strong{display:block;font-family:'Bebas Neue',sans-serif;letter-spacing:.06em;font-size:26px;color:#fff;line-height:1;margin-bottom:8px;}
+    .strip-item span{display:block;color:var(--muted);font-size:14px;line-height:1.5;}
+    .tick-list{display:grid;gap:8px;margin-top:12px;}
+    .tick{background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.075);padding:12px 14px;color:var(--muted);font-size:15px;line-height:1.45;}
+    .tick:before{content:"✓";color:var(--red);font-weight:900;margin-right:9px;}
+    .sp-card{background:var(--card);border:1px solid rgba(200,0,0,.18);padding:38px 34px;position:relative;overflow:hidden;}
+    .sp-card:before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--red);box-shadow:0 0 24px rgba(200,0,0,.8);}
+    .sp-card:after{content:"RSL";position:absolute;right:28px;bottom:-10px;font-family:'Bebas Neue',sans-serif;font-size:120px;color:rgba(200,0,0,.045);pointer-events:none;line-height:1;}
+    .sp-title{font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:.05em;color:#fff;line-height:1;margin-bottom:22px;}
+    .sp-title span{color:var(--red);}
+    .sponsors-grid{position:relative;z-index:1;display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;}
+    .sponsor-card{min-width:190px;min-height:96px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;padding:18px 22px;text-decoration:none;transition:.18s;}
+    .sponsor-card:hover{border-color:rgba(200,0,0,.42);transform:translateY(-3px);}
+    .sponsor-card img{display:block;object-fit:contain;max-width:220px;max-height:70px;}
+    .form-field{display:flex;flex-direction:column;gap:6px;margin-bottom:14px;}
+    .form-field label{font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);}
+    .form-field input,.form-field textarea,.form-field select{background:#0d0d0d;border:1px solid rgba(255,255,255,.12);color:#fff;padding:11px 13px;font-family:'Barlow Condensed',sans-serif;font-size:15px;outline:none;transition:.15s;}
+    .form-field input:focus,.form-field textarea:focus{border-color:rgba(200,0,0,.55);}
+    .form-field textarea{resize:vertical;min-height:120px;}
+    @media(max-width:980px){.sitenav-links{display:none;}.snbtn:not(.red){display:none;}.sitenav{padding:0 14px;}.sitenav-tab{margin-left:-14px;}#menuBtn{display:block;}.cards{grid-template-columns:1fr 1fr;}.grid2{grid-template-columns:1fr;}.strip{grid-template-columns:1fr 1fr;}}
+    @media(max-width:620px){.page-hero{min-height:320px;padding:54px 16px 50px;}.wrap{padding:40px 16px 60px;}.cards{grid-template-columns:1fr;}.strip{grid-template-columns:1fr;}.highlight{flex-direction:column;align-items:flex-start;}.btn{width:100%;}footer{padding:20px 16px;flex-direction:column;align-items:flex-start;}}
+    @keyframes breathe{0%,100%{opacity:.55;transform:translate(-50%,-50%) scale(.92);}50%{opacity:1;transform:translate(-50%,-50%) scale(1.08);}}
+    @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.25;}}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
   </style>
 </head>
 <body>
-
-  <!-- VIDÉO DE FOND -->
-  <video class="site-bg-video" autoplay muted loop playsinline id="rslBg" poster="images/hero-poster.jpg"></video>
-  <div class="site-bg-dim" aria-hidden="true"></div>
-
-  <!-- MINI HEADER -->
-  <div class="mini-header">
-    <img src="images/logo_rsl.png" alt="RSL"/>
-    <div class="brand-text">
-      <div class="brand-main">RSL — Romandie Scooter League</div>
-      <div class="brand-sub">Espace membre</div>
+  <video id="bg" autoplay muted loop playsinline poster="/images/hero-poster.jpg"></video>
+  <div class="vig"></div>
+  <div class="grain"></div>
+  <nav class="sitenav">
+    <a class="sitenav-brand" href="/">
+      <div class="sitenav-tab"><img src="/images/logo_rsl.png" alt="RSL"></div>
+      <div class="sitenav-name">RSL<small>Romandie Scooter League</small></div>
+    </a>
+    <ul class="sitenav-links">
+      <li><a href="/cours">Cours</a></li>
+      <li><a href="/formation">Formation</a></li>
+      <li><a href="/ou_rider">Où rider ?</a></li>
+      <li><a href="/evenements">Événements</a></li>
+      <li><a href="/disciplines">Disciplines</a></li>
+      <li><a href="/shop-rsl">Shop</a></li>
+      <li><a href="/comite">Comité</a></li>
+      <li><a href="/contact">Contact</a></li>
+    </ul>
+    <div class="sitenav-right">
+      <a class="snbtn" href="/access" aria-current="page" id="btnLogin">Login</a>
+      <a class="snbtn" href="/compte" id="btnAccount" style="display:none">Compte</a>
+      <a class="snbtn red" href="/membres">Devenir membre</a>
+      <button id="menuBtn" aria-label="Menu">☰</button>
     </div>
+  </nav>
+
+  <div class="mobile-sheet" id="mobileMenu" aria-hidden="true">
+    <div class="mobile-dim"></div>
+    <nav class="mobile-panel">
+      <button class="mp-close" type="button" id="closeMenu">×</button>
+      <div class="mp-title"><span>RSL</span> MENU</div>
+      <a href="/">Accueil</a>
+      <a href="/cours">Cours</a>
+      <a href="/membres" class="mp-red">Devenir membre</a>
+      <a href="/formation">Formation RSL</a>
+      <a href="/disciplines">Disciplines</a>
+      <a href="/ou_rider">Où rider ?</a>
+      <a href="/evenements">Événements</a>
+      <a href="/game">Games</a>
+      <a href="/shop-rsl">Shop</a>
+      <a href="/comite">Comité</a>
+      <a href="/contact">Contact</a>
+      <a href="/conditions">Conditions générales</a>
+      <a href="/access" aria-current="page">Se connecter</a>
+      <a href="/compte">Mon compte</a>
+      <a href="/coach">Je suis coach</a>
+    </nav>
   </div>
 
-  <!-- CONTENU -->
-  <main class="page-wrap">
-
-    <div class="logo-wrap">
-      <img src="images/logo_rsl.png" alt="RSL"/>
+  <header class="page-hero">
+    <div class="hero-inner">
+      <div class="fed">
+        <div class="fed-bar"></div><div class="fed-dot"></div>
+        <div class="fed-txt">Membres · coachs · riders</div>
+        <div class="fed-dot"></div><div class="fed-bar"></div>
+      </div>
+      <h1>ESPACE <span>MEMBRE</span></h1>
+      <div class="redsep"></div>
+      <p class="hero-sub">Connecte-toi à ton compte RSL pour accéder à ton espace membre, tes inscriptions et ton profil rider.</p>
     </div>
+  </header>
 
-    <div class="eyebrow">Compte RSL</div>
-
-    <h1 class="title">Connexion / Création de compte</h1>
-
-    <p class="subtitle">
-      Connecte-toi ou crée un compte pour gérer tes <b>cours</b>, ton <b>adhésion</b> et ton <b>profil RSL</b>.
-    </p>
-
-    <!-- ===== PANEL COMPTE DÉJÀ CONNECTÉ ===== -->
-    <section class="panel hide" id="accountPanel">
-      <h2>Mon compte RSL <span class="tag-free">actif</span></h2>
-
-      <div class="acc-email">
-        Connecté en tant que <b id="accEmail">(email)</b>
-      </div>
-
-      <div class="field">
-        <button class="btn-main" id="goAccountBtn" type="button">Aller à mon compte</button>
-      </div>
-
-      <div class="field">
-        <button class="btn-alt" id="logoutBtn" type="button">Se déconnecter</button>
-      </div>
-
-      <div class="pw-block-label">Changer mon mot de passe</div>
-
-      <div class="field">
-        <label for="oldPass">Ancien mot de passe</label>
-        <input id="oldPass" class="input" type="password" placeholder="Ancien mot de passe"/>
-      </div>
-
-      <div class="field">
-        <label for="newPass1">Nouveau mot de passe</label>
-        <input id="newPass1" class="input" type="password" placeholder="Nouveau mot de passe (min 6 caractères)"/>
-      </div>
-
-      <div class="field">
-        <label for="newPass2">Confirme le nouveau mot de passe</label>
-        <input id="newPass2" class="input" type="password" placeholder="Confirme le nouveau mot de passe"/>
-      </div>
-
-      <div id="pwMsgErr" class="pw-msg-err"></div>
-      <div id="pwMsgOk"  class="pw-msg-ok"></div>
-
-      <div class="field">
-        <button class="btn-change" id="pwChangeBtn" type="button">Mettre à jour mon mot de passe</button>
+  <main>
+    <section class="wrap" style="max-width:560px;">
+      <div id="authBox">
+        <div class="section-head">
+          <div class="section-kicker"><div class="num">🔐</div><div class="section-title">SE <span>CONNECTER</span></div></div>
+        </div>
+        <div class="form-field"><label>Email</label><input type="email" id="authEmail" placeholder="ton@email.com" autocomplete="email"></div>
+        <div class="form-field"><label>Mot de passe</label><input type="password" id="authPwd" placeholder="••••••••" autocomplete="current-password"></div>
+        <div class="actions" style="margin-top:8px;">
+          <button class="btn red" onclick="doLogin()" style="width:100%">Se connecter</button>
+        </div>
+        <p style="color:#777;font-size:14px;margin-top:16px;text-align:center;">Pas encore de compte ? <a href="/membres" style="color:var(--red);font-weight:700;">Devenir membre</a></p>
+        <p style="color:#777;font-size:14px;margin-top:8px;text-align:center;"><a href="/reset" style="color:#777;">Mot de passe oublié ?</a></p>
+        <p id="authMsg" style="color:var(--red);font-size:14px;margin-top:12px;text-align:center;display:none;"></p>
       </div>
     </section>
+  <script>
+    async function doLogin(){
+      const email = document.getElementById('authEmail').value.trim();
+      const pwd   = document.getElementById('authPwd').value;
+      const msg   = document.getElementById('authMsg');
+      msg.style.display='none';
+      function waitEnv(ms=3000){return new Promise(r=>{const s=Date.now();(function t(){if(window.env?.SUPABASE_URL&&window.env?.SUPABASE_ANON)return r(true);if(Date.now()-s>ms)return r(false);setTimeout(t,30);})();});}
+      await waitEnv();
+      if(!window.env?.SUPABASE_URL){msg.textContent='Config manquante.';msg.style.display='block';return;}
+      const supa = supabase.createClient(window.env.SUPABASE_URL, window.env.SUPABASE_ANON);
+      const {error} = await supa.auth.signInWithPassword({email,password:pwd});
+      if(error){msg.textContent=error.message;msg.style.display='block';}
+      else{window.location.href='/compte';}
+    }
+    document.addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+  </script>
 
-
-    <!-- ===== PANEL LOGIN ===== -->
-    <form class="panel" id="loginForm" autocomplete="off" novalidate>
-      <h2>Connexion à ton compte</h2>
-
-      <div class="field">
-        <label for="loginEmail">Email</label>
-        <input id="loginEmail" class="input" type="email" placeholder="ton.email@example.com" required/>
-      </div>
-
-      <div class="field">
-        <label for="loginPass">Mot de passe</label>
-        <input id="loginPass" class="input" type="password" placeholder="••••••••" required minlength="6"/>
-      </div>
-
-      <div id="loginErr" class="msg-err"></div>
-
-      <button class="btn-main" id="btnLogin" type="submit">Se connecter</button>
-
-      <div class="field" style="margin-top:12px;">
-        <button class="btn-alt btn-small" id="forgotBtn" type="button">J'ai oublié mon mot de passe</button>
-        <div id="forgotOk" class="msg-ok" style="margin-top:8px;">Un lien de réinitialisation a été envoyé (si l'email existe).</div>
-      </div>
-
-      <div class="switch-link">
-        Pas encore inscrit ? <button type="button" id="showSignupBtn">Créer un compte</button>
-      </div>
-    </form>
-
-
-    <!-- ===== PANEL SIGNUP ===== -->
-    <form class="panel hide" id="signupForm" autocomplete="off" novalidate>
-      <h2>
-        Crée ton compte RSL
-        <span class="tag-free">gratuit</span>
-      </h2>
-
-      <div class="field">
-        <label for="signupEmail">Email</label>
-        <input id="signupEmail" class="input" type="email" placeholder="ton.email@example.com" required/>
-      </div>
-
-      <div class="field">
-        <label for="signupPass1">Mot de passe</label>
-        <input id="signupPass1" class="input" type="password" placeholder="••••••••" required minlength="6"/>
-      </div>
-
-      <div class="field">
-        <label for="signupPass2">Confirme le mot de passe</label>
-        <input id="signupPass2" class="input" type="password" placeholder="••••••••" required minlength="6"/>
-      </div>
-
-      <div class="checkline">
-        <input id="okMail" type="checkbox" required/>
-        <span>J'autorise la RSL à me prévenir pour les cours, événements et infos importantes.</span>
-      </div>
-
-      <div class="checkline">
-        <input id="okImage" type="checkbox" required/>
-        <span>J'accepte l'utilisation de photos/vidéos des événements RSL (<b>@rsl_swiss</b> pour toute demande de retrait).</span>
-      </div>
-
-      <div id="signupErr" class="msg-err"></div>
-      <div id="signupOk" class="msg-ok"></div>
-
-      <button class="btn-main" id="btnCreate" type="submit">Créer mon compte</button>
-
-      <div class="switch-link">
-        Déjà un compte ? <button type="button" id="showLoginBtn">Connexion</button>
-      </div>
-    </form>
-
-
-    <div class="footnote">
-      Avec ce compte, tu pourras gérer tes cours, ton profil et ton adhésion RSL.
-    </div>
-
-    <p class="copy">© 2025 — Romandie Scooter League. Tous droits réservés.</p>
   </main>
 
-  <!-- SUPABASE -->
-  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-  <script src="js/env.js"></script>
-
+  <footer>
+    <div>
+      <div class="ft-brand">ROMANDIE <span>SCOOTER LEAGUE</span></div>
+      <div class="ft-copy">© 2026 RSL — Tous droits réservés.</div>
+    </div>
+    <ul class="ft-links">
+      <li><a href="/cours">Cours</a></li>
+      <li><a href="/formation">Formation</a></li>
+      <li><a href="/evenements">Événements</a></li>
+      <li><a href="/membres">Membres</a></li>
+      <li><a href="/contact">Contact</a></li>
+      <li><a href="/access">Login</a></li>
+    </ul>
+  </footer>
   <script>
-  (function(){
-    // ====== VIDÉO DE FOND SUPABASE (aléatoire) ======
-    window.addEventListener('DOMContentLoaded', () => {
-      const v = document.getElementById('rslBg');
+    (function(){
+      const v=document.getElementById('bg');
       if(!v) return;
-
-      const vids = [
+      const vids=[
         "https://jynxifufaauoxwzjapzq.supabase.co/storage/v1/object/public/videos_rsl/trottvideo1.mp4",
         "https://jynxifufaauoxwzjapzq.supabase.co/storage/v1/object/public/videos_rsl/trottvideo2.mp4"
       ];
-      const pick = vids[Math.floor(Math.random()*vids.length)];
-
-      const srcEl = document.createElement('source');
-      srcEl.src = pick;
-      srcEl.type = "video/mp4";
-      v.appendChild(srcEl);
-
-      const start = () => {
-        try {
-          v.playbackRate = 0.6;
-          const p = v.play();
-          if(p && p.catch){ p.catch(()=>{}); }
-        } catch(e){}
-      };
-      start();
-
-      document.addEventListener('visibilitychange',()=>{
-        if(document.hidden){
-          v.pause();
-        } else {
-          start();
-        }
-      });
-    });
-
-    // refs DOM
-    const accountPanel = document.getElementById('accountPanel');
-    const accEmail     = document.getElementById('accEmail');
-    const goAccountBtn = document.getElementById('goAccountBtn');
-    const logoutBtn    = document.getElementById('logoutBtn');
-
-    const oldPass      = document.getElementById('oldPass');
-    const newPass1     = document.getElementById('newPass1');
-    const newPass2     = document.getElementById('newPass2');
-    const pwChangeBtn  = document.getElementById('pwChangeBtn');
-    const pwMsgErr     = document.getElementById('pwMsgErr');
-    const pwMsgOk      = document.getElementById('pwMsgOk');
-
-    const loginForm    = document.getElementById('loginForm');
-    const loginEmail   = document.getElementById('loginEmail');
-    const loginPass    = document.getElementById('loginPass');
-    const loginBtn     = document.getElementById('btnLogin');
-    const loginErr     = document.getElementById('loginErr');
-
-    const forgotBtn    = document.getElementById('forgotBtn');
-    const forgotOk     = document.getElementById('forgotOk');
-
-    const signupForm   = document.getElementById('signupForm');
-    const signupEmail  = document.getElementById('signupEmail');
-    const signupPass1  = document.getElementById('signupPass1');
-    const signupPass2  = document.getElementById('signupPass2');
-    const okMail       = document.getElementById('okMail');
-    const okImage      = document.getElementById('okImage');
-    const signupBtn    = document.getElementById('btnCreate');
-    const signupErr    = document.getElementById('signupErr');
-    const signupOk     = document.getElementById('signupOk');
-
-    const showSignupBtn= document.getElementById('showSignupBtn');
-    const showLoginBtn = document.getElementById('showLoginBtn');
-
-    function show(el){ if(el) el.classList.remove('hide'); }
-    function hide(el){ if(el) el.classList.add('hide'); }
-
-    function showLoginPanel(){
-      show(loginForm);
-      hide(signupForm);
-    }
-    function showSignupPanel(){
-      show(signupForm);
-      hide(loginForm);
-    }
-    showSignupBtn?.addEventListener('click', showSignupPanel);
-    showLoginBtn?.addEventListener('click', showLoginPanel);
-
-    function showLoginErr(msg){
-      loginErr.textContent = msg;
-      loginErr.style.display='block';
-    }
-    function clearLoginErr(){
-      loginErr.style.display='none';
-    }
-
-    function showSignupErr(msg){
-      signupErr.textContent = msg;
-      signupErr.style.display='block';
-      signupOk.style.display='none';
-    }
-    function showSignupOk(msg){
-      signupErr.style.display='none';
-      signupOk.textContent = msg || "Compte créé. Redirection…";
-      signupOk.style.display='block';
-    }
-
-    function clearPwMsg(){
-      pwMsgErr.style.display='none';
-      pwMsgOk.style.display='none';
-    }
-    function showPwErr(msg){
-      pwMsgErr.textContent=msg;
-      pwMsgErr.style.display='block';
-      pwMsgOk.style.display='none';
-    }
-    function showPwOk(msg){
-      pwMsgOk.textContent=msg;
-      pwMsgOk.style.display='block';
-      pwMsgErr.style.display='none';
-    }
-
-    function hideForgotOk(){
-      forgotOk.style.display='none';
-    }
-    function showForgotOk(){
-      forgotOk.style.display='block';
-    }
-
-    // init supabase
-    let supa=null;
-    try{
-      supa = supabase.createClient(
-        window.env?.SUPABASE_URL || '',
-        window.env?.SUPABASE_ANON || ''
-      );
-    }catch(e){
-      console.warn("Init Supabase fail:",e);
-    }
-
-    // État initial : check session
-    (async function initState(){
-      hide(accountPanel);
-      hideForgotOk();
-
-      // Par défaut: login visible, signup caché
-      show(loginForm);
-      hide(signupForm);
-
-      let sessionOK=false;
-      let emailNow="";
-
-      if(supa){
-        try{
-          const { data:{ user } } = await supa.auth.getUser();
-          if(user){
-            sessionOK=true;
-            emailNow = user.email || "";
-          }
-        }catch(e){ console.warn(e); }
-      }
-
-      if(sessionOK){
-        if(accEmail) accEmail.textContent=emailNow||"(inconnu)";
-        show(accountPanel);
-        hide(loginForm);
-        hide(signupForm);
-
-        try{
-          localStorage.setItem('rsl_pre_email', emailNow);
-        }catch(_){}
-      }
+      v.src=vids[Math.floor(Math.random()*vids.length)];
+      v.playbackRate=0.5;
+      try{const p=v.play();if(p&&p.catch)p.catch(()=>{});}catch(e){}
+      document.addEventListener('visibilitychange',()=>{if(document.hidden)v.pause();else{v.playbackRate=0.5;try{v.play();}catch(e){}}});
     })();
-
-    // Aller à mon compte
-    goAccountBtn?.addEventListener('click', ()=>{
-      window.location.href="compte.html";
-    });
-
-    // Logout
-    logoutBtn?.addEventListener('click', async ()=>{
-      try{ await supa.auth.signOut(); }catch(e){}
-      try{
-        localStorage.removeItem('rsl_pre_email');
-      }catch(_){}
-      window.location.reload();
-    });
-
-    // Changer mot de passe
-    pwChangeBtn?.addEventListener('click', async ()=>{
-      clearPwMsg();
-
-      const oldP=(oldPass.value||"").trim();
-      const np1 =(newPass1.value||"").trim();
-      const np2 =(newPass2.value||"").trim();
-
-      if(np1.length<6){
-        showPwErr("Nouveau mot de passe trop court (min 6 caractères).");
-        return;
-      }
-      if(np1!==np2){
-        showPwErr("Le nouveau mot de passe ne correspond pas dans les deux champs.");
-        return;
-      }
-
-      let currentEmail="";
-      try{
-        const { data:{ user } } = await supa.auth.getUser();
-        if(user){ currentEmail=user.email||""; }
-      }catch(e){ console.warn(e); }
-
-      if(!currentEmail){
-        showPwErr("Session expirée. Reconnecte-toi.");
-        return;
-      }
-
-      pwChangeBtn.disabled=true;
-
-      try{
-        const { error:checkErr } = await supa.auth.signInWithPassword({
-          email: currentEmail,
-          password: oldP
-        });
-        if(checkErr){
-          showPwErr("Ancien mot de passe incorrect.");
-          pwChangeBtn.disabled=false;
-          return;
-        }
-
-        const { error:updateErr } = await supa.auth.updateUser({
-          password: np1
-        });
-        if(updateErr){
-          showPwErr("Impossible de modifier le mot de passe.");
-          pwChangeBtn.disabled=false;
-          return;
-        }
-
-        showPwOk("Mot de passe mis à jour ✔");
-        oldPass.value="";
-        newPass1.value="";
-        newPass2.value="";
-        pwChangeBtn.disabled=false;
-
-      }catch(e){
-        console.warn(e);
-        showPwErr("Erreur technique, réessaie.");
-        pwChangeBtn.disabled=false;
-      }
-    });
-
-    // Mot de passe oublié
-    forgotBtn?.addEventListener('click', async ()=>{
-      hideForgotOk();
-      clearLoginErr();
-
-      const em=(loginEmail.value||"").trim();
-      if(!em){
-        showLoginErr("Mets d'abord ton email.");
-        return;
-      }
-
-      try{
-        const redirectUrl = window.location.origin + "/access.html";
-        const { error } = await supa.auth.resetPasswordForEmail(em,{
-          redirectTo: redirectUrl
-        });
-        if(error){
-          showLoginErr("Impossible d'envoyer l'email de récupération.");
-          return;
-        }
-        showForgotOk();
-      }catch(e){
-        console.warn(e);
-        showLoginErr("Erreur envoi email. Réessaie.");
-      }
-    });
-
-    // LOGIN
-    loginForm?.addEventListener('submit', async (ev)=>{
-      ev.preventDefault();
-      clearLoginErr();
-
-      const em=(loginEmail.value||'').trim();
-      const pw=(loginPass.value||'').trim();
-
-      loginBtn.disabled=true;
-      try{
-        if(!supa) throw new Error("Supabase manquant");
-
-        const { data, error } = await supa.auth.signInWithPassword({
-          email:em,
-          password:pw
-        });
-        if(error || !data?.user){
-          showLoginErr("Email ou mot de passe incorrect.");
-          loginBtn.disabled=false;
-          return;
-        }
-
-        localStorage.setItem('rsl_pre_email', em);
-
-        // 🔁 Après login → compte
-        window.location.href="compte.html";
-
-      }catch(ex){
-        console.warn(ex);
-        showLoginErr("Erreur. Réessaie.");
-        loginBtn.disabled=false;
-      }
-    });
-
-    // SIGNUP
-    signupForm?.addEventListener('submit', async (ev)=>{
-      ev.preventDefault();
-      signupErr.style.display='none';
-      signupOk.style.display='none';
-
-      const em=(signupEmail.value||'').trim();
-      const p1=(signupPass1.value||'').trim();
-      const p2=(signupPass2.value||'').trim();
-
-      if(p1!==p2){
-        showSignupErr("Les mots de passe ne correspondent pas.");
-        return;
-      }
-      if(p1.length<6){
-        showSignupErr("Mot de passe trop court (min 6).");
-        return;
-      }
-      if(!okMail.checked || !okImage.checked){
-        showSignupErr("Merci d'accepter les conditions.");
-        return;
-      }
-
-      signupBtn.disabled=true;
-      try{
-        if(!supa) throw new Error("Supabase manquant");
-
-        const { error } = await supa.auth.signUp({
-          email:em,
-          password:p1,
-          options:{
-            data:{
-              rsl_member: true
-            }
-          }
-        });
-        if(error){
-          showSignupErr("Impossible de créer le compte.");
-          signupBtn.disabled=false;
-          return;
-        }
-
-        localStorage.setItem('rsl_pre_email', em);
-
-        showSignupOk("Compte créé ✅ Redirection...");
-
-        setTimeout(()=>{ window.location.href="compte.html"; },1000);
-
-      }catch(ex){
-        console.warn(ex);
-        showSignupErr("Erreur. Réessaie.");
-        signupBtn.disabled=false;
-      }
-    });
-
-  })();
+    (function(){
+      const menuBtn=document.getElementById('menuBtn');
+      const mobile=document.getElementById('mobileMenu');
+      const close=document.getElementById('closeMenu');
+      if(!menuBtn||!mobile) return;
+      const open=()=>{mobile.classList.add('open');mobile.setAttribute('aria-hidden','false');};
+      const shut=()=>{mobile.classList.remove('open');mobile.setAttribute('aria-hidden','true');};
+      menuBtn.addEventListener('click',e=>{e.stopPropagation();open();});
+      close?.addEventListener('click',shut);
+      mobile.querySelector('.mobile-dim')?.addEventListener('click',shut);
+      document.addEventListener('keydown',e=>{if(e.key==='Escape') shut();});
+    })();
   </script>
 </body>
 </html>
