@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Connexion — RSL Supabase</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 400px; margin: 60px auto; text-align: center; }
+    input, button { width: 100%; margin: 6px 0; padding: 10px; font-size: 16px; }
+    #msg { margin-top: 10px; opacity: .8; font-size: .9em; }
+  </style>
+</head>
+<body>
+  <h1>Connexion / Inscription</h1>
+
+  <h3>Créer un compte</h3>
+  <input id="signupEmail" type="email" placeholder="Email" required>
+  <input id="signupPass" type="password" placeholder="Mot de passe" required>
+  <button id="signupBtn">S’inscrire</button>
+
+  <h3>Se connecter</h3>
+  <input id="loginEmail" type="email" placeholder="Email" required>
+  <input id="loginPass" type="password" placeholder="Mot de passe" required>
+  <button id="loginBtn">Connexion</button>
+
+  <p id="msg"></p>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/env.js"></script>
+  <script>
+    const supabase = window.supabase.createClient(window.env.SUPABASE_URL, window.env.SUPABASE_ANON);
+    const msg = document.getElementById('msg');
+
+    document.getElementById('signupBtn').onclick = async () => {
+      const email = signupEmail.value, password = signupPass.value;
+      const { error } = await supabase.auth.signUp({ email, password });
+      msg.textContent = error ? "❌ " + error.message : "✅ Compte créé, vérifie ton e-mail.";
+    };
+
+    document.getElementById('loginBtn').onclick = async () => {
+      const email = loginEmail.value, password = loginPass.value;
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) return msg.textContent = "❌ " + error.message;
+      msg.textContent = "✅ Connecté ! Redirection...";
+      setTimeout(() => location.href = "/membre", 800);
+    };
+  </script>
+</body>
+</html>

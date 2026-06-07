@@ -1,0 +1,1308 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Shop — Romandie Scooter League</title>
+
+  <!-- Fonts + styles globaux -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/common.css"/>
+
+  <!-- Supabase + scripts -->
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <script defer src="js/env.js"></script>
+  <script defer src="js/auth.js"></script>
+  <script defer src="js/site.js"></script>
+
+  <style>
+    :root{
+      --rsl-bg:#020617;
+      --rsl-fg:#e5e7eb;
+      --rsl-muted:#9ca3af;
+      --rsl-card:rgba(15,23,42,.96);
+      --rsl-card-soft:rgba(15,23,42,.90);
+      --rsl-border:rgba(148,163,184,.45);
+      --rsl-accent:#22c55e;
+      --rsl-accent-soft:rgba(34,197,94,.14);
+      --rsl-shadow:0 24px 70px rgba(0,0,0,.55);
+      --rsl-shadow-soft:0 18px 44px rgba(15,23,42,.85);
+    }
+
+    body.theme-light{
+      --rsl-bg:#f3f4f6;
+      --rsl-fg:#0f172a;
+      --rsl-muted:#6b7280;
+      --rsl-card:#ffffff;
+      --rsl-card-soft:#f9fafb;
+      --rsl-border:rgba(148,163,184,.35);
+      --rsl-accent:#16a34a;
+      --rsl-accent-soft:rgba(22,163,74,.12);
+      --rsl-shadow:0 24px 60px rgba(15,23,42,.16);
+      --rsl-shadow-soft:0 18px 44px rgba(15,23,42,.12);
+    }
+
+    *,:before,:after{ box-sizing:border-box; }
+
+    html,body{
+      height:100%;
+      margin:0;
+      background:transparent!important;
+      display:flex;
+      flex-direction:column;
+      color:var(--rsl-fg);
+      font-family:"Outfit",system-ui,-apple-system,Segoe UI,Roboto,Arial;
+      overflow-x:hidden;
+    }
+    main{ flex:1; }
+
+    /* ======= Fond vidéo ======= */
+    .site-bg-video{
+      position:fixed; inset:0;
+      width:100%; height:100%;
+      object-fit:cover;
+      z-index:-2;
+      background:#000;
+    }
+    .site-bg-dim{
+      position:fixed; inset:0;
+      z-index:-1;
+      background:linear-gradient(180deg,rgba(0,0,0,.55),rgba(0,0,0,.90));
+      transition:background .25s ease;
+    }
+    body.theme-light .site-bg-dim{
+      background:linear-gradient(180deg,rgba(249,250,251,.90),rgba(15,23,42,.85));
+    }
+
+    /* ======= NAVBAR (IDENTIQUE INDEX) ======= */
+    nav.nav{
+      background:rgba(0,0,0,.65);
+      backdrop-filter:blur(10px);
+      position:sticky; top:0; z-index:100;
+      transition:background .25s ease, border-color .25s ease, box-shadow .25s ease;
+      border-bottom:1px solid rgba(15,23,42,.8);
+    }
+    nav.nav .container{ max-width:1320px; margin:0 auto; padding:10px 18px; }
+    nav.nav .row{ display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+
+    body.theme-light nav.nav{
+      background:rgba(248,250,252,.96);
+      border-bottom:1px solid rgba(148,163,184,.5);
+      box-shadow:0 10px 30px rgba(15,23,42,.06);
+    }
+
+    .brand{
+      display:flex; align-items:center; gap:10px;
+      color:inherit; text-decoration:none;
+      min-width:fit-content;
+    }
+    .brand img{
+      height:42px; border-radius:10px;
+      display:block;
+      background:#fff;
+      padding:3px;
+      box-shadow:0 10px 28px rgba(0,0,0,.35);
+    }
+    .brand span{
+      font-weight:800;
+      letter-spacing:.2px;
+      font-size:16px;
+      white-space:nowrap;
+    }
+
+    nav.nav ul{
+      display:flex; align-items:center; gap:20px;
+      padding:0; margin:0;
+      list-style:none;
+    }
+    nav.nav ul li a{
+      font-weight:600;
+      color:var(--rsl-fg);
+      font-size:15px;
+      letter-spacing:.02em;
+      white-space:nowrap;
+      text-decoration:none;
+      opacity:.9;
+      transition:.2s ease;
+    }
+    nav.nav ul li a:hover{
+      color:var(--rsl-accent);
+      opacity:1;
+    }
+
+    .cta{ display:flex; align-items:center; gap:10px; }
+
+    .btn{
+      border-radius:999px;
+      padding:8px 14px;
+      font-size:14px;
+      font-weight:700;
+      border:1px solid rgba(148,163,184,.5);
+      text-decoration:none;
+      cursor:pointer;
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      background:rgba(15,23,42,.9);
+      color:#f9fafb;
+      transition:.2s ease;
+      line-height:1;
+      white-space:nowrap;
+    }
+    body.theme-light .btn{
+      background:#0f172a;
+      color:#f9fafb;
+      border-color:#0f172a;
+    }
+    .btn.green{
+      background:var(--rsl-accent);
+      color:#052e16;
+      border-color:transparent;
+      box-shadow:0 10px 26px rgba(22,163,74,.45);
+    }
+    .btn:hover{ transform:translateY(-1px); filter:brightness(1.05); }
+
+    .nav-avatar{
+      width:34px; height:34px;
+      border-radius:999px;
+      object-fit:cover;
+      border:2px solid var(--rsl-accent);
+      box-shadow:0 0 10px rgba(34,197,94,.5);
+      display:block;
+    }
+
+    .theme-toggle{
+      border-radius:999px;
+      border:1px solid rgba(148,163,184,.6);
+      background:rgba(15,23,42,.9);
+      color:#e5e7eb;
+      width:34px; height:34px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      font-size:17px;
+      cursor:pointer;
+      padding:0;
+      transition:.2s ease;
+      line-height:1;
+    }
+    .theme-toggle:hover{ transform:translateY(-1px); filter:brightness(1.08); }
+    body.theme-light .theme-toggle{
+      background:#ffffff;
+      color:#0f172a;
+      border-color:rgba(148,163,184,.7);
+    }
+
+    #menuBtn{
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding:7px 10px;
+      font-size:18px;
+      line-height:1;
+      border-radius:10px;
+      border:1px solid rgba(148,163,184,.4);
+      background:rgba(15,23,42,.9);
+      color:#e5e7eb;
+      cursor:pointer;
+      transition:.2s ease;
+    }
+    #menuBtn:hover { filter:brightness(1.1); }
+    body.theme-light #menuBtn{
+      background:#0f172a;
+      color:#f9fafb;
+      border-color:#0f172a;
+    }
+
+    /* ===== Menu mobile ===== */
+    .mobile-sheet{ position:fixed; inset:0; display:none; z-index:120; }
+    .mobile-sheet.open{ display:block; }
+    .mobile-dim{ position:absolute; inset:0; background:rgba(0,0,0,.55); }
+    .mobile-panel{
+      position:absolute; top:0; right:0; height:100%;
+      width:82vw; max-width:360px;
+      background:var(--rsl-card);
+      padding:22px 18px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      border-left:1px solid rgba(15,23,42,.8);
+      box-shadow:-18px 0 50px rgba(0,0,0,.55);
+    }
+    .mobile-panel a{
+      color:var(--rsl-fg);
+      text-decoration:none;
+      font-weight:700;
+      padding:6px 0;
+      font-size:14px;
+    }
+    .mobile-panel hr{
+      border:0;
+      height:1px;
+      background:rgba(148,163,184,.4);
+      margin:10px 0;
+    }
+
+    @media (max-width:990px){
+      nav.nav ul{ display:none !important; }
+      #btnCart, .btn.green{ display:none !important; }
+      #menuBtn{ display:inline-flex; }
+      .coach-fab{ display:none; }
+    }
+
+    /* ===== SHOP LAYOUT (recalibré comme index) ===== */
+    .wrap{
+      max-width:1200px;
+      margin:0 auto;
+      padding:0 16px 44px;
+    }
+
+    .hero-wrap{
+      max-width:1200px;
+      margin:32px auto 18px;
+      padding:0 16px;
+    }
+
+    .intro-card{
+      background:var(--rsl-card);
+      border-radius:22px;
+      border:1px solid var(--rsl-border);
+      box-shadow:var(--rsl-shadow);
+      padding:22px 22px 22px;
+      position:relative;
+      overflow:hidden;
+      max-width:100%;
+    }
+    .intro-card:before{
+      content:"";
+      position:absolute; inset:-40% -30%;
+      background:
+        radial-gradient(circle at 20% 25%, var(--rsl-accent-soft), transparent 55%),
+        radial-gradient(circle at 85% 20%, rgba(34,197,94,.10), transparent 60%),
+        radial-gradient(circle at 60% 90%, rgba(99,102,241,.10), transparent 62%);
+      pointer-events:none;
+      z-index:0;
+    }
+    .intro-inner{ position:relative; z-index:1; }
+
+    .top-row{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:18px;
+      flex-wrap:wrap;
+    }
+    .brand-block{
+      display:flex;
+      gap:14px;
+      align-items:center;
+      min-width:min(560px,100%);
+    }
+    .brand-logo-big{
+      width:60px; height:60px;
+      border-radius:18px;
+      background:#fff;
+      padding:7px;
+      box-shadow:0 18px 44px rgba(15,23,42,.75);
+      flex:0 0 auto;
+    }
+    .brand-logo-big img{
+      width:100%; height:100%;
+      object-fit:contain;
+      display:block;
+    }
+    .brand-text-big h1{
+      margin:0;
+      font-size:clamp(24px,4vw,30px);
+      font-weight:800;
+      letter-spacing:.02em;
+      color:var(--rsl-fg);
+    }
+    .brand-text-big p{
+      margin:4px 0 0;
+      font-size:13px;
+      color:var(--rsl-muted);
+      max-width:70ch;
+      line-height:1.55;
+    }
+
+    .badge-launch{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:6px 12px;
+      border-radius:999px;
+      background:rgba(15,23,42,.95);
+      border:1px solid rgba(148,163,184,.7);
+      font-size:11px;
+      text-transform:uppercase;
+      letter-spacing:.14em;
+      color:var(--rsl-muted);
+      white-space:nowrap;
+    }
+    .badge-launch span{
+      width:7px;height:7px;
+      border-radius:999px;
+      background:var(--rsl-accent);
+      box-shadow:0 0 10px rgba(34,197,94,.9);
+    }
+    body.theme-light .badge-launch{ background:#f9fafb; }
+
+    .intro-main{
+      margin-top:16px;
+      display:grid;
+      grid-template-columns:minmax(0,1.55fr) minmax(0,1fr);
+      gap:22px;
+      align-items:stretch;
+    }
+    @media(max-width:900px){
+      .intro-main{ grid-template-columns:1fr; }
+    }
+
+    .intro-text{
+      font-size:14px;
+      line-height:1.7;
+      color:var(--rsl-fg);
+    }
+    .intro-text p{ margin:0 0 10px; }
+    .intro-text b{ color:var(--rsl-fg); }
+
+    .cta-block{
+      background:var(--rsl-card-soft);
+      border-radius:16px;
+      border:1px solid var(--rsl-border);
+      padding:16px 16px 18px;
+      box-shadow:var(--rsl-shadow-soft);
+      display:flex;
+      flex-direction:column;
+      height:100%;
+    }
+
+    .cta-title{
+      font-size:15px;
+      font-weight:800;
+      margin:0 0 6px;
+      color:var(--rsl-fg);
+    }
+    .cta-sub{
+      font-size:13px;
+      color:var(--rsl-muted);
+      margin:0 0 12px;
+      line-height:1.55;
+    }
+
+    .btn-main, .btn-ghost{
+      display:block;
+      width:100%;
+      text-align:center;
+      border-radius:12px;
+      font-size:15px;
+      font-weight:800;
+      padding:12px 16px;
+      cursor:pointer;
+      text-decoration:none;
+      margin-bottom:10px;
+      border:0;
+      line-height:1.1;
+    }
+    .btn-main{
+      background:linear-gradient(180deg,var(--rsl-accent),#16a34a);
+      color:#052e16;
+      box-shadow:0 12px 26px rgba(22,163,74,.5);
+    }
+    .btn-main:hover{ filter:brightness(1.05); }
+    .btn-ghost{
+      background:rgba(15,23,42,.85);
+      border:1px solid rgba(148,163,184,.6);
+      color:#e5e7eb;
+    }
+    body.theme-light .btn-ghost{
+      background:#ffffff;
+      color:#0f172a;
+      border-color:rgba(148,163,184,.7);
+    }
+    .btn-ghost:hover{ filter:brightness(1.03); }
+
+    /* ===== Bandeau info ===== */
+    .shop-alert{
+      margin-top:12px;
+      padding:12px 14px;
+      border-radius:14px;
+      background:var(--rsl-card-soft);
+      border:1px solid rgba(250,204,21,.35);
+      display:flex;
+      align-items:flex-start;
+      gap:10px;
+      font-size:13px;
+      color:var(--rsl-fg);
+      box-shadow:var(--rsl-shadow-soft);
+    }
+    body.theme-light .shop-alert{
+      border-color:rgba(250,204,21,.55);
+    }
+    .shop-alert-icon{ font-size:18px; line-height:1; margin-top:2px; }
+    .shop-alert strong{ font-weight:800; }
+    .shop-alert-close{
+      margin-left:auto;
+      border:none;
+      background:transparent;
+      color:rgba(250,204,21,.95);
+      font-size:14px;
+      cursor:pointer;
+      padding:0 2px;
+      font-weight:900;
+    }
+    body.theme-light .shop-alert-close{ color:#a16207; }
+
+    /* ===== Section produits (comme overview) ===== */
+    .section-title{
+      margin:18px 0 10px;
+      font-size:13px;
+      text-transform:uppercase;
+      letter-spacing:.18em;
+      color:var(--rsl-muted);
+    }
+
+    .products-grid{
+      display:grid;
+      grid-template-columns:repeat(12,minmax(0,1fr));
+      gap:16px;
+    }
+    @media(max-width:1100px){
+      .products-grid{ grid-template-columns:repeat(8,minmax(0,1fr)); }
+    }
+    @media(max-width:780px){
+      .products-grid{ grid-template-columns:repeat(4,minmax(0,1fr)); }
+    }
+
+    .product-card{ grid-column:span 3; }
+    @media(max-width:1100px){ .product-card{ grid-column:span 4; } }
+    @media(max-width:780px){ .product-card{ grid-column:span 4; } }
+
+    .product-card{
+      background:var(--rsl-card-soft);
+      border-radius:16px;
+      border:1px solid var(--rsl-border);
+      padding:14px 14px 16px;
+      box-shadow:var(--rsl-shadow-soft);
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+      font-size:13px;
+      line-height:1.55;
+      transition:.18s ease;
+      min-height: 100%;
+    }
+    .product-card:hover{
+      transform:translateY(-2px);
+      filter:brightness(1.02);
+    }
+
+    /* Image centrée */
+    .product-img{
+      position:relative;
+      width:100%;
+      aspect-ratio:1/1;
+      border-radius:14px;
+      overflow:hidden;
+      background:rgba(2,6,23,.25);
+      border:1px solid rgba(148,163,184,.25);
+      padding:0 !important;
+    }
+    body.theme-light .product-img{
+      background:#f3f4f6;
+      border-color:rgba(148,163,184,.25);
+    }
+    .product-img img{
+      position:absolute;
+      left:50%; top:50%;
+      transform:translate(-50%,-50%);
+      max-width:90%;
+      max-height:90%;
+      width:auto !important;
+      height:auto !important;
+      display:block;
+    }
+
+    .product-title{
+      font-size:15px;
+      font-weight:800;
+      margin-top:2px;
+      color:var(--rsl-fg);
+      text-align:center;
+    }
+    .product-meta{
+      font-size:13px;
+      color:var(--rsl-muted);
+      text-align:center;
+    }
+    .product-price{
+      font-size:16px;
+      font-weight:900;
+      margin-top:2px;
+      color:var(--rsl-fg);
+      text-align:center;
+    }
+    .product-price span{
+      display:block;
+      margin-top:2px;
+      font-size:12px;
+      font-weight:800;
+      color:var(--rsl-muted);
+    }
+
+    .product-actions{
+      margin-top:8px;
+      display:flex;
+      justify-content:center;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+    .product-btn{
+      display:inline-flex;
+      justify-content:center;
+      align-items:center;
+      padding:10px 12px;
+      border-radius:12px;
+      font-size:13px;
+      font-weight:900;
+      text-decoration:none;
+      background:linear-gradient(180deg,var(--rsl-accent),#16a34a);
+      color:#052e16;
+      box-shadow:0 12px 26px rgba(22,163,74,.35);
+      cursor:pointer;
+      border:0;
+      min-width:160px;
+      line-height:1;
+    }
+    .product-btn:hover{ filter:brightness(1.05); }
+
+    .badge-small{
+      align-self:center;
+      margin-top:4px;
+      padding:4px 10px;
+      font-size:11px;
+      border-radius:999px;
+      border:1px solid rgba(148,163,184,.45);
+      color:var(--rsl-muted);
+      background:rgba(15,23,42,.55);
+      font-weight:900;
+    }
+    body.theme-light .badge-small{
+      background:#ffffff;
+      color:#334155;
+      border-color:rgba(148,163,184,.35);
+    }
+
+    .product-disclaimer{
+      margin:14px auto 0;
+      font-size:12px;
+      color:var(--rsl-muted);
+      background:var(--rsl-card-soft);
+      display:block;
+      width:max-content;
+      max-width:100%;
+      padding:10px 12px;
+      border-radius:14px;
+      border:1px solid rgba(148,163,184,.25);
+      box-shadow:var(--rsl-shadow-soft);
+      text-align:center;
+    }
+
+    /* ===== Bloc tailles (style cartes index) ===== */
+    .size-block{
+      margin:26px auto 0;
+      padding:18px 16px 18px;
+      border-radius:16px;
+      border:1px solid var(--rsl-border);
+      background:var(--rsl-card-soft);
+      max-width:980px;
+      box-shadow:var(--rsl-shadow-soft);
+    }
+    .size-block h2{
+      margin:0 0 10px;
+      font-size:18px;
+      font-weight:900;
+      color:var(--rsl-fg);
+      text-align:center;
+    }
+    .size-block p{
+      font-size:14px;
+      margin:6px auto 10px;
+      color:var(--rsl-muted);
+      line-height:1.65;
+      max-width:860px;
+      text-align:center;
+    }
+    .size-table{
+      width:100%;
+      max-width:860px;
+      margin:12px auto 10px;
+      border-collapse:separate;
+      border-spacing:0;
+      overflow:hidden;
+      border-radius:14px;
+      border:1px solid rgba(148,163,184,.35);
+      font-size:13px;
+      background:rgba(2,6,23,.35);
+    }
+    body.theme-light .size-table{ background:#fff; }
+    .size-table th,.size-table td{
+      text-align:left;
+      padding:10px 12px;
+      color:var(--rsl-fg);
+    }
+    body.theme-light .size-table th,
+    body.theme-light .size-table td{ color:#0f172a; }
+    .size-table th{
+      background:rgba(2,6,23,.55);
+      border-bottom:1px solid rgba(148,163,184,.25);
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      font-size:12px;
+      color:rgba(226,232,240,.75);
+      font-weight:900;
+    }
+    body.theme-light .size-table th{
+      background:#f8fafc;
+      color:#64748b;
+      border-bottom-color:rgba(148,163,184,.35);
+    }
+    .size-table tr:nth-child(even) td{ background:rgba(2,6,23,.18); }
+    body.theme-light .size-table tr:nth-child(even) td{ background:#f3f4f6; }
+
+    .size-block h3{
+      margin:14px 0 6px;
+      text-align:center;
+      font-size:13px;
+      text-transform:uppercase;
+      letter-spacing:.12em;
+      color:var(--rsl-muted);
+      font-weight:900;
+    }
+    .size-block ul{
+      max-width:760px;
+      margin:8px auto 0;
+      padding-left:18px;
+      color:var(--rsl-fg);
+      line-height:1.7;
+      font-size:14px;
+    }
+    body.theme-light .size-block ul{ color:#0f172a; }
+    .size-block li{ color:inherit; }
+
+    /* Footer */
+    .footer-mini .copy{
+      text-align:center;
+      color:var(--rsl-muted);
+      font-size:13px;
+      padding:20px 0 24px;
+      margin:0;
+      border-top:1px solid rgba(15,23,42,.7);
+      background:rgba(15,23,42,.85);
+    }
+    body.theme-light .footer-mini .copy{
+      background:rgba(248,250,252,.96);
+      border-top-color:rgba(148,163,184,.5);
+    }
+
+    /* FAB coach */
+    .coach-fab{
+      position:fixed; right:16px; bottom:16px; z-index:80;
+      display:inline-flex; align-items:center; gap:8px;
+      padding:10px 13px; border-radius:999px;
+      background:linear-gradient(180deg,var(--rsl-accent),#16a34a);
+      color:#052e16; font-weight:800; text-decoration:none;
+      box-shadow:0 12px 28px rgba(22,163,74,.5), inset 0 1px 0 rgba(255,255,255,.18);
+      border:0;
+      font-size:13px;
+      line-height:1;
+    }
+    .coach-fab:hover{ filter:brightness(1.05); transform:translateY(-1px); transition:.15s ease; }
+    @media (max-width:990px){ .coach-fab{ display:none; } }
+
+    /* Modal */
+    .product-modal{
+      position:fixed; inset:0;
+      display:none;
+      align-items:center; justify-content:center;
+      z-index:1500;
+    }
+    .product-modal.open{ display:flex; }
+    .product-modal-backdrop{ position:absolute; inset:0; background:rgba(0,0,0,.7); }
+    .product-modal-panel{
+      position:relative;
+      max-width:560px;
+      width:92vw;
+      max-height:82vh;
+      background:var(--rsl-card);
+      border-radius:20px;
+      border:1px solid var(--rsl-border);
+      box-shadow:0 24px 70px rgba(0,0,0,.55);
+      padding:18px 18px 20px;
+      overflow:auto;
+      z-index:1;
+      color:var(--rsl-fg);
+    }
+    .product-modal-close{
+      position:absolute; top:10px; right:12px;
+      border:none; background:transparent;
+      color:var(--rsl-muted);
+      font-size:22px; cursor:pointer;
+      font-weight:900;
+    }
+    .product-modal-content h2{
+      margin:0 0 6px;
+      font-size:20px;
+      font-weight:900;
+      color:var(--rsl-fg);
+      text-align:center;
+    }
+    .product-modal-content h3{
+      margin:12px 0 6px;
+      font-size:12px;
+      text-transform:uppercase;
+      letter-spacing:.12em;
+      color:var(--rsl-muted);
+      font-weight:900;
+      text-align:center;
+    }
+    .product-modal-content p{
+      font-size:14px;
+      line-height:1.65;
+      color:var(--rsl-fg);
+      margin:6px 0 10px;
+      text-align:center;
+    }
+    .product-modal-content ul{
+      padding-left:18px;
+      margin:6px auto 12px;
+      font-size:14px;
+      color:var(--rsl-fg);
+      line-height:1.7;
+      max-width:480px;
+    }
+
+    @media(max-width:480px){
+      .hero-wrap{ padding:0 12px; }
+      .intro-card{ padding:18px 14px 18px; border-radius:16px; }
+      .cta-block{ padding:14px 12px 16px; border-radius:14px; }
+      .btn-main,.btn-ghost{ padding:12px 14px; font-size:14px; }
+      .brand-block{ min-width:100%; }
+      .badge-launch{ width:100%; justify-content:center; }
+      .product-btn{ min-width:100%; }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Fond vidéo -->
+  <video class="site-bg-video" autoplay muted loop playsinline id="rslBg" poster="images/hero-poster.jpg"></video>
+  <div class="site-bg-dim" aria-hidden="true"></div>
+
+  <!-- NAV -->
+  <nav class="nav">
+    <div class="container">
+      <div class="row">
+        <a class="brand" href="index.html">
+          <img src="images/logo_rsl.png" alt="Logo RSL"/>
+          <span>RSL — Romandie Scooter League</span>
+        </a>
+
+        <ul>
+          <li><a href="cours.html">Cours</a></li>
+          <li><a href="formation.html">Formation RSL</a></li>
+          <li><a href="ou_rider.html">Où rider ?</a></li>
+          <li><a href="evenements.html">Événements</a></li>
+          <li><a href="disciplines.html">Disciplines</a></li>
+          <li><a href="shop-rsl.html" aria-current="page">Shop</a></li>
+          <li><a href="comite.html">Comité</a></li>
+          <li><a href="contact.html">Contact</a></li>
+        </ul>
+
+        <div class="cta">
+          <button id="themeToggle" class="theme-toggle" aria-label="Changer le thème">🌙</button>
+
+          <a class="btn" id="btnLogin" href="access.html">Login</a>
+          <a class="btn" id="btnAccount" href="compte.html" style="display:none">Mon compte</a>
+
+          <a href="compte.html" aria-label="Mon compte">
+            <img id="navAvatar" class="nav-avatar" src="images/logo_rsl.png" alt="Avatar" style="display:none;">
+          </a>
+
+          <a class="btn" id="btnCart" href="panier/panier.html">Panier</a>
+          <a class="btn green" href="membres.html">Devenir membre</a>
+          <button id="menuBtn" aria-label="Menu">☰</button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- MENU MOBILE -->
+  <div class="mobile-sheet" id="mobileMenu" aria-hidden="true">
+    <div class="mobile-dim"></div>
+    <nav class="mobile-panel">
+      <a href="index.html">Accueil</a>
+      <a href="cours.html">Cours</a>
+      <a href="membres.html">Devenir membre</a>
+      <a href="formation.html">Formation RSL</a>
+      <a href="disciplines.html">Disciplines</a>
+      <a href="ou_rider.html">Où rider ?</a>
+      <a href="evenements.html">Événements</a>
+      <a href="game.html">Games</a>
+      <a href="shop-rsl.html" aria-current="page">Shop</a>
+      <a href="comite.html">Comité</a>
+      <a href="contact.html">Contact</a>
+      <a href="conditions.html">Conditions générales</a>
+      <a href="access.html">Se connecter</a>
+      <a href="compte.html">Mon compte</a>
+      <a href="coach.html">👨‍🏫 Je suis coach</a>
+    </nav>
+  </div>
+
+  <main>
+
+    <!-- HERO SHOP (calibré comme index) -->
+    <div class="hero-wrap">
+      <section class="intro-card">
+        <div class="intro-inner">
+          <div class="top-row">
+            <div class="brand-block">
+              <div class="brand-logo-big">
+                <img src="images/logo_rsl.png" alt="RSL">
+              </div>
+              <div class="brand-text-big">
+                <h1>Shop RSL</h1>
+                <p>La sélection simple et efficace de la RSL : trottinettes <b>Versatyl, Ethic &amp; S2S</b>, textile officiel, et protections <b>ALK13</b>.</p>
+              </div>
+            </div>
+
+            <div>
+              <div class="badge-launch">
+                <span></span> Catalogue • Commandes dès Janvier 2026
+              </div>
+            </div>
+          </div>
+
+          <div class="intro-main">
+            <div class="intro-text">
+              <p>
+                Ici tu retrouves les produits recommandés par la ligue : <b>setup</b>, <b>protections</b> et <b>merch</b>.
+                Les commandes en ligne arrivent bientôt — en attendant, tu peux déjà voir les prix, les tailles et les infos.
+              </p>
+
+              <div class="shop-alert" id="shopAlert">
+                <div class="shop-alert-icon">🚧</div>
+                <div>
+                  <strong>Shop en construction</strong><br>
+                  Les commandes en ligne seront possibles <b>dès janvier 2026</b>. Catalogue visible ci-dessous.
+                </div>
+                <button class="shop-alert-close" id="shopAlertClose" aria-label="Fermer">OK</button>
+              </div>
+            </div>
+
+            <div class="cta-block">
+              <h2 class="cta-title">Accès rapide</h2>
+              <p class="cta-sub">Commence par les cours, l’adhésion, ou déroule le catalogue.</p>
+
+              <a href="cours.html" class="btn-main">🎓 Voir les cours RSL</a>
+              <a href="membres.html" class="btn-ghost">⭐ Devenir membre</a>
+              <a href="#produits" class="btn-ghost">🛒 Voir les produits</a>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- PRODUITS -->
+    <section class="wrap" id="produits">
+      <p class="section-title">Produits RSL</p>
+
+      <div class="products-grid">
+
+        <!-- 1) T-shirt -->
+        <article class="product-card">
+          <div class="product-img">
+            <img src="https://jynxifufaauoxwzjapzq.supabase.co/storage/v1/object/public/Produit%20Shop%20rsl/Copie%20de%20Copie%20de%20Copie%20de%20Sans%20titre%20(160%20x%20160%20px)%20(1600%20x%201600%20px)%20(3).png" alt="T-shirt officiel RSL">
+          </div>
+          <div class="product-title">T-shirt officiel RSL</div>
+          <div class="product-meta">Coupe confortable, logo RSL, parfait pour rider ou représenter la ligue.</div>
+          <div class="product-price">CHF 35.– <span>merch officiel</span></div>
+          <div class="product-actions"><a class="product-btn js-open-product" href="#">Voir / commander</a></div>
+          <div class="badge-small">Tailles enfant &amp; adulte</div>
+          <div class="product-popup-content" style="display:none">
+            <div class="product-modal-content">
+              <h2>T-shirt officiel RSL</h2>
+              <h3>Détails</h3>
+              <ul><li>Coton confortable</li><li>Tailles enfant &amp; adulte</li><li>Couleurs selon stock</li></ul>
+              <p><b>Prix :</b> CHF 35.–</p>
+            </div>
+          </div>
+        </article>
+
+        <!-- 2) Casque -->
+        <article class="product-card">
+          <div class="product-img">
+            <img src="https://jynxifufaauoxwzjapzq.supabase.co/storage/v1/object/public/Produit%20Shop%20rsl/alk13%20casque.png" alt="Casque ALK13 Krypton">
+          </div>
+          <div class="product-title">ALK13 Krypton – Casque</div>
+          <div class="product-meta">Coque ABS + mousse EPS. Tailles <b>S-M</b> et <b>L-XL</b>.</div>
+          <div class="product-price">CHF 48.– <span>S-M / L-XL</span></div>
+          <div class="product-actions"><a class="product-btn js-open-product" href="#">Voir / commander</a></div>
+          <div class="badge-small">Protection tête ALK13</div>
+          <div class="product-popup-content" style="display:none">
+            <div class="product-modal-content">
+              <h2>ALK13 Krypton – Casque</h2>
+              <h3>Points forts</h3>
+              <ul><li>Coque ABS + mousse EPS</li><li>Mousses + sangles pour ajuster</li><li>Tailles : S-M / L-XL</li></ul>
+              <p><b>Prix :</b> CHF 48.–</p>
+            </div>
+          </div>
+        </article>
+
+        <!-- 3) Hoodie -->
+        <article class="product-card">
+          <div class="product-img">
+            <img src="https://jynxifufaauoxwzjapzq.supabase.co/storage/v1/object/public/Produit%20Shop%20rsl/pull-rsl.png" alt="Sweat officiel RSL">
+          </div>
+          <div class="product-title">Sweat à capuche officiel RSL</div>
+          <div class="product-meta">Hoodie chaud et confortable, logo RSL bien visible.</div>
+          <div class="product-price">CHF 69.– <span>merch premium</span></div>
+          <div class="product-actions"><a class="product-btn js-open-product" href="#">Voir / commander</a></div>
+          <div class="badge-small">Inclus Premium</div>
+          <div class="product-popup-content" style="display:none">
+            <div class="product-modal-content">
+              <h2>Sweat à capuche officiel RSL</h2>
+              <h3>Détails</h3>
+              <ul><li>Molleton intérieur doux</li><li>Capuche + poche ventrale</li><li>Tailles enfant &amp; adulte</li></ul>
+              <p><b>Prix :</b> CHF 69.–</p>
+            </div>
+          </div>
+        </article>
+
+        <!-- 4) Protections -->
+        <article class="product-card">
+          <div class="product-img">
+            <img src="https://jynxifufaauoxwzjapzq.supabase.co/storage/v1/object/public/Produit%20Shop%20rsl/Alk13%20Set%20protection%20(M).jpg" alt="Set protections ALK13">
+          </div>
+          <div class="product-title">Set protections ALK13</div>
+          <div class="product-meta">Genoux + coudes. Tailles <b>S / M / L / XL</b>.</div>
+          <div class="product-price">CHF 49.– <span>pack complet</span></div>
+          <div class="product-actions"><a class="product-btn js-open-product" href="#">Voir / commander</a></div>
+          <div class="badge-small">Recommandé pour les cours</div>
+          <div class="product-popup-content" style="display:none">
+            <div class="product-modal-content">
+              <h2>Set protections ALK13</h2>
+              <h3>Contenu</h3>
+              <ul><li>Genouillères coque rigide</li><li>Coudières assorties</li><li>Tailles : S / M / L / XL</li></ul>
+              <p><b>Prix :</b> CHF 49.–</p>
+            </div>
+          </div>
+        </article>
+
+        <!-- 5) Bloody Mary -->
+        <article class="product-card">
+          <div class="product-img">
+            <img src="https://jynxifufaauoxwzjapzq.supabase.co/storage/v1/object/public/Produit%20Shop%20rsl/Bloody%20Mary%20V2%20Trottinette%20Freestyle%20(2).png" alt="Versatyl Bloody Mary V2">
+          </div>
+          <div class="product-title">Versatyl Bloody Mary V2</div>
+          <div class="product-meta">Setup <b>park</b> léger, compression IHC, roues 110 alu.</div>
+          <div class="product-price">CHF 139.95 <span>83,5 cm • ~2955 g</span></div>
+          <div class="product-actions"><a class="product-btn js-open-product" href="#">Voir / commander</a></div>
+          <div class="badge-small">Park • Ultra léger</div>
+          <div class="product-popup-content" style="display:none">
+            <div class="product-modal-content">
+              <h2>Versatyl Bloody Mary V2</h2>
+              <h3>Caractéristiques</h3>
+              <ul><li>Compression IHC</li><li>Hauteur totale : 83,5 cm</li><li>Poids : ~2955 g</li></ul>
+              <p><b>Prix :</b> CHF 139.95</p>
+            </div>
+          </div>
+        </article>
+
+        <!-- 6) S2S -->
+        <article class="product-card">
+          <div class="product-img">
+            <img src="https://jynxifufaauoxwzjapzq.supabase.co/storage/v1/object/public/Produit%20Shop%20rsl/s2s.png" alt="Trottinette S2S Edition">
+          </div>
+          <div class="product-title">Trottinette S2S Edition</div>
+          <div class="product-meta">Signature <b>Scoot2Street</b>, ultra légère, progression rapide.</div>
+          <div class="product-price">CHF 179.– <span>~2,9 kg • IHC</span></div>
+          <div class="product-actions"><a class="product-btn js-open-product" href="#">Voir / commander</a></div>
+          <div class="badge-small">Recommandé RSL</div>
+          <div class="product-popup-content" style="display:none">
+            <div class="product-modal-content">
+              <h2>S2S Edition</h2>
+              <h3>Caractéristiques</h3>
+              <ul><li>Ultra légère ~2,9 kg</li><li>Roues 110 mm alu</li><li>Compression IHC</li></ul>
+              <p><b>Prix :</b> CHF 179.–</p>
+            </div>
+          </div>
+        </article>
+
+        <!-- 7) Ethic Pandora -->
+        <article class="product-card">
+          <div class="product-img">
+            <img src="https://jynxifufaauoxwzjapzq.supabase.co/storage/v1/object/public/Produit%20Shop%20rsl/ethic.png" alt="Ethic Pandora">
+          </div>
+          <div class="product-title">Ethic Pandora</div>
+          <div class="product-meta">Setup <b>haut de gamme</b> park &amp; street. Hauteurs <b>85</b> / <b>90 cm</b>.</div>
+          <div class="product-price">CHF 239.– <span>85 / 90 cm</span></div>
+          <div class="product-actions"><a class="product-btn js-open-product" href="#">Voir / commander</a></div>
+          <div class="badge-small">Intermédiaire / avancé</div>
+          <div class="product-popup-content" style="display:none">
+            <div class="product-modal-content">
+              <h2>Ethic Pandora</h2>
+              <h3>Détails</h3>
+              <ul><li>Park &amp; street intensif</li><li>Noir / Brushed</li><li>85 cm et 90 cm</li></ul>
+              <p><b>Prix :</b> CHF 239.–</p>
+            </div>
+          </div>
+        </article>
+
+      </div>
+
+      <p class="product-disclaimer">
+        Note : de petites différences (couleurs, détails, composants) peuvent exister par rapport aux photos.
+      </p>
+
+      <div class="size-block">
+        <h2>Choisir la bonne taille de trottinette</h2>
+        <p>Repère général selon ta taille. La hauteur totale est mesurée du sol au sommet du guidon.</p>
+
+        <table class="size-table">
+          <thead>
+            <tr><th>Hauteur de l’utilisateur</th><th>Hauteur totale recommandée</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>moins de 100 cm</td><td>65 – 69 cm</td></tr>
+            <tr><td>100 – 110 cm</td><td>69 – 72 cm</td></tr>
+            <tr><td>110 – 120 cm</td><td>72 – 75 cm</td></tr>
+            <tr><td>120 – 130 cm</td><td>75 – 77 cm</td></tr>
+            <tr><td>130 – 140 cm</td><td>77 – 80 cm</td></tr>
+            <tr><td>140 – 150 cm</td><td>80 – 84 cm</td></tr>
+            <tr><td>150 – 160 cm</td><td>84 – 88 cm</td></tr>
+            <tr><td>160 – 170 cm</td><td>88 – 94 cm</td></tr>
+            <tr><td>170 – 180 cm</td><td>94 – 100 cm</td></tr>
+            <tr><td>180 cm +</td><td>100 cm +</td></tr>
+          </tbody>
+        </table>
+
+        <h3>Méthode du manche à balai</h3>
+        <ul>
+          <li>Place un manche à balai à la hauteur où tu veux ton guidon (souvent autour de la hanche).</li>
+          <li>Mesure la distance au sol.</li>
+          <li>Ajoute environ <b>5 cm</b>.</li>
+        </ul>
+      </div>
+
+    </section>
+  </main>
+
+  <footer class="footer-mini">
+    <p class="copy">© 2026 — RSL Romandie Scooter League. Tous droits réservés.</p>
+  </footer>
+
+  <a href="coach.html" class="coach-fab">👨‍🏫 Je suis coach</a>
+
+  <!-- MODAL -->
+  <div class="product-modal" id="productModal" aria-hidden="true">
+    <div class="product-modal-backdrop"></div>
+    <div class="product-modal-panel">
+      <button class="product-modal-close" aria-label="Fermer">✕</button>
+      <div id="productModalInner"></div>
+    </div>
+  </div>
+
+  <script>
+    // Thème (clair / sombre) — même logique que l’index
+    (function(){
+      const STORAGE_KEY = 'rsl-theme';
+      const body = document.body;
+      const btn = document.getElementById('themeToggle');
+
+      function applyTheme(theme){
+        if(theme === 'light'){
+          body.classList.add('theme-light');
+          if(btn) btn.textContent = '☀️';
+        }else{
+          body.classList.remove('theme-light');
+          if(btn) btn.textContent = '🌙';
+        }
+      }
+
+      let saved = null;
+      try{ saved = localStorage.getItem(STORAGE_KEY); }catch(e){}
+      if(!saved){
+        const prefersLight = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
+        saved = prefersLight ? 'light' : 'dark';
+      }
+      applyTheme(saved);
+
+      if(btn){
+        btn.addEventListener('click', ()=>{
+          const current = body.classList.contains('theme-light') ? 'light' : 'dark';
+          const next = current === 'light' ? 'dark' : 'light';
+          applyTheme(next);
+          try{ localStorage.setItem(STORAGE_KEY, next); }catch(e){}
+        });
+      }
+    })();
+
+    // Vidéo de fond
+    (function(){
+      const vids = [
+        "https://jynxifufaauoxwzjapzq.supabase.co/storage/v1/object/public/videos_rsl/trottvideo1.mp4",
+        "https://jynxifufaauoxwzjapzq.supabase.co/storage/v1/object/public/videos_rsl/trottvideo2.mp4"
+      ];
+      const pick = vids[Math.floor(Math.random()*vids.length)];
+      const v = document.getElementById('rslBg');
+      if(!v) return;
+
+      const s = document.createElement('source');
+      s.src = pick;
+      s.type = 'video/mp4';
+      v.appendChild(s);
+
+      const start = () => {
+        try{
+          v.playbackRate = 0.6;
+          const p = v.play();
+          if(p && p.catch) p.catch(()=>{});
+        }catch(e){}
+      };
+      start();
+
+      document.addEventListener('visibilitychange', () => {
+        if(document.hidden) v.pause();
+        else start();
+      });
+    })();
+
+    // Menu mobile
+    (function(){
+      const menuBtn=document.getElementById('menuBtn');
+      const mobile=document.getElementById('mobileMenu');
+      if(!menuBtn || !mobile) return;
+
+      menuBtn.addEventListener('click',e=>{
+        e.stopPropagation();
+        mobile.classList.add('open');
+        mobile.setAttribute('aria-hidden','false');
+      });
+      mobile.querySelector('.mobile-dim')?.addEventListener('click',()=>{
+        mobile.classList.remove('open');
+        mobile.setAttribute('aria-hidden','true');
+      });
+      document.addEventListener('keydown',e=>{
+        if(e.key==='Escape'){
+          mobile.classList.remove('open');
+          mobile.setAttribute('aria-hidden','true');
+        }
+      });
+    })();
+
+    // Popup produit
+    (function(){
+      const modal=document.getElementById('productModal');
+      const modalInner=document.getElementById('productModalInner');
+      if(!modal || !modalInner) return;
+
+      function openModal(contentHtml){
+        modalInner.innerHTML=contentHtml;
+        modal.classList.add('open');
+        modal.setAttribute('aria-hidden','false');
+      }
+      function closeModal(){
+        modal.classList.remove('open');
+        modalInner.innerHTML="";
+        modal.setAttribute('aria-hidden','true');
+      }
+
+      document.addEventListener('click',function(e){
+        const btn=e.target.closest('.js-open-product');
+        if(btn){
+          e.preventDefault();
+          const card=btn.closest('.product-card');
+          const popup=card?.querySelector('.product-popup-content');
+          if(popup) openModal(popup.innerHTML);
+        }
+        if(e.target.closest('.product-modal-close') || e.target.classList.contains('product-modal-backdrop')){
+          closeModal();
+        }
+      });
+
+      document.addEventListener('keydown',function(e){
+        if(e.key==="Escape" && modal.classList.contains('open')) closeModal();
+      });
+    })();
+
+    // Bannière "shop en construction"
+    (function(){
+      const alert=document.getElementById('shopAlert');
+      const closeBtn=document.getElementById('shopAlertClose');
+      if(!alert || !closeBtn) return;
+
+      try{
+        if(localStorage.getItem('rslShopAlertClosed')==='1'){
+          alert.style.display='none';
+        }
+      }catch(e){}
+
+      closeBtn.addEventListener('click',()=>{
+        alert.style.display='none';
+        try{ localStorage.setItem('rslShopAlertClosed','1'); }catch(e){}
+      });
+    })();
+
+    // Login UI (mon compte + avatar) — identique logique
+    function waitForEnv(timeoutMs=3500){
+      return new Promise((resolve)=>{
+        const start=Date.now();
+        (function tick(){
+          const ok = !!(window.env && window.env.SUPABASE_URL && window.env.SUPABASE_ANON);
+          if(ok) return resolve(true);
+          if(Date.now()-start>timeoutMs) return resolve(false);
+          setTimeout(tick,30);
+        })();
+      });
+    }
+    function getSupa(){
+      if(window.__rslSupa) return window.__rslSupa;
+      if(!window.env?.SUPABASE_URL || !window.env?.SUPABASE_ANON) return null;
+      window.__rslSupa = supabase.createClient(window.env.SUPABASE_URL, window.env.SUPABASE_ANON);
+      return window.__rslSupa;
+    }
+
+    (async function(){
+      await waitForEnv(3500);
+      const supa = getSupa();
+      if(!supa) return;
+
+      try{
+        const {data:{user}} = await supa.auth.getUser();
+        const btnLogin=document.getElementById('btnLogin');
+        const btnAccount=document.getElementById('btnAccount');
+        const navAvatar=document.getElementById('navAvatar');
+
+        function ui(u){
+          if(u){
+            btnAccount.style.display='inline-flex';
+            btnLogin.style.display='none';
+            navAvatar.style.display='inline-block';
+          }else{
+            btnAccount.style.display='none';
+            btnLogin.style.display='inline-flex';
+            navAvatar.style.display='none';
+          }
+        }
+        ui(user);
+        supa.auth.onAuthStateChange((_e,s)=>ui(s?.user ?? null));
+      }catch(_){}
+    })();
+  </script>
+</body>
+</html>

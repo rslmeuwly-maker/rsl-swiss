@@ -1,0 +1,1143 @@
+<!doctype html>
+<html lang="fr" data-theme="dark">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Games — Romandie Scooter League</title>
+
+  <!-- Fonts + styles globaux -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/common.css"/>
+
+  <!-- Supabase + scripts -->
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <script defer src="js/env.js"></script>
+  <script defer src="js/auth.js"></script>
+  <script defer src="js/site.js"></script>
+
+  <style>
+    :root{
+      --rsl-accent:#22c55e;
+      --rsl-accent-2:#16a34a;
+    }
+
+    html, body {
+      height:100%;
+      margin:0;
+      background: transparent !important;
+      display:flex;
+      flex-direction:column;
+      color:#fff;
+      font-family:"Outfit",system-ui,-apple-system,Segoe UI,Roboto,Arial;
+      overflow-x:hidden;
+    }
+    main { flex:1; position:relative; z-index:10; }
+
+    /* ======= Vidéo de fond ======= */
+    .site-bg-video{
+      position:fixed;
+      inset:0;
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      z-index:-2;
+      background:#000;
+    }
+    .site-bg-dim{
+      position:fixed;
+      inset:0;
+      z-index:-1;
+      background:linear-gradient(180deg,rgba(0,0,0,.55),rgba(0,0,0,.8));
+      transition:background .25s ease;
+    }
+
+    /* ======= NAVBAR ======= */
+    nav.nav{
+      background: rgba(0,0,0,.65);
+      backdrop-filter: blur(8px);
+      position: sticky; top:0; z-index:100;
+      border-bottom:1px solid rgba(255,255,255,.08);
+      transition:background .25s ease, border-color .25s ease, box-shadow .25s ease;
+    }
+    nav.nav .container{ max-width:1320px; margin:0 auto; padding:12px 28px; }
+    nav.nav .row{ display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; }
+
+    .brand{ display:flex; align-items:center; gap:10px; color:#fff; text-decoration:none; }
+    .brand img{ height:48px; border-radius:10px; display:block; background:#fff; padding:3px; }
+    .brand span{ font-weight:800; letter-spacing:.2px; font-size:17px; white-space:nowrap; }
+
+    nav.nav ul{ display:flex; align-items:center; gap:26px; list-style:none; padding:0; margin:0; }
+    nav.nav ul li a{
+      font-weight:600;
+      color:#e8f0ea;
+      font-size:17px;
+      letter-spacing:.2px;
+      white-space:nowrap;
+      text-decoration:none;
+      transition:.2s ease;
+    }
+    nav.nav ul li a:hover{ color:var(--rsl-accent); }
+
+    .cta{ display:flex; align-items:center; gap:12px; }
+
+    .btn{
+      border-radius:999px;
+      border:1px solid rgba(148,163,184,.7);
+      background:rgba(15,23,42,.9);
+      color:#e5e7eb;
+      padding:8px 14px;
+      font-size:14px;
+      font-weight:700;
+      text-decoration:none;
+      cursor:pointer;
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      transition:.15s ease;
+      line-height:1;
+    }
+    .btn:hover{ transform:translateY(-1px); filter:brightness(1.06); }
+
+    .btn.green{
+      border:0;
+      background:linear-gradient(135deg,var(--rsl-accent),var(--rsl-accent-2));
+      color:#022c16;
+      box-shadow:0 12px 26px rgba(0,0,0,.6);
+    }
+
+    .theme-toggle{
+      width:36px;
+      height:36px;
+      border-radius:999px;
+      border:1px solid rgba(148,163,184,.7);
+      background:rgba(15,23,42,.9);
+      color:#e5e7eb;
+      cursor:pointer;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      font-size:16px;
+      transition:.15s ease;
+      line-height:1;
+    }
+    .theme-toggle:hover{ transform:translateY(-1px); filter:brightness(1.06); }
+
+    .nav-avatar{
+      width:38px;
+      height:38px;
+      border-radius:999px;
+      object-fit:cover;
+      border:2px solid var(--rsl-accent);
+      box-shadow:0 0 10px rgba(34,197,94,.5);
+    }
+
+    #menuBtn{
+      display:none;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      padding:10px 12px;
+      font-size:18px;
+      line-height:1;
+      border-radius:10px;
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(34,197,94,.12);
+      color:var(--rsl-accent);
+      cursor:pointer;
+      transition:.2s ease;
+    }
+    #menuBtn:hover { background:rgba(34,197,94,.22); }
+
+    .container{ max-width:1200px; margin:0 auto; padding:0 24px; }
+
+    /* ===== Menu mobile ===== */
+    .mobile-sheet{ position:fixed; inset:0; display:none; z-index:120; }
+    .mobile-sheet.open{ display:block; }
+    .mobile-dim{ position:absolute; inset:0; background:rgba(0,0,0,.5); }
+    .mobile-panel{
+      position:absolute; top:0; right:0; height:100%; width:82vw; max-width:360px;
+      background:#0b1220; padding:22px 18px; display:flex; flex-direction:column; gap:12px;
+      border-left:1px solid rgba(255,255,255,.08); box-shadow:-12px 0 30px rgba(0,0,0,.35);
+    }
+    .mobile-panel a{ color:#eaf5ee; text-decoration:none; font-weight:800; padding:8px 0; }
+    .mobile-panel hr{ border:0; height:1px; background:rgba(255,255,255,.1); margin:10px 0; }
+
+    @media (max-width:990px){
+      nav.nav ul{ display:none !important; }
+      #btnCart, #btnLogin, #btnAccount, .btn.green{ display:none !important; }
+      #menuBtn{ display:inline-flex; }
+    }
+
+    /* ===== HERO / GAME CARD ===== */
+    .game-wrap{
+      max-width:1200px;
+      margin:40px auto 30px;
+      padding:0 16px;
+    }
+    .game-card{
+      background:rgba(0,0,0,.65);
+      border-radius:18px;
+      border:1px solid rgba(148,163,184,.45);
+      box-shadow:0 30px 80px rgba(0,0,0,.85),0 0 60px rgba(34,197,94,.18);
+      padding:20px 20px 24px;
+      position:relative;
+      overflow:hidden;
+      max-width:100%;
+      box-sizing:border-box;
+      transition:background .25s ease, border-color .25s ease, box-shadow .25s ease;
+    }
+    .game-card-inner{ position:relative; z-index:1; }
+
+    .game-header{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:18px;
+      flex-wrap:wrap;
+      margin-bottom:10px;
+    }
+    .game-title-block h1{
+      margin:0;
+      font-size:clamp(26px,4vw,32px);
+      font-weight:800;
+      letter-spacing:.02em;
+    }
+    .game-title-block p{
+      margin:4px 0 0;
+      font-size:13px;
+      color:#cdd6ff;
+    }
+
+    .badge-game{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:6px 12px;
+      border-radius:999px;
+      background:rgba(15,23,42,.9);
+      border:1px solid rgba(148,163,184,.6);
+      font-size:11px;
+      text-transform:uppercase;
+      letter-spacing:.14em;
+      color:#9ca3af;
+    }
+    .badge-game span{
+      width:7px;height:7px;
+      border-radius:999px;
+      background:var(--rsl-accent);
+      box-shadow:0 0 10px rgba(34,197,94,.9);
+    }
+
+    .game-main{
+      margin-top:18px;
+      display:grid;
+      grid-template-columns:minmax(0,1.5fr) minmax(0,1.1fr);
+      gap:22px;
+    }
+    @media(max-width:900px){
+      .game-main{ grid-template-columns:1fr; }
+    }
+
+    /* Bloc gauche : générateur */
+    .generator-card{
+      background:rgba(15,23,42,.96);
+      border-radius:16px;
+      border:1px solid rgba(148,163,184,.55);
+      padding:18px 16px 18px;
+      box-shadow:0 20px 60px rgba(0,0,0,.7);
+      transition:background .25s ease, border-color .25s ease, box-shadow .25s ease;
+    }
+    .generator-label{
+      font-size:12px;
+      text-transform:uppercase;
+      letter-spacing:.18em;
+      color:#9ca3af;
+      margin-bottom:8px;
+    }
+    .current-trick-box{
+      border-radius:14px;
+      border:1px solid rgba(34,197,94,.5);
+      background:radial-gradient(circle at top,#0b1220,#020617 60%);
+      padding:18px 16px 14px;
+      text-align:center;
+      box-shadow:0 20px 60px rgba(0,0,0,.85);
+      margin-bottom:14px;
+      min-height:80px;
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      transition:background .25s ease, box-shadow .25s ease;
+    }
+    #currentTrick{
+      font-size:clamp(20px,4vw,26px);
+      font-weight:800;
+      margin:0 0 4px;
+    }
+    #trickMeta{
+      font-size:12px;
+      color:#9ca3af;
+    }
+
+    .generator-buttons{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      margin-top:10px;
+    }
+    .btn-main-game,
+    .btn-ghost-game{
+      flex:1;
+      min-width:140px;
+      border-radius:12px;
+      padding:10px 12px;
+      font-size:14px;
+      font-weight:800;
+      cursor:pointer;
+      text-align:center;
+      transition:.15s ease;
+    }
+    .btn-main-game{
+      background:linear-gradient(180deg,var(--rsl-accent),var(--rsl-accent-2));
+      color:#062312;
+      border:0;
+      box-shadow:0 12px 26px rgba(0,0,0,.7), inset 0 1px 0 rgba(255,255,255,.2);
+    }
+    .btn-main-game:hover{ transform:translateY(-1px); filter:brightness(1.05); }
+    .btn-ghost-game{
+      background:rgba(0,0,0,.4);
+      border:1px solid rgba(255,255,255,.25);
+      color:#e5e7eb;
+    }
+    .btn-ghost-game:hover{ transform:translateY(-1px); background:rgba(15,23,42,.9); }
+
+    .btn-main-game:disabled,
+    .btn-ghost-game:disabled{
+      opacity:.55;
+      cursor:not-allowed;
+      transform:none;
+    }
+
+    .hint-text{
+      margin-top:10px;
+      font-size:12px;
+      color:#9ca3af;
+    }
+
+    /* Bloc droite : ajout + liste */
+    .side-card{
+      background:rgba(15,23,42,.96);
+      border-radius:16px;
+      border:1px solid rgba(148,163,184,.55);
+      padding:18px 16px 18px;
+      box-shadow:0 20px 60px rgba(0,0,0,.7);
+      transition:background .25s ease, border-color .25s ease, box-shadow .25s ease;
+    }
+    .side-card h2{
+      margin:0 0 6px;
+      font-size:16px;
+      font-weight:800;
+    }
+    .side-card p{
+      margin:0 0 12px;
+      font-size:13px;
+      color:#cdd6ff;
+    }
+
+    .add-row{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      margin-bottom:12px;
+    }
+    .add-row input{
+      flex:1;
+      min-width:140px;
+      border-radius:999px;
+      border:1px solid rgba(148,163,184,.7);
+      background:rgba(15,23,42,.9);
+      color:#e5e7eb;
+      padding:9px 12px;
+      font-size:14px;
+      outline:none;
+    }
+    .add-row input:focus{
+      border-color:var(--rsl-accent);
+      box-shadow:0 0 0 2px rgba(34,197,94,.35);
+    }
+    .add-row button{
+      border-radius:999px;
+      border:0;
+      padding:9px 14px;
+      font-size:13px;
+      font-weight:800;
+      cursor:pointer;
+      background:var(--rsl-accent);
+      color:#062312;
+      box-shadow:0 8px 20px rgba(0,0,0,.7);
+      white-space:nowrap;
+      transition:.15s ease;
+    }
+    .add-row button:hover{ transform:translateY(-1px); filter:brightness(1.05); }
+
+    .custom-actions{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:8px;
+      margin-bottom:8px;
+      font-size:12px;
+      color:#9ca3af;
+    }
+    .custom-actions button{
+      border-radius:999px;
+      border:1px solid rgba(248,113,113,.7);
+      background:rgba(127,29,29,.85);
+      color:#fecaca;
+      padding:6px 10px;
+      font-size:11px;
+      cursor:pointer;
+      white-space:nowrap;
+      transition:.15s ease;
+    }
+    .custom-actions button:hover{ transform:translateY(-1px); filter:brightness(1.05); }
+
+    .trick-list-title{
+      font-size:12px;
+      text-transform:uppercase;
+      letter-spacing:.14em;
+      color:#9ca3af;
+      margin:6px 0 4px;
+    }
+    .trick-list{
+      max-height:210px;
+      overflow:auto;
+      padding:0;
+      margin:0;
+      list-style:none;
+      font-size:13px;
+    }
+    .trick-list li{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:8px;
+      padding:5px 0;
+      border-bottom:1px solid rgba(148,163,184,.22);
+    }
+    .trick-list li:last-child{ border-bottom:none; }
+
+    .trick-name{ flex:1; color:#e5e7eb; }
+
+    .pill{
+      font-size:11px;
+      padding:2px 8px;
+      border-radius:999px;
+      border:1px solid rgba(148,163,184,.6);
+      color:#cdd6ff;
+      white-space:nowrap;
+    }
+    .pill-default{ border-color:rgba(52,211,153,.8); color:#bbf7d0; }
+    .pill-custom{ border-color:rgba(251,191,36,.8); color:#facc15; }
+
+    .del-btn{
+      border-radius:999px;
+      border:1px solid rgba(248,113,113,.7);
+      background:rgba(127,29,29,.9);
+      color:#fecaca;
+      padding:3px 8px;
+      font-size:11px;
+      cursor:pointer;
+      white-space:nowrap;
+      transition:.15s ease;
+    }
+    .del-btn:hover{ transform:translateY(-1px); filter:brightness(1.05); }
+
+    /* Footer */
+    .footer-mini .copy{
+      text-align:center; color:#9aa5b1; font-size:14px;
+      padding:24px 0 28px; margin:0;
+      border-top:1px solid rgba(255,255,255,.1);
+      background:transparent;
+    }
+
+    /* Petit status debug (sauvegarde supa) */
+    .save-status{
+      position:fixed;
+      left:14px;
+      bottom:14px;
+      z-index:9999;
+      background:rgba(2,6,23,.75);
+      border:1px solid rgba(148,163,184,.35);
+      color:#e5e7eb;
+      padding:8px 10px;
+      border-radius:12px;
+      font-size:12px;
+      backdrop-filter: blur(8px);
+      box-shadow:0 12px 30px rgba(0,0,0,.55);
+      max-width:min(520px, calc(100vw - 28px));
+      line-height:1.25;
+    }
+    .save-status b{ color:#bbf7d0; }
+    .save-status .warn{ color:#fde68a; }
+    .save-status .err{ color:#fecaca; }
+
+    /* =========================
+       ✅ MODE JOUR (data-theme="light")
+       ========================= */
+    html[data-theme="light"], 
+    html[data-theme="light"] body{
+      color:#0b1220 !important;
+    }
+
+    html[data-theme="light"] .site-bg-dim{
+      background:linear-gradient(180deg,rgba(255,255,255,.60),rgba(255,255,255,.92));
+    }
+
+    html[data-theme="light"] nav.nav{
+      background:rgba(255,255,255,.72);
+      border-bottom:1px solid rgba(2,6,23,.10);
+    }
+
+    html[data-theme="light"] nav.nav ul li a{
+      color:#0b1220;
+    }
+    html[data-theme="light"] nav.nav ul li a:hover{
+      color:var(--rsl-accent-2);
+    }
+
+    html[data-theme="light"] .btn,
+    html[data-theme="light"] .theme-toggle{
+      background:rgba(255,255,255,.85);
+      color:#0b1220;
+      border:1px solid rgba(2,6,23,.18);
+    }
+
+    html[data-theme="light"] .btn.green{
+      color:#052e16;
+    }
+
+    html[data-theme="light"] .game-card{
+      background:rgba(255,255,255,.78);
+      border:1px solid rgba(2,6,23,.12);
+      box-shadow:0 30px 80px rgba(0,0,0,.20),0 0 60px rgba(34,197,94,.10);
+    }
+
+    html[data-theme="light"] .game-title-block p{
+      color:rgba(2,6,23,.70);
+    }
+
+    html[data-theme="light"] .badge-game{
+      background:rgba(255,255,255,.9);
+      border:1px solid rgba(2,6,23,.15);
+      color:rgba(2,6,23,.65);
+    }
+
+    html[data-theme="light"] .generator-card,
+    html[data-theme="light"] .side-card{
+      background:rgba(255,255,255,.92);
+      border:1px solid rgba(2,6,23,.14);
+      box-shadow:0 20px 60px rgba(0,0,0,.12);
+    }
+
+    html[data-theme="light"] .generator-label,
+    html[data-theme="light"] .trick-list-title,
+    html[data-theme="light"] .custom-actions{
+      color:rgba(2,6,23,.55);
+    }
+
+    html[data-theme="light"] .current-trick-box{
+      background:radial-gradient(circle at top,#ffffff,#f1f5f9 65%);
+      border:1px solid rgba(34,197,94,.35);
+      box-shadow:0 20px 60px rgba(0,0,0,.12);
+    }
+
+    html[data-theme="light"] #trickMeta{
+      color:rgba(2,6,23,.55);
+    }
+
+    html[data-theme="light"] .hint-text{
+      color:rgba(2,6,23,.60);
+    }
+
+    html[data-theme="light"] .add-row input{
+      background:#ffffff;
+      color:#0b1220;
+      border:1px solid rgba(2,6,23,.20);
+    }
+
+    html[data-theme="light"] .trick-name{
+      color:#0b1220;
+    }
+
+    html[data-theme="light"] .trick-list li{
+      border-bottom:1px solid rgba(2,6,23,.10);
+    }
+
+    html[data-theme="light"] .pill{
+      border:1px solid rgba(2,6,23,.18);
+      color:rgba(2,6,23,.70);
+    }
+
+    html[data-theme="light"] .pill-default{
+      border-color:rgba(34,197,94,.55);
+      color:#166534;
+    }
+
+    html[data-theme="light"] .pill-custom{
+      border-color:rgba(234,179,8,.65);
+      color:#854d0e;
+    }
+
+    html[data-theme="light"] .save-status{
+      background:rgba(255,255,255,.85);
+      color:#0b1220;
+      border:1px solid rgba(2,6,23,.15);
+    }
+
+    html[data-theme="light"] .footer-mini .copy{
+      color:rgba(2,6,23,.60);
+      border-top:1px solid rgba(2,6,23,.10);
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Fond vidéo -->
+  <video class="site-bg-video" autoplay muted loop playsinline id="rslBg" poster="images/hero-poster.jpg"></video>
+  <div class="site-bg-dim" aria-hidden="true"></div>
+
+  <!-- NAV -->
+  <nav class="nav">
+    <div class="container">
+      <div class="row">
+        <a class='brand' href='/'>
+          <img src="images/logo_rsl.png" alt="Logo RSL"/>
+          <span>RSL — Romandie Scooter League</span>
+        </a>
+
+        <ul>
+          <li><a href='/cours'>Cours</a></li>
+          <li><a href='/formation'>Formation RSL</a></li>
+          <li><a href='/ou_rider'>Où rider ?</a></li>
+          <li><a href='/evenements'>Événements</a></li>
+          <li><a href='/disciplines'>Disciplines</a></li>
+          <li><a href='/shop-rsl'>Shop</a></li>
+          <li><a href='/comite'>Comité</a></li>
+          <li><a href='/contact'>Contact</a></li>
+        </ul>
+
+        <div class="cta">
+          <button id="themeToggle" class="theme-toggle" aria-label="Changer le thème">🌙</button>
+
+          <a class='btn' href='/access' id='btnLogin'>Login</a>
+          <a class='btn' href='/compte' id='btnAccount' style='display:none'>Mon compte</a>
+
+          <a href='/compte'>
+            <img id="navAvatar" class="nav-avatar" src="images/default-avatar.png" alt="Avatar" style="display:none;">
+          </a>
+
+          <a class='btn' href='/panier/panier' id='btnCart'>Panier</a>
+          <a class='btn green' href='/membres'>Devenir membre</a>
+          <button id="menuBtn">☰</button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- MENU MOBILE -->
+  <div class="mobile-sheet" id="mobileMenu" aria-hidden="true">
+    <div class="mobile-dim"></div>
+    <nav class="mobile-panel">
+      <a href='/'>Accueil</a>
+      <a href='/cours'>Cours</a>
+      <a href='/membres'>Devenir membre</a>
+      <a href='/formation'>Formation RSL</a>
+      <a href='/disciplines'>Disciplines</a>
+      <a href='/ou_rider'>Où rider ?</a>
+      <a href='/evenements'>Événements</a>
+      <a aria-current='page' href='/game'>Games</a>
+      <a href='/shop-rsl'>Shop</a>
+      <a href='/comite'>Comité</a>
+      <a href='/contact'>Contact</a>
+      <a href='/conditions'>Conditions générales</a>
+      <a href='/access'>Se connecter</a>
+      <a href='/compte'>Mon compte</a>
+      <a class='coach-link' href='/coach'>👨‍🏫 Je suis coach</a>
+    </nav>
+  </div>
+
+  <!-- CONTENU GAME -->
+  <main>
+    <div class="game-wrap">
+      <section class="game-card">
+        <div class="game-card-inner">
+          <div class="game-header">
+            <div class="game-title-block">
+              <h1>RSL Trick Game</h1>
+              <p>Un générateur de tricks pour JAM, échauffement ou défis entre potes.</p>
+            </div>
+            <div>
+              <div class="badge-game">
+                <span></span> 20 tricks simples + tes idées
+              </div>
+            </div>
+          </div>
+
+          <div class="game-main">
+            <!-- Générateur -->
+            <div class="generator-card">
+              <div class="generator-label">Générateur de tricks</div>
+              <div class="current-trick-box">
+                <p id="currentTrick">Clique sur “Nouveau trick”</p>
+                <p id="trickMeta">0 / 0 trick possibles</p>
+              </div>
+
+              <div class="generator-buttons">
+                <button type="button" class="btn-main-game" id="btnNewTrick">Nouveau trick</button>
+                <button type="button" class="btn-ghost-game" id="btnNewLine">3 tricks (ligne)</button>
+              </div>
+
+              <p class="hint-text">
+                Astuce : pour une JAM, tu peux lancer un trick par rider, ou une ligne de 3 tricks pour les plus chauds.
+              </p>
+            </div>
+
+            <!-- Ajout + liste -->
+            <div class="side-card">
+              <h2>Ajoute tes propres tricks</h2>
+              <p>Par exemple des combos locaux, des noms de figures du crew, ou des variantes plus engagées.</p>
+
+              <div class="add-row">
+                <input id="newTrickInput" type="text" placeholder="Ex: 180 barspin, whip à plat, manual to 180…">
+                <button type="button" id="btnAddTrick">Ajouter</button>
+              </div>
+
+              <div class="custom-actions">
+                <span id="customCountText">0 trick perso enregistré</span>
+                <button type="button" id="btnClearCustom">Effacer mes tricks persos</button>
+              </div>
+
+              <div class="trick-list-title">Liste des tricks</div>
+              <ul class="trick-list" id="trickList"></ul>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer class="footer-mini">
+    <p class="copy">© 2026 — RSL Romandie Scooter League. Tous droits réservés.</p>
+  </footer>
+
+  <!-- Status save -->
+  <div class="save-status" id="saveStatus">Status: …</div>
+
+  <!-- ✅ UN SEUL SCRIPT -->
+  <script>
+    /* ✅ THEME TOGGLE */
+    (function(){
+      const KEY = 'rsl-theme';
+      const root = document.documentElement;
+      const btn = document.getElementById('themeToggle');
+
+      function setTheme(t){
+        root.setAttribute('data-theme', t);
+        if(btn) btn.textContent = (t === 'dark') ? '🌙' : '☀️';
+        try{ localStorage.setItem(KEY, t); }catch(e){}
+      }
+
+      let saved = null;
+      try{ saved = localStorage.getItem(KEY); }catch(e){}
+      if(!saved){
+        const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+        saved = prefersDark ? 'dark' : 'light';
+      }
+      setTheme(saved);
+
+      btn?.addEventListener('click', ()=>{
+        const cur = root.getAttribute('data-theme') || 'dark';
+        setTheme(cur === 'dark' ? 'light' : 'dark');
+      });
+    })();
+
+    /* ✅ Vidéo de fond */
+    (function(){
+      const vids = [
+        "https://jynxifufaauoxwzjapzq.supabase.co/storage/v1/object/public/videos_rsl/trottvideo1.mp4",
+        "https://jynxifufaauoxwzjapzq.supabase.co/storage/v1/object/public/videos_rsl/trottvideo2.mp4"
+      ];
+      const pick = vids[Math.floor(Math.random()*vids.length)];
+      const v = document.getElementById('rslBg');
+      if(!v) return;
+
+      const s = document.createElement('source');
+      s.src = pick;
+      s.type = 'video/mp4';
+      v.appendChild(s);
+
+      const start = () => {
+        try{
+          v.playbackRate = 0.6;
+          const p = v.play();
+          if(p && p.catch) p.catch(()=>{});
+        }catch(e){}
+      };
+
+      start();
+      document.addEventListener('visibilitychange', () => {
+        if(document.hidden) v.pause();
+        else start();
+      });
+    })();
+
+    /* ✅ Menu mobile */
+    (function(){
+      const menuBtn=document.getElementById('menuBtn');
+      const mobile=document.getElementById('mobileMenu');
+      if(!menuBtn || !mobile) return;
+
+      menuBtn.addEventListener('click',e=>{
+        e.stopPropagation();
+        mobile.classList.add('open');
+        mobile.setAttribute('aria-hidden','false');
+      });
+      mobile.querySelector('.mobile-dim')?.addEventListener('click',()=>{
+        mobile.classList.remove('open');
+        mobile.setAttribute('aria-hidden','true');
+      });
+      document.addEventListener('keydown',e=>{
+        if(e.key==='Escape'){
+          mobile.classList.remove('open');
+          mobile.setAttribute('aria-hidden','true');
+        }
+      });
+    })();
+
+    /* ====== TRICKS + SUPABASE SAVE (rsl_game_tricklists) ====== */
+    const defaultTricks = [
+      "Bunny hop (jump à plat)",
+      "Drop in simple",
+      "Roll-in (descendre la rampe en roulant)",
+      "180 à plat",
+      "360 à plat",
+      "Fakie (rouler en arrière)",
+      "Revert (demi-tour en slideant les roues)",
+      "Manual (rouler sur la roue arrière)",
+      "Nose manual (rouler sur la roue avant)",
+      "One foot (un pied en l’air)",
+      "No footer (les deux pieds en l’air)",
+      "No hander (sans les mains sur le guidon)",
+      "Tailwhip (whip classique)",
+      "Barspin (tour de guidon)",
+      "X-up (croiser le guidon)",
+      "180 out du quarter",
+      "Rock to fakie",
+      "Feeble grind sur curb",
+      "Boardslide sur rail/curb bas",
+      "Footjam (bloquer la roue avant avec le pied)"
+    ];
+
+    const STORAGE_KEY_BASE = "rsl_trickgame_custom_v1";
+    const SUPA_TABLE = "rsl_game_tricklists";
+
+    // DOM
+    const elCurrent = document.getElementById("currentTrick");
+    const elMeta = document.getElementById("trickMeta");
+    const elList = document.getElementById("trickList");
+    const elInput = document.getElementById("newTrickInput");
+    const btnAdd = document.getElementById("btnAddTrick");
+    const btnClear = document.getElementById("btnClearCustom");
+    const btnNew = document.getElementById("btnNewTrick");
+    const btnLine = document.getElementById("btnNewLine");
+    const elCount = document.getElementById("customCountText");
+    const elStatus = document.getElementById("saveStatus");
+
+    // State
+    let customTricks = [];
+    let lastPick = null;
+    let supa = null;
+    let userId = null;
+
+    // Helpers
+    const uniq = (arr) => Array.from(new Set(arr.map(s => (s||"").trim()).filter(Boolean)));
+    const safeJson = (s, fallback) => { try{ return JSON.parse(s); }catch(e){ return fallback; } };
+    const nowTime = () => new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+    const norm = (v) => (v || "").trim().replace(/\s+/g, " ");
+
+    function setStatus(type, msg){
+      if(!elStatus) return;
+      const icon =
+        type === "ok" ? "<b>OK</b>" :
+        type === "warn" ? "<span class='warn'>WARN</span>" :
+        type === "err" ? "<span class='err'>ERR</span>" : "…";
+      elStatus.innerHTML = `Status: ${icon} — ${msg} <span style="opacity:.7">(${nowTime()})</span>`;
+    }
+
+    function mergedPool(){ return [...defaultTricks, ...customTricks]; }
+
+    function updateMeta(extra=""){
+      const total = mergedPool().length;
+      const base = `${customTricks.length} / ${total} trick possibles`;
+      elMeta.textContent = extra ? `${base} — ${extra}` : base;
+      elCount.textContent = `${customTricks.length} trick perso enregistré${customTricks.length>1?'s':''}`;
+      btnClear.disabled = customTricks.length === 0;
+      btnNew.disabled = total === 0;
+      btnLine.disabled = total < 3;
+    }
+
+    function renderList(){
+      if(!elList) return;
+      elList.innerHTML = "";
+
+      const items = [
+        ...defaultTricks.map(t => ({t, type:"default"})),
+        ...customTricks.map(t => ({t, type:"custom"}))
+      ];
+
+      items.forEach((it) => {
+        const li = document.createElement("li");
+
+        const name = document.createElement("div");
+        name.className = "trick-name";
+        name.textContent = it.t;
+
+        const pill = document.createElement("span");
+        pill.className = "pill " + (it.type === "default" ? "pill-default" : "pill-custom");
+        pill.textContent = (it.type === "default" ? "RSL" : "PERSO");
+
+        li.appendChild(name);
+        li.appendChild(pill);
+
+        if(it.type === "custom"){
+          const del = document.createElement("button");
+          del.className = "del-btn";
+          del.type = "button";
+          del.textContent = "Suppr";
+          del.addEventListener("click", async () => {
+            customTricks = customTricks.filter(x => x !== it.t);
+            await persistCustom();
+            renderList();
+            updateMeta("supprimé");
+          });
+          li.appendChild(del);
+        }
+
+        elList.appendChild(li);
+      });
+
+      updateMeta();
+    }
+
+    function pickRandom(exclude=null){
+      const pool = mergedPool();
+      if(pool.length === 0) return null;
+      if(pool.length === 1) return pool[0];
+
+      let t=null, tries=0;
+      do{
+        t = pool[Math.floor(Math.random()*pool.length)];
+        tries++;
+      }while(exclude && t===exclude && tries<20);
+      return t;
+    }
+
+    function pickLine3(){
+      const pool = mergedPool();
+      if(pool.length < 3) return [];
+      const copy = pool.slice();
+      for(let i=copy.length-1;i>0;i--){
+        const j = Math.floor(Math.random()*(i+1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy.slice(0,3);
+    }
+
+    function getStorageKey(){
+      return userId ? `${STORAGE_KEY_BASE}_${userId}` : STORAGE_KEY_BASE;
+    }
+
+    function loadLocal(){
+      const raw = localStorage.getItem(getStorageKey());
+      const parsed = safeJson(raw, []);
+      customTricks = uniq(Array.isArray(parsed) ? parsed : []);
+    }
+
+    function saveLocal(){
+      localStorage.setItem(getStorageKey(), JSON.stringify(customTricks));
+    }
+
+    // --- SUPABASE INIT (env.js)
+    function getSupaEnv(){
+      const e = window.__ENV || window.ENV || {};
+      const url = e.SUPABASE_URL || e.supabaseUrl || window.SUPABASE_URL;
+      const key = e.SUPABASE_ANON_KEY || e.supabaseAnonKey || window.SUPABASE_ANON_KEY;
+      return { url, key };
+    }
+
+    async function initSupabase(){
+      try{
+        if(!window.supabase) return null;
+        const { url, key } = getSupaEnv();
+        if(!url || !key) return null;
+        return window.supabase.createClient(url, key);
+      }catch(e){
+        return null;
+      }
+    }
+
+    async function fetchUserId(){
+      try{
+        if(window.__USER?.id) return window.__USER.id;
+      }catch(e){}
+      try{
+        if(supa){
+          const { data } = await supa.auth.getUser();
+          return data?.user?.id || null;
+        }
+      }catch(e){}
+      return null;
+    }
+
+    async function loadFromSupabase(){
+      if(!supa || !userId) return false;
+      try{
+        const { data, error } = await supa
+          .from(SUPA_TABLE)
+          .select("tricks")
+          .eq("user_id", userId)
+          .maybeSingle();
+
+        if(error) throw error;
+
+        const tricks = data?.tricks;
+        if(Array.isArray(tricks)){
+          customTricks = uniq(tricks);
+          return true;
+        }
+        return false;
+      }catch(e){
+        return false;
+      }
+    }
+
+    async function saveToSupabase(){
+      if(!supa || !userId) return false;
+      try{
+        const payload = {
+          user_id: userId,
+          tricks: customTricks,
+          updated_at: new Date().toISOString()
+        };
+
+        const { error } = await supa
+          .from(SUPA_TABLE)
+          .upsert(payload, { onConflict: "user_id" });
+
+        if(error) throw error;
+        return true;
+      }catch(e){
+        return false;
+      }
+    }
+
+    async function persistCustom(){
+      customTricks = uniq(customTricks);
+      try{
+        saveLocal();
+      }catch(e){
+        setStatus("err", "Impossible d'écrire en localStorage");
+        return;
+      }
+      const ok = await saveToSupabase();
+      setStatus(ok ? "ok" : "warn", ok ? "Sauvegarde Supabase + local" : "Supa KO → local OK");
+    }
+
+    // Events
+    btnNew?.addEventListener("click", () => {
+      const t = pickRandom(lastPick);
+      if(!t) return;
+      lastPick = t;
+      elCurrent.textContent = t;
+      updateMeta("1 trick");
+    });
+
+    btnLine?.addEventListener("click", () => {
+      const line = pickLine3();
+      if(line.length < 3) return;
+      lastPick = line[line.length-1];
+      elCurrent.innerHTML = line.map((x,i)=>`<span style="display:block">${i+1}. ${x}</span>`).join("");
+      updateMeta("ligne x3");
+    });
+
+    async function addTrickFromInput(){
+      const v = norm(elInput?.value);
+      if(!v) return;
+
+      const lower = v.toLowerCase();
+      const exists =
+        defaultTricks.some(t => t.toLowerCase() === lower) ||
+        customTricks.some(t => t.toLowerCase() === lower);
+
+      if(exists){
+        setStatus("warn", "Déjà dans la liste");
+        elInput.value = "";
+        return;
+      }
+
+      customTricks.push(v);
+      elInput.value = "";
+      await persistCustom();
+      renderList();
+      updateMeta("ajouté");
+    }
+
+    btnAdd?.addEventListener("click", addTrickFromInput);
+    elInput?.addEventListener("keydown", (e) => {
+      if(e.key === "Enter"){
+        e.preventDefault();
+        addTrickFromInput();
+      }
+    });
+
+    btnClear?.addEventListener("click", async () => {
+      if(customTricks.length === 0) return;
+      if(!confirm("Effacer tous tes tricks persos ?")) return;
+      customTricks = [];
+      await persistCustom();
+      renderList();
+      elCurrent.textContent = "Clique sur “Nouveau trick”";
+      updateMeta("reset");
+    });
+
+    // Init
+    (async function init(){
+      setStatus("ok", "Init…");
+
+      supa = await initSupabase();
+      userId = await fetchUserId();
+
+      // local d'abord
+      try{ loadLocal(); }catch(e){ customTricks = []; }
+
+      // si connecté -> supa
+      if(supa && userId){
+        const ok = await loadFromSupabase();
+        if(ok){
+          try{ saveLocal(); }catch(e){}
+          setStatus("ok", `Sync Supabase → ${customTricks.length} persos`);
+        }else{
+          setStatus("ok", `Local (aucune donnée Supa)`);
+        }
+      }else{
+        setStatus("ok", userId ? "Local (Supa absent)" : "Local (non connecté)");
+      }
+
+      renderList();
+      updateMeta();
+    })();
+  </script>
+</body>
+</html>

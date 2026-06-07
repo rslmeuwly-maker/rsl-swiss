@@ -1,0 +1,1266 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Panier — Romandie Scooter League</title>
+
+  <!-- Fonts + styles globaux -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/common.css"/>
+
+  <!-- Supabase + scripts -->
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <script defer src="../js/env.js"></script>
+  <script defer src="../js/auth.js"></script>
+  <script defer src="../js/site.js"></script>
+
+  <style>
+    :root{
+      --rsl-bg:#020617;
+      --rsl-fg:#e5e7eb;
+      --rsl-muted:#9ca3af;
+      --rsl-card:rgba(15,23,42,.96);
+      --rsl-card-soft:rgba(15,23,42,.9);
+      --rsl-border:rgba(148,163,184,.45);
+      --rsl-accent:#22c55e;
+      --rsl-accent-soft:rgba(34,197,94,.14);
+    }
+    body.theme-light{
+      --rsl-bg:#f3f4f6;
+      --rsl-fg:#0f172a;
+      --rsl-muted:#6b7280;
+      --rsl-card:#ffffff;
+      --rsl-card-soft:#f9fafb;
+      --rsl-border:rgba(148,163,184,.35);
+      --rsl-accent:#16a34a;
+      --rsl-accent-soft:rgba(22,163,74,.12);
+    }
+
+    *,:before,:after{ box-sizing:border-box; }
+
+    html,body{
+      height:100%;
+      margin:0;
+      background:transparent!important;
+      display:flex;
+      flex-direction:column;
+      color:var(--rsl-fg);
+      font-family:"Outfit",system-ui,-apple-system,Segoe UI,Roboto,Arial;
+      overflow-x:hidden;
+    }
+    main{ flex:1; position:relative; z-index:10; }
+
+    /* ======= Fond vidéo ======= */
+    .site-bg-video{
+      position:fixed; inset:0;
+      width:100%; height:100%;
+      object-fit:cover;
+      z-index:-2;
+      background:#000;
+      pointer-events:none !important;
+    }
+    .site-bg-dim{
+      position:fixed; inset:0;
+      z-index:-1;
+      background:linear-gradient(180deg,rgba(0,0,0,.55),rgba(0,0,0,.9));
+      transition:background .25s ease;
+      pointer-events:none !important;
+    }
+    body.theme-light .site-bg-dim{
+      background:linear-gradient(180deg,rgba(249,250,251,.9),rgba(15,23,42,.85));
+    }
+
+    /* ======= NAVBAR ======= */
+    nav.nav{
+      background:rgba(0,0,0,.65);
+      backdrop-filter:blur(10px);
+      position:sticky; top:0; z-index:100;
+      transition:background .25s ease, border-color .25s ease, box-shadow .25s ease;
+      border-bottom:1px solid rgba(15,23,42,.8);
+    }
+    nav.nav .container{ max-width:1320px; margin:0 auto; padding:10px 18px; }
+    nav.nav .row{ display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+
+    body.theme-light nav.nav{
+      background:rgba(248,250,252,.96);
+      border-bottom:1px solid rgba(148,163,184,.5);
+      box-shadow:0 10px 30px rgba(15,23,42,.06);
+    }
+
+    .brand{
+      display:flex; align-items:center; gap:10px;
+      color:inherit; text-decoration:none;
+      min-width:fit-content;
+    }
+    .brand img{
+      height:42px; border-radius:10px;
+      display:block;
+      background:#fff;
+      padding:3px;
+      box-shadow:0 10px 28px rgba(0,0,0,.35);
+    }
+    .brand span{
+      font-weight:800;
+      letter-spacing:.2px;
+      font-size:16px;
+      white-space:nowrap;
+    }
+
+    nav.nav ul{
+      display:flex; align-items:center; gap:20px;
+      padding:0; margin:0;
+      list-style:none;
+    }
+    nav.nav ul li a{
+      font-weight:600;
+      color:var(--rsl-fg);
+      font-size:15px;
+      letter-spacing:.02em;
+      white-space:nowrap;
+      text-decoration:none;
+      opacity:.9;
+      transition:.2s ease;
+    }
+    nav.nav ul li a:hover{ color:var(--rsl-accent); opacity:1; }
+
+    .cta{ display:flex; align-items:center; gap:10px; }
+
+    .btn{
+      border-radius:999px;
+      padding:8px 14px;
+      font-size:14px;
+      font-weight:700;
+      border:1px solid rgba(148,163,184,.5);
+      text-decoration:none;
+      cursor:pointer;
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      background:rgba(15,23,42,.9);
+      color:#f9fafb;
+      transition:.2s ease;
+      line-height:1;
+      white-space:nowrap;
+    }
+    body.theme-light .btn{
+      background:#0f172a;
+      color:#f9fafb;
+      border-color:#0f172a;
+    }
+    .btn.green{
+      background:var(--rsl-accent);
+      color:#052e16;
+      border-color:transparent;
+      box-shadow:0 10px 26px rgba(22,163,74,.45);
+    }
+    .btn:hover{ transform:translateY(-1px); filter:brightness(1.05); }
+
+    .nav-avatar{
+      width:34px; height:34px;
+      border-radius:999px;
+      object-fit:cover;
+      border:2px solid var(--rsl-accent);
+      box-shadow:0 0 10px rgba(34,197,94,.5);
+      display:block;
+    }
+
+    .theme-toggle{
+      border-radius:999px;
+      border:1px solid rgba(148,163,184,.6);
+      background:rgba(15,23,42,.9);
+      color:#e5e7eb;
+      width:34px; height:34px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      font-size:17px;
+      cursor:pointer;
+      padding:0;
+      transition:.2s ease;
+      line-height:1;
+    }
+    .theme-toggle:hover{ transform:translateY(-1px); filter:brightness(1.08); }
+    body.theme-light .theme-toggle{
+      background:#ffffff;
+      color:#0f172a;
+      border-color:rgba(148,163,184,.7);
+    }
+
+    #menuBtn{
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding:7px 10px;
+      font-size:18px;
+      line-height:1;
+      border-radius:10px;
+      border:1px solid rgba(148,163,184,.4);
+      background:rgba(15,23,42,.9);
+      color:#e5e7eb;
+      cursor:pointer;
+      transition:.2s ease;
+    }
+    #menuBtn:hover { filter:brightness(1.1); }
+    body.theme-light #menuBtn{
+      background:#0f172a;
+      color:#f9fafb;
+      border-color:#0f172a;
+    }
+
+    .container{ max-width:1200px; margin:0 auto; padding:0 16px; }
+
+    /* ===== Menu mobile ===== */
+    .mobile-sheet{ position:fixed; inset:0; display:none; z-index:120; }
+    .mobile-sheet.open{ display:block; }
+    .mobile-dim{ position:absolute; inset:0; background:rgba(0,0,0,.55); }
+    .mobile-panel{
+      position:absolute; top:0; right:0; height:100%;
+      width:82vw; max-width:360px;
+      background:var(--rsl-card);
+      padding:22px 18px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      border-left:1px solid rgba(15,23,42,.8);
+      box-shadow:-18px 0 50px rgba(0,0,0,.55);
+    }
+    .mobile-panel a{
+      color:var(--rsl-fg);
+      text-decoration:none;
+      font-weight:700;
+      padding:6px 0;
+      font-size:14px;
+    }
+    .mobile-panel hr{
+      border:0;
+      height:1px;
+      background:rgba(148,163,184,.4);
+      margin:10px 0;
+    }
+
+    @media (max-width:990px){
+      nav.nav ul{ display:none !important; }
+      #btnCart, .btn.green{ display:none !important; }
+      #menuBtn{ display:inline-flex; }
+    }
+
+    /* ======= CONTENU PANIER ======= */
+    .wrap{
+      max-width:1120px;
+      margin:26px auto 54px;
+      padding:0 16px;
+      display:grid;
+      grid-template-columns:minmax(0, 1.25fr) minmax(0, 0.95fr);
+      gap:18px;
+    }
+    @media(max-width:990px){ .wrap{ grid-template-columns:1fr; } }
+
+    .card{
+      background:var(--rsl-card);
+      border-radius:22px;
+      border:1px solid var(--rsl-border);
+      box-shadow:0 30px 80px rgba(15,23,42,.9);
+      position:relative;
+      overflow:hidden;
+    }
+    body.theme-light .card{ box-shadow:0 24px 60px rgba(15,23,42,.16); }
+
+    .card:before{
+      content:"";
+      position:absolute; inset:-40% -30%;
+      background:
+        radial-gradient(circle at 20% 25%, rgba(34,197,94,.18), transparent 55%),
+        radial-gradient(circle at 85% 20%, rgba(34,197,94,.12), transparent 60%),
+        radial-gradient(circle at 60% 90%, rgba(99,102,241,.10), transparent 62%);
+      pointer-events:none;
+      z-index:0;
+    }
+    .card-inner{ position:relative; z-index:1; padding:18px 18px 16px; }
+
+    h1{
+      margin:0 0 6px;
+      font-size:clamp(22px,3.2vw,28px);
+      font-weight:800;
+      letter-spacing:.02em;
+    }
+    p.sub{ margin:0 0 14px; color:var(--rsl-muted); font-size:14px; }
+
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:8px 10px;
+      border-radius:999px;
+      border:1px solid rgba(148,163,184,.35);
+      background:rgba(15,23,42,.65);
+      color:var(--rsl-fg);
+      font-weight:900;
+      font-size:12px;
+      margin:0 0 10px;
+      width:fit-content;
+    }
+    body.theme-light .pill{
+      background:#ffffff;
+      color:#0f172a;
+      border-color:rgba(148,163,184,.45);
+    }
+    .pill b{ color:var(--rsl-accent); }
+    .pill .muted{ color:var(--rsl-muted); font-weight:800; }
+
+    .chosen-header{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-end;
+      gap:8px;
+      flex-wrap:wrap;
+      margin:0 0 8px;
+    }
+    .chosen-header h2{ margin:0; font-size:16px; font-weight:800; }
+    .chosen-header small{ color:var(--rsl-muted); font-size:13px; font-weight:600; }
+
+    details{
+      margin-top:8px;
+      border-radius:14px;
+      background:var(--rsl-card-soft);
+      border:1px solid var(--rsl-border);
+      padding:8px 10px 10px;
+    }
+    details summary{
+      cursor:pointer;
+      padding:6px 0;
+      font-weight:800;
+      color:var(--rsl-accent);
+      font-size:13px;
+      list-style:none;
+    }
+    details summary::marker,
+    details summary::-webkit-details-marker{ display:none; }
+
+    @media (min-width: 990px){
+      #chosenSessions{
+        display:grid;
+        grid-template-columns:repeat(auto-fill, minmax(320px, 1fr));
+        gap:10px;
+        margin-top:10px;
+      }
+      .session-card{ margin:0 !important; height:100%; }
+    }
+
+    .session-card{
+      background:rgba(15,23,42,1);
+      border:1px solid var(--rsl-border);
+      border-radius:16px;
+      box-shadow:0 12px 34px rgba(0,0,0,.7);
+      padding:12px 12px;
+      font-size:13px;
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      color:var(--rsl-fg);
+    }
+    body.theme-light .session-card{ background:#ffffff; box-shadow:0 18px 44px rgba(15,23,42,.12); }
+
+    .session-meta div{ margin-bottom:2px; }
+    .session-meta b{ font-size:14px; }
+    .session-price{ font-size:12px; color:var(--rsl-muted); }
+    .session-price s{ opacity:.7; margin-right:6px; }
+
+    .remove-btn{
+      border-radius:999px;
+      border:1px solid rgba(248,113,113,.75);
+      background:rgba(127,29,29,1);
+      color:#fecaca;
+      padding:7px 10px;
+      cursor:pointer;
+      font-size:12px;
+      font-weight:800;
+      height:fit-content;
+      white-space:nowrap;
+      align-self:center;
+      box-shadow:0 10px 22px rgba(0,0,0,.65);
+    }
+    .remove-btn:hover{ filter:brightness(1.1); }
+
+    .price-line{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      border-top:1px solid var(--rsl-border);
+      padding-top:12px;
+      margin-top:12px;
+      font-weight:800;
+      font-size:14px;
+    }
+    .price-big{
+      color:var(--rsl-accent);
+      font-weight:900;
+      font-size:20px;
+      text-shadow:0 0 8px rgba(34,197,94,.25);
+    }
+
+    /* ===== Form à droite ===== */
+    .side h2{ margin:0; font-size:17px; font-weight:900; }
+    .side p.small{ margin:2px 0 0; color:var(--rsl-muted); font-size:13px; line-height:1.5; }
+
+    .section-header-row{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      margin-top:6px;
+    }
+
+    .form-grid{ display:flex; gap:12px; flex-wrap:wrap; }
+    .form-grid > div{ flex:1; }
+    @media(max-width:900px){ .form-grid{ flex-direction:column; } }
+
+    label{
+      font-size:13px;
+      font-weight:800;
+      color:var(--rsl-fg);
+      display:block;
+      margin-bottom:6px;
+    }
+    input{
+      width:100%;
+      background:rgba(15,23,42,.9);
+      border:1px solid var(--rsl-border);
+      border-radius:12px;
+      padding:10px 12px;
+      color:var(--rsl-fg);
+      font-size:14px;
+      font-weight:600;
+      outline:none;
+      box-sizing:border-box;
+    }
+    body.theme-light input{
+      background:#ffffff;
+      color:#0f172a;
+    }
+    input::placeholder{ color:rgba(148,163,184,.9); }
+    input:focus{
+      border-color:var(--rsl-accent);
+      box-shadow:0 0 0 2px rgba(34,197,94,.35);
+    }
+
+    .auth-status{
+      font-size:11px;
+      color:var(--rsl-muted);
+      margin-top:4px;
+    }
+    .auth-status b{ color:var(--rsl-fg); }
+
+    .same-btn{
+      border-radius:999px;
+      border:1px solid var(--rsl-border);
+      background:rgba(15,23,42,.9);
+      color:var(--rsl-fg);
+      font-size:11px;
+      padding:6px 10px;
+      cursor:pointer;
+      font-weight:900;
+      white-space:nowrap;
+    }
+    body.theme-light .same-btn{ background:#ffffff; color:#0f172a; }
+
+    .legal{
+      margin-top:4px;
+      width:100%;
+      font-size:13px;
+      line-height:1.45;
+    }
+    .legal-row{
+      display:flex;
+      align-items:flex-start;
+      gap:8px;
+      margin:0 0 8px;
+      cursor:pointer;
+    }
+    .legal-row input[type="checkbox"]{
+      flex-shrink:0;
+      width:18px;
+      height:18px;
+      margin-top:2px;
+      accent-color:var(--rsl-accent);
+    }
+    .legal-row span{ flex:1; white-space:normal; }
+    .legal p{ margin:8px 0 0; font-size:12px; color:var(--rsl-muted); }
+    .legal a{ color:#a5b4fc; text-decoration:underline; }
+
+    .confirm-btn{
+      width:100%;
+      margin-top:10px;
+      background:linear-gradient(180deg,var(--rsl-accent),#16a34a);
+      color:#052e16;
+      font-weight:900;
+      font-size:15px;
+      border:0;
+      border-radius:14px;
+      padding:12px 14px;
+      cursor:pointer;
+      box-shadow:0 14px 30px rgba(0,0,0,.8), inset 0 1px 0 rgba(255,255,255,.25);
+    }
+    .confirm-btn[disabled]{ opacity:.4; cursor:not-allowed; box-shadow:none; }
+
+    /* Footer */
+    .footer-mini .copy{
+      text-align:center;
+      color:var(--rsl-muted);
+      font-size:13px;
+      padding:20px 0 24px;
+      margin:0;
+      border-top:1px solid rgba(15,23,42,.7);
+      background:rgba(15,23,42,.85);
+    }
+    body.theme-light .footer-mini .copy{
+      background:rgba(248,250,252,.96);
+      border-top-color:rgba(148,163,184,.5);
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Fond vidéo -->
+  <video class="site-bg-video" autoplay muted loop playsinline id="rslBg" poster="../images/hero-poster.jpg"></video>
+  <div class="site-bg-dim" aria-hidden="true"></div>
+
+  <!-- NAV -->
+  <nav class="nav">
+    <div class="container">
+      <div class="row">
+        <a class="brand" href="../index.html">
+          <img src="../images/logo_rsl.png" alt="Logo RSL"/>
+          <span>RSL — Romandie Scooter League</span>
+        </a>
+
+        <ul>
+          <li><a href="../cours.html">Cours</a></li>
+          <li><a href="../formation.html">Formation RSL</a></li>
+          <li><a href="../ou_rider.html">Où rider ?</a></li>
+          <li><a href="../evenements.html">Événements</a></li>
+          <li><a href="../disciplines.html">Disciplines</a></li>
+          <li><a href="../shop-rsl.html">Shop</a></li>
+          <li><a href="../comite.html">Comité</a></li>
+          <li><a href="../contact.html">Contact</a></li>
+        </ul>
+
+        <div class="cta">
+          <button id="themeToggle" class="theme-toggle" aria-label="Changer le thème">🌙</button>
+
+          <button class="btn" id="btnLogin">Login</button>
+          <a class="btn" id="btnAccount" href="../compte.html" style="display:none">Mon compte</a>
+          <button class="btn" id="btnLogout" style="display:none;">Déconnexion</button>
+
+          <a href="../compte.html" aria-label="Mon compte">
+            <img id="navAvatar" class="nav-avatar" src="../images/default-avatar.png" alt="Avatar" style="display:none;">
+          </a>
+
+          <a class="btn" id="btnCart" href="../panier/panier.html">Panier</a>
+          <a class="btn green" href="../membres.html">Devenir membre</a>
+          <button id="menuBtn" aria-label="Menu">☰</button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- MENU MOBILE -->
+  <div class="mobile-sheet" id="mobileMenu" aria-hidden="true">
+    <div class="mobile-dim"></div>
+    <nav class="mobile-panel">
+      <a href="../index.html">Accueil</a>
+      <a href="../cours.html">Cours</a>
+      <a href="../panier/panier.html">Panier</a>
+      <a href="../membres.html">Devenir membre</a>
+      <a href="../formation.html">Formation RSL</a>
+      <a href="../disciplines.html">Disciplines</a>
+      <a href="../ou_rider.html">Où rider ?</a>
+      <a href="../evenements.html">Événements</a>
+      <a href="../game.html">Games</a>
+      <a href="../shop-rsl.html">Shop</a>
+      <a href="../comite.html">Comité</a>
+      <a href="../contact.html">Contact</a>
+      <a href="../conditions.html">Conditions générales</a>
+      <a href="../compte.html">Mon compte</a>
+      <hr>
+      <a href="../coach.html" class="coach-link">👨‍🏫 Je suis coach</a>
+      <a id="mobileLogout" style="display:none; color:#f87171; font-weight:800; cursor:pointer;">Déconnexion</a>
+    </nav>
+  </div>
+
+  <!-- CONTENU -->
+  <main>
+    <div class="wrap">
+
+      <!-- GAUCHE -->
+      <section class="card">
+        <div class="card-inner">
+          <h1>Récapitulatif de tes cours</h1>
+          <p class="sub">Vérifie les dates et lieux. Tu peux retirer un cours avant la validation.</p>
+
+          <div class="pill" id="membershipPill" style="display:none;"></div>
+
+          <div class="chosen-header">
+            <h2>Mes cours sélectionnés</h2>
+            <small id="chosenCount">0 cours sélectionné(s)</small>
+          </div>
+
+          <details open>
+            <summary>Voir / masquer la liste</summary>
+            <div id="chosenSessions"></div>
+          </details>
+
+          <div class="price-line">
+            <span>Total (estimation)</span>
+            <span class="price-big" id="totalEst">CHF 0.–</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- DROITE -->
+      <aside class="card side">
+        <div class="card-inner">
+          <div>
+            <h2>Infos du payeur</h2>
+            <p class="small">Personne qui reçoit la facture / confirmation.</p>
+          </div>
+
+          <div class="form-grid">
+            <div>
+              <label>Prénom</label>
+              <input id="payFirst">
+            </div>
+            <div>
+              <label>Nom</label>
+              <input id="payLast">
+            </div>
+          </div>
+
+          <div class="form-grid">
+            <div>
+              <label>Téléphone</label>
+              <input id="payPhone" placeholder="+41 ...">
+            </div>
+            <div>
+              <label>Email</label>
+              <input id="payEmail" placeholder="mail@example.ch">
+              <div id="authStatus" class="auth-status"></div>
+            </div>
+          </div>
+
+          <div class="section-header-row">
+            <div>
+              <h2>Rider</h2>
+              <p class="small">Rider inscrit aux cours.</p>
+            </div>
+            <button type="button" id="sameAsPayerBtn" class="same-btn">C’est la même personne</button>
+          </div>
+
+          <div class="form-grid">
+            <div>
+              <label>Prénom du rider</label>
+              <input id="riderFirst">
+            </div>
+            <div>
+              <label>Nom du rider</label>
+              <input id="riderLast">
+            </div>
+          </div>
+
+          <div class="form-grid">
+            <div>
+              <label>Âge du rider</label>
+              <input id="riderAge" type="number" min="3" max="99" placeholder="8">
+            </div>
+            <div>
+              <label>Remarque médicale / allergie (optionnel)</label>
+              <input id="noteMed" placeholder="Rien de spécial">
+            </div>
+          </div>
+
+          <div class="legal">
+            <label class="legal-row">
+              <input type="checkbox" id="repLegal">
+              <span>J’atteste être le représentant légal et j’autorise la participation.</span>
+            </label>
+            <label class="legal-row">
+              <input type="checkbox" id="discharge">
+              <span>J’accepte la décharge RSL (hors faute grave) et l’intervention en cas d’urgence médicale.</span>
+            </label>
+            <label class="legal-row">
+              <input type="checkbox" id="photoOk">
+              <span>J’autorise l’utilisation de photos / vidéos (optionnel).</span>
+            </label>
+            <p>En validant, j’accepte le <a href="../reglement.html" target="_blank">règlement / conditions de participation</a>.</p>
+          </div>
+
+          <div class="price-line">
+            <span>Total</span>
+            <span class="price-big" id="totalRight">CHF 0.–</span>
+          </div>
+
+          <button class="confirm-btn" id="confirmBtn" onclick="handleConfirm()" disabled>
+            Valider et payer
+          </button>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <footer class="footer-mini">
+    <p class="copy">© 2026 — RSL Romandie Scooter League. Tous droits réservés.</p>
+  </footer>
+
+  <script>
+    // === Thème ===
+    (function(){
+      const STORAGE_KEY = 'rsl-theme';
+      const body = document.body;
+      const btn = document.getElementById('themeToggle');
+
+      function applyTheme(theme){
+        if(theme === 'light'){
+          body.classList.add('theme-light');
+          if(btn) btn.textContent = '☀️';
+        }else{
+          body.classList.remove('theme-light');
+          if(btn) btn.textContent = '🌙';
+        }
+      }
+
+      let saved = null;
+      try{ saved = localStorage.getItem(STORAGE_KEY); }catch(e){}
+      if(!saved){
+        const prefersLight = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
+        saved = prefersLight ? 'light' : 'dark';
+      }
+      applyTheme(saved);
+
+      if(btn){
+        btn.addEventListener('click', ()=>{
+          const current = body.classList.contains('theme-light') ? 'light' : 'dark';
+          const next = current === 'light' ? 'dark' : 'light';
+          applyTheme(next);
+          try{ localStorage.setItem(STORAGE_KEY, next); }catch(e){}
+        });
+      }
+    })();
+
+    // ==== Supabase client ====
+    const SUPABASE_URL = "https://jynxifufaauoxwzjapzq.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp5bnhpZnVmYWF1b3h3emphcHpxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEzODI2NzcsImV4cCI6MjA3Njk1ODY3N30.vFPGhGakPIM3Xg5rn8_BrAXl6oJMJOssO780C9nXmr4";
+    let sb = null;
+    if (window.supabase && window.supabase.createClient) {
+      sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    }
+
+    // ==== Vidéo de fond ====
+    (function(){
+      const vids = [
+        "https://jynxifufaauoxwzjapzq.supabase.co/storage/v1/object/public/videos_rsl/trottvideo1.mp4",
+        "https://jynxifufaauoxwzjapzq.supabase.co/storage/v1/object/public/videos_rsl/trottvideo2.mp4"
+      ];
+      const pick = vids[Math.floor(Math.random()*vids.length)];
+      const v = document.getElementById('rslBg');
+      if(!v) return;
+      const s = document.createElement('source');
+      s.src = pick;
+      s.type = 'video/mp4';
+      v.appendChild(s);
+      const start = () => {
+        try{
+          v.playbackRate = 0.6;
+          const p = v.play();
+          if(p && p.catch) p.catch(()=>{});
+        }catch(e){}
+      };
+      start();
+      document.addEventListener('visibilitychange', () => {
+        if(document.hidden) v.pause(); else start();
+      });
+    })();
+
+    // ==== Menu mobile ====
+    (function(){
+      const menuBtn=document.getElementById('menuBtn');
+      const mobile=document.getElementById('mobileMenu');
+      if(!menuBtn || !mobile) return;
+      menuBtn.addEventListener('click',e=>{
+        e.stopPropagation();
+        mobile.classList.add('open');
+        mobile.setAttribute('aria-hidden','false');
+      });
+      mobile.querySelector('.mobile-dim')?.addEventListener('click',()=>{
+        mobile.classList.remove('open');
+        mobile.setAttribute('aria-hidden','true');
+      });
+      document.addEventListener('keydown',e=>{
+        if(e.key==='Escape'){
+          mobile.classList.remove('open');
+          mobile.setAttribute('aria-hidden','true');
+        }
+      });
+    })();
+
+    // ==== Login bouton simple ====
+    document.getElementById('btnLogin')?.addEventListener('click', ()=>{
+      location.href = "../compte.html";
+    });
+
+    // ==== Avatar nav (depuis localStorage) ====
+    const navAvatar = document.getElementById('navAvatar');
+    function getAvatarLS(){
+      try{ return localStorage.getItem('rsl_avatar') || null; }catch(e){ return null; }
+    }
+    function applyAvatarToUI(){
+      const stored = getAvatarLS();
+      if(navAvatar){
+        navAvatar.src = stored || "../images/default-avatar.png";
+        if(stored) navAvatar.style.display = "inline-block";
+      }
+    }
+
+    // ==== Helpers profil LS ====
+    function getProfileLS(){
+      try{ return JSON.parse(localStorage.getItem('rsl_profile')||'{}'); }catch(e){ return {}; }
+    }
+    function saveProfileLS(obj){
+      localStorage.setItem('rsl_profile', JSON.stringify(obj));
+    }
+
+    // ==== DOM panier ====
+    const chosenSessions=document.getElementById("chosenSessions");
+    const chosenCount=document.getElementById("chosenCount");
+    const totalEst=document.getElementById("totalEst");
+    const totalRight=document.getElementById("totalRight");
+    const confirmBtn=document.getElementById("confirmBtn");
+    const membershipPill=document.getElementById("membershipPill");
+
+    const payFirst=document.getElementById("payFirst");
+    const payLast=document.getElementById("payLast");
+    const payPhone=document.getElementById("payPhone");
+    const payEmail=document.getElementById("payEmail");
+    const riderFirst=document.getElementById("riderFirst");
+    const riderLast=document.getElementById("riderLast");
+    const riderAge=document.getElementById("riderAge");
+    const noteMed=document.getElementById("noteMed");
+    const repLegal=document.getElementById("repLegal");
+    const discharge=document.getElementById("discharge");
+
+    const sameAsPayerBtn=document.getElementById("sameAsPayerBtn");
+    const authStatus=document.getElementById("authStatus");
+
+    const requiredInputs=[payFirst,payLast,payPhone,riderFirst,riderLast,riderAge];
+
+    const btnLogout = document.getElementById("btnLogout");
+    const btnAccount = document.getElementById("btnAccount");
+    const mobileLogout = document.getElementById("mobileLogout");
+    const btnLoginEl = document.getElementById("btnLogin");
+
+    // ==== Panier localStorage (compatible cours.html) ====
+    function getPanier(){
+      try{
+        const rawNew = localStorage.getItem("rsl_panier_courses");
+        const rawOld = localStorage.getItem("rsl_panier_cours");
+        if(rawNew && rawNew !== "[]") return JSON.parse(rawNew);
+        if(rawOld && rawOld !== "[]") return JSON.parse(rawOld);
+        return [];
+      }catch(e){ return []; }
+    }
+    function setPanier(list){
+      const json = JSON.stringify(list);
+      localStorage.setItem("rsl_panier_courses", json);
+      localStorage.setItem("rsl_panier_cours", json);
+    }
+
+    // ==== Parsing prix robuste (supporte "CHF 30.–", "30", 30, "0.00") ====
+    function parsePriceAny(val, fallback=30){
+      if(typeof val === "number" && Number.isFinite(val)) return val;
+      if(typeof val === "string"){
+        const m = val.replace(",",".").match(/-?\d+(\.\d+)?/);
+        const n = m ? Number(m[0]) : NaN;
+        if(Number.isFinite(n)) return n;
+      }
+      return fallback;
+    }
+
+    // ==== État membership (chargé depuis Supabase) ====
+    let membershipState = {
+      loaded: false,
+      user: null,
+      isActive: false,
+      planCode: null,
+      planLabel: null,
+      coursePrice: null,       // ex 20
+      freeLeft: 0,             // ex 15 - used
+      isUnlimited: false,
+      endsAt: null,
+      raw: null
+    };
+
+    function isMembershipActiveNow(cm){
+      if(!cm) return false;
+      const okStatus = ["active","paid","trialing"].includes((cm.status||"").toLowerCase());
+      if(!okStatus) return false;
+      if(!cm.ends_at) return true;
+      const ends = new Date(cm.ends_at);
+      return ends.getTime() > Date.now();
+    }
+
+    async function loadMembership(){
+      membershipState.loaded = false;
+
+      try{
+        if(!sb || !sb.auth) return;
+
+        const { data:{ user } = {} } = await sb.auth.getUser();
+        membershipState.user = user || null;
+
+        if(!user){
+          membershipState.loaded = true;
+          return;
+        }
+
+        // 1) current_membership (source de vérité)
+        const { data: cm, error: cmErr } = await sb
+          .from("current_membership")
+          .select("*")
+          .eq("user_id", user.id)
+          .maybeSingle();
+
+        if(cmErr){
+          console.warn("Erreur current_membership:", cmErr);
+          membershipState.loaded = true;
+          return;
+        }
+
+        // 2) type (règles)
+        let mt = null;
+        if(cm?.plan){
+          const { data: mtData, error: mtErr } = await sb
+            .from("rsl_membership_types")
+            .select("*")
+            .eq("code", cm.plan)
+            .maybeSingle();
+          if(mtErr) console.warn("Erreur rsl_membership_types:", mtErr);
+          mt = mtData || null;
+        }
+
+        const active = isMembershipActiveNow(cm);
+        const quotaTotal = Number(cm?.quota_total ?? 0);
+        const quotaUsed  = Number(cm?.quota_used ?? 0);
+        const typeFreeQuota = Number(mt?.free_courses_quota ?? 0);
+
+        // freeLeft : priorité au type (free_courses_quota). Si current_membership quota_total est rempli, on le respecte.
+        const baseQuota = quotaTotal > 0 ? quotaTotal : typeFreeQuota;
+        const freeLeft = active ? Math.max(baseQuota - (Number.isFinite(quotaUsed) ? quotaUsed : 0), 0) : 0;
+
+        membershipState = {
+          loaded: true,
+          user,
+          isActive: active,
+          planCode: cm?.plan || null,
+          planLabel: mt?.label || cm?.plan || null,
+          coursePrice: mt ? Number(mt.course_price_chf) : null,
+          freeLeft,
+          isUnlimited: !!(mt && mt.is_unlimited),
+          endsAt: cm?.ends_at || null,
+          raw: { cm, mt }
+        };
+
+      }catch(e){
+        console.warn("Erreur loadMembership:", e);
+        membershipState.loaded = true;
+      }
+    }
+
+    // ==== Calcul des prix appliqués au panier ====
+    function applyPricingToCart(cart){
+      // basePrice = prix normal cours (depuis cours.html). Chez toi c'était un text "CHF 30.–"
+      const items = (cart || []).map(c => {
+        const base = parsePriceAny(c.base_price ?? c.basePrice ?? c.price, 30);
+        return { ...c, _basePrice: base, _effectivePrice: base, _pricingReason: "base" };
+      });
+
+      // Si pas connecté / pas abo actif => prix normal
+      if(!membershipState.user || !membershipState.isActive){
+        return items;
+      }
+
+      // Premium: unlimited => 0
+      const coursePrice = Number(membershipState.coursePrice);
+      if(membershipState.isUnlimited || (Number.isFinite(coursePrice) && coursePrice === 0)){
+        return items.map(it => ({ ...it, _effectivePrice: 0, _pricingReason: "unlimited" }));
+      }
+
+      // Sinon: prix abo (ex 20) + éventuellement quota gratuit (progression)
+      const effectivePaidPrice = Number.isFinite(coursePrice) ? coursePrice : null;
+      let freeLeft = Number(membershipState.freeLeft || 0);
+
+      return items.map(it => {
+        // priorité: quota gratuit (si dispo) => 0
+        if(freeLeft > 0){
+          freeLeft -= 1;
+          return { ...it, _effectivePrice: 0, _pricingReason: "quota_free" };
+        }
+        // sinon prix abo si défini, sinon base
+        if(Number.isFinite(effectivePaidPrice)){
+          return { ...it, _effectivePrice: effectivePaidPrice, _pricingReason: "member_price" };
+        }
+        return it;
+      });
+    }
+
+    function computeTotalsPriced(items){
+      let total = 0;
+      let paidCount = 0;
+      let unitPrices = new Set();
+      items.forEach(it => {
+        const p = Number(it._effectivePrice || 0);
+        total += p;
+        if(p > 0){
+          paidCount++;
+          unitPrices.add(String(p));
+        }
+      });
+      return { total, paidCount, unitPrices };
+    }
+
+    // ==== UI pill membership ====
+    function renderMembershipPill(){
+      if(!membershipPill) return;
+
+      if(!membershipState.user){
+        membershipPill.style.display = "inline-flex";
+        membershipPill.innerHTML = `Abo : <b>non connecté</b> <span class="muted">→ tarif normal</span>`;
+        return;
+      }
+
+      if(!membershipState.isActive){
+        membershipPill.style.display = "inline-flex";
+        membershipPill.innerHTML = `Abo : <b>inactif</b> <span class="muted">→ tarif normal</span>`;
+        return;
+      }
+
+      const label = membershipState.planLabel || membershipState.planCode || "membre";
+      const cp = Number(membershipState.coursePrice);
+      const free = Number(membershipState.freeLeft || 0);
+
+      let right = "";
+      if(membershipState.isUnlimited || (Number.isFinite(cp) && cp === 0)){
+        right = `→ cours à <b>0.–</b>`;
+      }else{
+        right = `→ cours à <b>${Number.isFinite(cp) ? cp : "?"}.–</b>`;
+        if(free > 0) right += ` <span class="muted">(gratuit restant: ${free})</span>`;
+      }
+
+      membershipPill.style.display = "inline-flex";
+      membershipPill.innerHTML = `Abo : <b>${label}</b> <span class="muted">${right}</span>`;
+    }
+
+    // ==== Rendu ====
+    function render(){
+      const cart = getPanier();
+      const priced = applyPricingToCart(cart);
+
+      chosenCount.textContent = priced.length+" cours sélectionné(s)";
+
+      if(!priced.length){
+        chosenSessions.innerHTML="<p style='color:var(--rsl-muted);margin:6px 0 0;'>Aucun cours sélectionné.</p>";
+        totalEst.textContent = "CHF 0.–";
+        totalRight.textContent = "CHF 0.–";
+        confirmBtn.disabled = true;
+        return;
+      }
+
+      const { total } = computeTotalsPriced(priced);
+      totalEst.textContent = "CHF "+total+".–";
+      totalRight.textContent = "CHF "+total+".–";
+
+      chosenSessions.innerHTML = priced.map((c, idx)=>{
+        const dateTxt = c.dateLabel || c.date || "";
+        const time = c.time || "";
+        const place = c.place || c.location || "Lieu inconnu";
+        const title = c.title || "";
+
+        const base = parsePriceAny(c._basePrice, 30);
+        const eff  = Number(c._effectivePrice || 0);
+
+        const showOld = (eff !== base);
+        const priceHtml = showOld
+          ? `<div class="session-price"><s>CHF ${base}.–</s> CHF ${eff}.–</div>`
+          : `<div class="session-price">CHF ${eff}.–</div>`;
+
+        return `<div class="session-card">
+          <div class="session-meta">
+            <div><b>${place}</b></div>
+            <div>${dateTxt} ${time}</div>
+            ${title ? `<div>${title}</div>` : ""}
+            ${priceHtml}
+          </div>
+          <button class="remove-btn" type="button" onclick="removeSession(${idx})">Retirer</button>
+        </div>`;
+      }).join("");
+
+      checkValid();
+    }
+
+    function removeSession(index){
+      const data = getPanier();
+      data.splice(index,1);
+      setPanier(data);
+      render();
+    }
+    window.removeSession = removeSession;
+
+    sameAsPayerBtn?.addEventListener("click", ()=>{
+      riderFirst.value = payFirst.value;
+      riderLast.value  = payLast.value;
+      checkValid();
+    });
+
+    function checkValid(){
+      const data = getPanier();
+      if(!data.length){ confirmBtn.disabled = true; return; }
+      const filled = requiredInputs.every(el => (el.value || "").trim() !== "");
+      const ok = filled && repLegal.checked && discharge.checked;
+      confirmBtn.disabled = !ok;
+    }
+    requiredInputs.forEach(el=>{
+      el.addEventListener("input",checkValid);
+      el.addEventListener("change",checkValid);
+    });
+    [repLegal,discharge].forEach(el=>{
+      el.addEventListener("change",checkValid);
+    });
+
+    // Pré-remplir email si user Supabase + gérer nav
+    (async ()=>{
+      try{
+        if(!sb || !sb.auth) return;
+        const { data:{ user } = {} } = await sb.auth.getUser();
+
+        if(user){
+          if(user.email && !payEmail.value) payEmail.value = user.email;
+          if(authStatus) authStatus.innerHTML = `Connecté avec <b>${user.email}</b>.`;
+
+          if(btnLoginEl) btnLoginEl.style.display = "none";
+          if(btnAccount) btnAccount.style.display = "inline-flex";
+          if(btnLogout) btnLogout.style.display = "inline-flex";
+          if(mobileLogout) mobileLogout.style.display = "block";
+
+          applyAvatarToUI();
+        }else{
+          if(btnLoginEl) btnLoginEl.style.display = "inline-flex";
+          if(btnAccount) btnAccount.style.display = "none";
+          if(btnLogout) btnLogout.style.display = "none";
+          if(mobileLogout) mobileLogout.style.display = "none";
+          if(navAvatar) navAvatar.style.display = "none";
+        }
+      }catch(e){
+        console.warn("Erreur getUser supabase:", e);
+      }
+    })();
+
+    async function logout(){
+      try{ if(sb && sb.auth) await sb.auth.signOut(); }catch(e){ console.warn("Erreur logout:", e); }
+      localStorage.removeItem("rsl_profile");
+      localStorage.removeItem("rsl_avatar");
+      window.location.href = "../index.html";
+    }
+    btnLogout?.addEventListener("click", logout);
+    mobileLogout?.addEventListener("click", logout);
+
+    // Stripe mappings (inchangé)
+    const stripe30 = {1:"https://buy.stripe.com/6oU14g6Wte78gfc1xmeUU0a",2:"https://buy.stripe.com/4gMeV6fsZ3sud302BqeUU0b",3:"https://buy.stripe.com/aFa4gs1C90gi2om8ZOeUU0c",4:"https://buy.stripe.com/4gM14gfsZ9QSd308ZOeUU0d",5:"https://buy.stripe.com/7sYbIU1C90gie74foceUU0e",6:"https://buy.stripe.com/9B6cMY94BbZ0aUSb7WeUU0f",7:"https://buy.stripe.com/9B63coeoV8MOfb8ek8eUU0g",8:"https://buy.stripe.com/fZucMYeoVe78bYW0tieUU0h",9:"https://buy.stripe.com/3cIeV6eoVaUW9QO2BqeUU0i",10:"https://buy.stripe.com/14AdR294B3sugfcgsgeUU0j"};
+    const stripe20 = {1:"https://buy.stripe.com/bJeaEQ1C97IK9QOek8eUU09",2:"https://buy.stripe.com/aFa14g4Ol7IKe741xmeUU0k",3:"https://buy.stripe.com/5kQ6oA2Gd1km0ge4JyeUU0l",4:"https://buy.stripe.com/4gM00ca8FaUWbYW3FueUU0m",5:"https://buy.stripe.com/eVq28k0y52oqbYWek8eUU0n",6:"https://buy.stripe.com/7sY28kfsZ7IK3sqgsgeUU0o",7:"https://buy.stripe.com/dRm8wI6Wt6EGe74b7WeUU0p",8:"https://buy.stripe.com/4gMaEQ5Spe78aUSek8eUU0q",9:"https://buy.stripe.com/3cIeV65Sp0gid303FueUU0r",10:"https://buy.stripe.com/6oUaEQ4OlbZ01kigsgeUU0s"};
+
+    function handleConfirm(){
+      const cart = getPanier();
+      if(!cart.length){ alert("Ton panier est vide."); return; }
+
+      const missing = [];
+      if(!payFirst.value.trim()) missing.push("Prénom du payeur");
+      if(!payLast.value.trim())  missing.push("Nom du payeur");
+      if(!payPhone.value.trim()) missing.push("Téléphone du payeur");
+      if(!riderFirst.value.trim()) missing.push("Prénom du rider");
+      if(!riderLast.value.trim())  missing.push("Nom du rider");
+      if(!riderAge.value.trim())   missing.push("Âge du rider");
+      if(!repLegal.checked)        missing.push("Représentant légal");
+      if(!discharge.checked)       missing.push("Décharge RSL");
+
+      if(missing.length){
+        alert("Merci de compléter avant de valider :\n- " + missing.join("\n- "));
+        return;
+      }
+
+      saveProfileLS({
+        riderFirst : riderFirst.value.trim(),
+        riderLast  : riderLast.value.trim(),
+        riderAge   : riderAge.value.trim(),
+        parentFirst: payFirst.value.trim(),
+        parentLast : payLast.value.trim(),
+        parentPhone: payPhone.value.trim(),
+        contactEmail: payEmail.value.trim(),
+        noteMed    : noteMed.value.trim()
+      });
+
+      // Recalcul avec pricing membership
+      const priced = applyPricingToCart(cart);
+      const { total, paidCount, unitPrices } = computeTotalsPriced(priced);
+
+      if(total === 0){
+        alert("Inscription enregistrée ✅\n(0.– à payer pour ces cours).");
+        localStorage.removeItem("rsl_panier_courses");
+        localStorage.removeItem("rsl_panier_cours");
+        window.location.href = "../compte.html";
+        return;
+      }
+
+      // Un seul prix unitaire pour les cours payants
+      if(unitPrices.size > 1){
+        alert("Erreur: ton panier mélange plusieurs tarifs payants.\nContacte la RSL pour régler ça avant le paiement.");
+        return;
+      }
+
+      const unit = Number([...unitPrices][0]); // ex 20 ou 30
+      let url = null;
+
+      if(unit === 30) url = stripe30[paidCount] || null;
+      else if(unit === 20) url = stripe20[paidCount] || null;
+
+      if(!url){
+        alert("Le paiement en ligne est dispo pour 1 à 10 cours payants.\nContacte la RSL si tu veux valider plus de cours d’un coup.");
+        return;
+      }
+
+      window.location.href = url;
+    }
+    window.handleConfirm = handleConfirm;
+
+    // Pré-remplir depuis profil LS
+    (function(){
+      const p = getProfileLS();
+      if(p.parentFirst) payFirst.value = p.parentFirst;
+      if(p.parentLast)  payLast.value  = p.parentLast;
+      if(p.parentPhone) payPhone.value = p.parentPhone;
+      if(p.contactEmail) payEmail.value = p.contactEmail;
+      if(p.riderFirst)  riderFirst.value = p.riderFirst;
+      if(p.riderLast)   riderLast.value  = p.riderLast;
+      if(p.riderAge)    riderAge.value   = p.riderAge;
+      if(p.noteMed)     noteMed.value    = p.noteMed;
+    })();
+
+    // ==== BOOT ====
+    (async ()=>{
+      await loadMembership();
+      renderMembershipPill();
+      render();
+      checkValid();
+    })();
+  </script>
+</body>
+</html>

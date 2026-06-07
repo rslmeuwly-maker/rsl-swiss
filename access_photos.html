@@ -1,0 +1,1008 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Galerie Photos HD — RSL</title>
+
+  <!-- Fonts + styles globaux -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/common.css"/>
+
+  <!-- Supabase + scripts -->
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <script defer src="js/env.js"></script>
+  <script defer src="js/auth.js"></script>
+  <script defer src="js/site.js"></script>
+
+  <style>
+    :root{
+      --rsl-bg:#020617;
+      --rsl-fg:#e5e7eb;
+      --rsl-muted:#9ca3af;
+      --rsl-card:rgba(15,23,42,.96);
+      --rsl-card-soft:rgba(15,23,42,.90);
+      --rsl-border:rgba(148,163,184,.45);
+      --rsl-accent:#22c55e;
+      --rsl-accent-soft:rgba(34,197,94,.14);
+      --rsl-shadow:0 30px 80px rgba(15,23,42,.90);
+    }
+    body.theme-light{
+      --rsl-bg:#f3f4f6;
+      --rsl-fg:#0f172a;
+      --rsl-muted:#6b7280;
+      --rsl-card:#ffffff;
+      --rsl-card-soft:#f9fafb;
+      --rsl-border:rgba(148,163,184,.35);
+      --rsl-accent:#16a34a;
+      --rsl-accent-soft:rgba(22,163,74,.12);
+      --rsl-shadow:0 24px 60px rgba(15,23,42,.16);
+    }
+    *,:before,:after{ box-sizing:border-box; }
+
+    html, body{
+      height:100%;
+      margin:0;
+      background:transparent!important;
+      display:flex;
+      flex-direction:column;
+      color:var(--rsl-fg);
+      font-family:"Outfit",system-ui,-apple-system,Segoe UI,Roboto,Arial;
+      overflow-x:hidden;
+    }
+    main{ flex:1; position:relative; z-index:10; }
+
+    /* Fond vidéo */
+    .site-bg-video{
+      position:fixed; inset:0;
+      width:100%; height:100%;
+      object-fit:cover;
+      z-index:-2;
+      background:#000;
+      pointer-events:none!important;
+    }
+    .site-bg-dim{
+      position:fixed; inset:0;
+      z-index:-1;
+      background:linear-gradient(180deg,rgba(0,0,0,.55),rgba(0,0,0,.90));
+      transition:background .25s ease;
+      pointer-events:none!important;
+    }
+    body.theme-light .site-bg-dim{
+      background:linear-gradient(180deg,rgba(249,250,251,.92),rgba(15,23,42,.85));
+    }
+
+    /* NAV */
+    nav.nav{
+      background:rgba(0,0,0,.65);
+      backdrop-filter:blur(10px);
+      position:sticky;
+      top:0;
+      z-index:100;
+      border-bottom:1px solid rgba(15,23,42,.8);
+      transition:background .25s ease, border-color .25s ease, box-shadow .25s ease;
+    }
+    nav.nav .container{ max-width:1320px; margin:0 auto; padding:10px 18px; }
+    nav.nav .row{ display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+
+    body.theme-light nav.nav{
+      background:rgba(248,250,252,.96);
+      border-bottom:1px solid rgba(148,163,184,.5);
+      box-shadow:0 10px 30px rgba(15,23,42,.06);
+    }
+
+    .brand{
+      display:flex; align-items:center; gap:10px;
+      color:inherit; text-decoration:none;
+      min-width:fit-content;
+    }
+    .brand img{
+      height:42px; border-radius:10px;
+      display:block;
+      background:#fff;
+      padding:3px;
+      box-shadow:0 10px 28px rgba(0,0,0,.35);
+    }
+    .brand span{
+      font-weight:800;
+      letter-spacing:.2px;
+      font-size:16px;
+      white-space:nowrap;
+    }
+
+    nav.nav ul{
+      display:flex; align-items:center; gap:20px;
+      list-style:none; padding:0; margin:0;
+    }
+    nav.nav ul li a{
+      font-weight:600;
+      color:var(--rsl-fg);
+      font-size:15px;
+      letter-spacing:.02em;
+      white-space:nowrap;
+      text-decoration:none;
+      opacity:.9;
+      transition:.2s ease;
+    }
+    nav.nav ul li a:hover{ color:var(--rsl-accent); opacity:1; }
+
+    .cta{ display:flex; align-items:center; gap:10px; }
+
+    .btn{
+      border-radius:999px;
+      padding:8px 14px;
+      font-size:14px;
+      font-weight:700;
+      border:1px solid rgba(148,163,184,.5);
+      text-decoration:none;
+      cursor:pointer;
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      background:rgba(15,23,42,.9);
+      color:#f9fafb;
+      transition:.2s ease;
+      line-height:1;
+      white-space:nowrap;
+    }
+    body.theme-light .btn{
+      background:#0f172a;
+      color:#f9fafb;
+      border-color:#0f172a;
+    }
+    .btn.green{
+      background:var(--rsl-accent);
+      color:#052e16;
+      border-color:transparent;
+      box-shadow:0 10px 26px rgba(22,163,74,.45);
+    }
+
+    .nav-avatar{
+      width:34px; height:34px;
+      border-radius:999px;
+      object-fit:cover;
+      border:2px solid var(--rsl-accent);
+      box-shadow:0 0 10px rgba(34,197,94,.5);
+      display:block;
+    }
+
+    .theme-toggle{
+      border-radius:999px;
+      border:1px solid rgba(148,163,184,.6);
+      background:rgba(15,23,42,.9);
+      color:#e5e7eb;
+      width:34px; height:34px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      font-size:17px;
+      cursor:pointer;
+      padding:0;
+      transition:.2s ease;
+      line-height:1;
+    }
+    body.theme-light .theme-toggle{
+      background:#ffffff;
+      color:#0f172a;
+      border-color:rgba(148,163,184,.7);
+    }
+
+    #menuBtn{
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding:7px 10px;
+      font-size:18px;
+      line-height:1;
+      border-radius:10px;
+      border:1px solid rgba(148,163,184,.4);
+      background:rgba(15,23,42,.9);
+      color:#e5e7eb;
+      cursor:pointer;
+    }
+    body.theme-light #menuBtn{
+      background:#0f172a;
+      color:#f9fafb;
+      border-color:#0f172a;
+    }
+
+    /* Menu mobile */
+    .mobile-sheet{ position:fixed; inset:0; display:none; z-index:120; }
+    .mobile-sheet.open{ display:block; }
+    .mobile-dim{ position:absolute; inset:0; background:rgba(0,0,0,.55); }
+    .mobile-panel{
+      position:absolute; top:0; right:0; height:100%; width:82vw; max-width:360px;
+      background:var(--rsl-card);
+      padding:22px 18px;
+      display:flex; flex-direction:column; gap:10px;
+      border-left:1px solid rgba(15,23,42,.8);
+      box-shadow:-18px 0 50px rgba(0,0,0,.55);
+    }
+    .mobile-panel a{ color:var(--rsl-fg); text-decoration:none; font-weight:700; padding:6px 0; font-size:14px; }
+
+    @media (max-width:990px){
+      nav.nav ul{ display:none!important; }
+      #btnCart, .btn.green{ display:none!important; }
+      #menuBtn{ display:inline-flex; }
+    }
+
+    /* Page */
+    .page{ max-width:1200px; margin:0 auto; padding:0 16px 80px; }
+    .intro{
+      margin:26px auto 14px;
+      background:var(--rsl-card);
+      border:1px solid var(--rsl-border);
+      box-shadow:var(--rsl-shadow);
+      border-radius:22px;
+      padding:22px 18px 18px;
+      text-align:center;
+      position:relative;
+      overflow:hidden;
+    }
+    .intro:before{
+      content:"";
+      position:absolute; inset:-40% -20%;
+      background:
+        radial-gradient(circle at 20% 30%, var(--rsl-accent-soft), transparent 55%),
+        radial-gradient(circle at 80% 20%, rgba(99,102,241,.12), transparent 58%),
+        radial-gradient(circle at 60% 85%, rgba(34,197,94,.10), transparent 60%);
+      pointer-events:none;
+    }
+    .intro > *{ position:relative; z-index:1; }
+
+    .eyebrow{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:6px 12px; border-radius:999px;
+      background:rgba(15,23,42,.90);
+      border:1px solid rgba(148,163,184,.60);
+      font-size:11px; text-transform:uppercase; letter-spacing:.14em;
+      color:var(--rsl-muted);
+    }
+    body.theme-light .eyebrow{ background:#f9fafb; }
+    .eyebrow i{ width:7px;height:7px;border-radius:999px; background:var(--rsl-accent); box-shadow:0 0 10px rgba(34,197,94,.9); display:inline-block; }
+
+    .logo-wrap{
+      width:64px; height:64px;
+      border-radius:14px;
+      background:#fff;
+      padding:8px;
+      margin:12px auto 10px;
+      box-shadow:0 18px 44px rgba(15,23,42,.45);
+      display:flex; align-items:center; justify-content:center;
+    }
+    .logo-wrap img{ width:100%; height:100%; object-fit:contain; display:block; }
+
+    .intro h1{
+      margin:8px 0 6px;
+      font-size:clamp(26px,4.2vw,40px);
+      font-weight:900;
+      letter-spacing:.01em;
+    }
+    .badge-free{
+      display:inline-block; margin-left:8px;
+      font-size:12px; padding:3px 7px;
+      border-radius:8px;
+      border:1px solid var(--rsl-border);
+      background:rgba(255,255,255,.06);
+      color:var(--rsl-muted);
+      font-weight:900;
+      vertical-align:middle;
+    }
+    body.theme-light .badge-free{ background:#ffffff; }
+
+    .intro p{ margin:10px 0 0; font-size:15px; line-height:1.55; color:var(--rsl-muted); }
+    .intro p b{ color:var(--rsl-accent); }
+
+    .notice{ margin:12px auto 0; font-size:12px; line-height:1.5; color:var(--rsl-muted); }
+
+    .results-link{ margin:16px 0 0; }
+    .results-link a{
+      display:inline-flex; align-items:center; justify-content:center; gap:8px;
+      padding:10px 14px; border-radius:12px;
+      background:linear-gradient(180deg,var(--rsl-accent),#16a34a);
+      color:#052e16;
+      font-weight:900;
+      font-size:14px;
+      text-decoration:none;
+      box-shadow:0 12px 26px rgba(22,163,74,.45);
+    }
+
+    /* ✅ Bandeau "pas connecté" (mais images visibles) */
+    .login-wall{
+      max-width:980px;
+      margin:14px auto 0;
+      padding:14px 14px;
+      border-radius:16px;
+      border:1px solid var(--rsl-border);
+      background:var(--rsl-card);
+      box-shadow:0 18px 44px rgba(15,23,42,.35);
+      text-align:center;
+      display:none;
+    }
+    .login-wall strong{ color:var(--rsl-accent); }
+    .login-actions{
+      display:flex;
+      gap:10px;
+      justify-content:center;
+      flex-wrap:wrap;
+      margin-top:10px;
+    }
+    .btn-main{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      padding:10px 14px;
+      border-radius:12px;
+      background:linear-gradient(180deg,var(--rsl-accent),#16a34a);
+      color:#052e16;
+      font-weight:900;
+      font-size:14px;
+      border:0;
+      text-decoration:none;
+      box-shadow:0 12px 26px rgba(22,163,74,.45);
+      cursor:pointer;
+    }
+    .btn-ghost{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      padding:10px 14px;
+      border-radius:12px;
+      background:rgba(15,23,42,.85);
+      border:1px solid rgba(148,163,184,.6);
+      color:#e5e7eb;
+      font-weight:900;
+      font-size:14px;
+      text-decoration:none;
+      cursor:pointer;
+    }
+    body.theme-light .btn-ghost{
+      background:#ffffff;
+      color:#0f172a;
+      border-color:rgba(148,163,184,.7);
+    }
+
+    .batch-bar{
+      max-width:980px;
+      margin:16px auto 0;
+      display:flex;
+      flex-wrap:wrap;
+      justify-content:center;
+      align-items:center;
+      gap:12px;
+      background:var(--rsl-card);
+      border:1px solid var(--rsl-border);
+      box-shadow:0 18px 44px rgba(15,23,42,.35);
+      border-radius:16px;
+      padding:12px 14px;
+      font-size:14px;
+      text-align:center;
+    }
+    .batch-bar label{ font-weight:900; color:var(--rsl-muted); }
+
+    .batch-select{
+      appearance:none;
+      background-color: rgba(0,0,0,0.35);
+      border: 1px solid rgba(148,163,184,.50);
+      color: var(--rsl-fg);
+      padding:10px 36px 10px 14px;
+      border-radius:12px;
+      font-size:15px;
+      font-weight:800;
+      min-width:220px;
+      background-image:
+        linear-gradient(45deg, transparent 50%, var(--rsl-accent) 50%),
+        linear-gradient(135deg, var(--rsl-accent) 50%, transparent 50%);
+      background-position: calc(100% - 22px) center, calc(100% - 17px) center;
+      background-size:6px 6px,6px 6px;
+      background-repeat:no-repeat;
+    }
+    body.theme-light .batch-select{
+      background-color:#ffffff;
+      border-color:rgba(148,163,184,.55);
+      color:#0f172a;
+    }
+
+    .gallery-grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
+      gap:16px;
+      margin-top:16px;
+    }
+    .ph-card{
+      background:var(--rsl-card);
+      border:1px solid var(--rsl-border);
+      border-radius:16px;
+      box-shadow:0 18px 44px rgba(15,23,42,.35);
+      overflow:hidden;
+      display:flex;
+      flex-direction:column;
+      transition:.18s ease;
+    }
+
+    .ph-media{
+      background:#000;
+      width:100%;
+      aspect-ratio:4/3;
+      overflow:hidden;
+      position:relative;
+      cursor:pointer;
+    }
+    .ph-media img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+      opacity:0;
+      transition:opacity .18s ease;
+    }
+
+    .ph-info{ padding:12px; display:flex; flex-direction:column; gap:8px; font-size:14px; }
+
+    .dl-btn{
+      background:linear-gradient(180deg,var(--rsl-accent),#16a34a);
+      color:#052e16;
+      font-weight:900;
+      font-size:14px;
+      border-radius:12px;
+      padding:10px 12px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:6px;
+      box-shadow:0 12px 26px rgba(22,163,74,.45);
+      cursor:pointer;
+      border:0;
+    }
+
+    /* ✅ état désactivé */
+    .dl-btn[disabled]{
+      filter:grayscale(1) brightness(.75);
+      opacity:.85;
+      cursor:not-allowed;
+      box-shadow:none;
+    }
+
+    .copy{
+      text-align:center;
+      color:var(--rsl-muted);
+      font-size:12px;
+      padding:28px 0 10px;
+      margin:26px 0 0;
+      border-top:1px solid rgba(148,163,184,.25);
+    }
+
+    .lightbox{
+      position:fixed;
+      inset:0;
+      background: rgba(0,0,0,.90);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      z-index:2000;
+      flex-direction:column;
+      padding:24px;
+    }
+    .lightbox.open{ display:flex; }
+    .lightbox img{
+      max-width:95vw;
+      max-height:80vh;
+      object-fit:contain;
+      border-radius:12px;
+      box-shadow:0 0 50px rgba(0,0,0,.8);
+    }
+    .lightbox .actions{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      width:95%;
+      max-width:900px;
+      margin-top:16px;
+      flex-wrap:wrap;
+      gap:12px;
+    }
+    .dl-big-btn{
+      background:linear-gradient(180deg,var(--rsl-accent),#16a34a);
+      color:#052e16;
+      font-weight:900;
+      font-size:15px;
+      border-radius:12px;
+      padding:12px 16px;
+      cursor:pointer;
+      min-width:180px;
+      border:0;
+      box-shadow:0 12px 26px rgba(22,163,74,.45);
+    }
+    .dl-big-btn[disabled]{
+      filter:grayscale(1) brightness(.75);
+      opacity:.85;
+      cursor:not-allowed;
+      box-shadow:none;
+    }
+    .close-btn{
+      background:rgba(255,255,255,.08);
+      color:#fff;
+      border:1px solid rgba(255,255,255,.2);
+      font-weight:900;
+      font-size:15px;
+      border-radius:12px;
+      padding:12px 16px;
+      cursor:pointer;
+      min-width:180px;
+    }
+    body.theme-light .close-btn{
+      background:rgba(15,23,42,.08);
+      color:#0f172a;
+      border-color:rgba(148,163,184,.45);
+    }
+  </style>
+</head>
+
+<body>
+
+  <video class="site-bg-video" autoplay muted loop playsinline id="rslBg" poster="images/hero-poster.jpg"></video>
+  <div class="site-bg-dim" aria-hidden="true"></div>
+
+  <nav class="nav">
+    <div class="container">
+      <div class="row">
+        <a class="brand" href="index.html">
+          <img src="images/logo_rsl.png" alt="Logo RSL"/>
+          <span>RSL — Romandie Scooter League</span>
+        </a>
+
+        <ul>
+          <li><a href="cours.html">Cours</a></li>
+          <li><a href="formation.html">Formation RSL</a></li>
+          <li><a href="ou_rider.html">Où rider ?</a></li>
+          <li><a href="evenements.html">Événements</a></li>
+          <li><a href="disciplines.html">Disciplines</a></li>
+          <li><a href="shop-rsl.html">Shop</a></li>
+          <li><a href="comite.html">Comité</a></li>
+          <li><a href="contact.html">Contact</a></li>
+        </ul>
+
+        <div class="cta">
+          <button id="themeToggle" class="theme-toggle" aria-label="Changer le thème">🌙</button>
+
+          <a class="btn" id="btnLogin" href="access.html">Login</a>
+          <a class="btn" id="btnAccount" href="compte.html" style="display:none">Mon compte</a>
+
+          <a href="compte.html" aria-label="Mon compte">
+            <img id="navAvatar" class="nav-avatar" src="images/logo_rsl.png" alt="Avatar" style="display:none;">
+          </a>
+
+          <a class="btn" id="btnCart" href="panier/panier.html">Panier</a>
+          <a class="btn green" href="membres.html">Devenir membre</a>
+          <button id="menuBtn" aria-label="Menu">☰</button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="mobile-sheet" id="mobileMenu" aria-hidden="true">
+    <div class="mobile-dim"></div>
+    <nav class="mobile-panel">
+      <a href="index.html">Accueil</a>
+      <a href="cours.html">Cours</a>
+      <a href="membres.html">Devenir membre</a>
+      <a href="formation.html">Formation RSL</a>
+      <a href="disciplines.html">Disciplines</a>
+      <a href="ou_rider.html">Où rider ?</a>
+      <a href="evenements.html">Événements</a>
+      <a href="game.html">Games</a>
+      <a href="shop-rsl.html">Shop</a>
+      <a href="comite.html">Comité</a>
+      <a href="contact.html">Contact</a>
+      <a href="conditions.html">Conditions générales</a>
+      <a href="access.html">Se connecter</a>
+      <a href="compte.html">Mon compte</a>
+      <a href="coach.html">👨‍🏫 Je suis coach</a>
+    </nav>
+  </div>
+
+  <main class="page">
+    <section class="intro">
+      <div class="eyebrow"><i></i> Montreux Scooter Contest 2025</div>
+
+      <div class="logo-wrap">
+        <img src="images/logo_rsl.png" alt="RSL">
+      </div>
+
+      <h1>Galerie Photos HD <span class="badge-free">téléchargement gratuit</span></h1>
+
+      <p>Merci d’avoir ridé avec nous 💚<br/>Si tu repostes une image, tag <b>@rsl_swiss</b>.</p>
+
+      <div class="notice">
+        Tu veux qu’on retire une photo où tu apparais ?<br/>
+        Écris sur <b>Instagram @rsl_swiss</b> avec le numéro de la photo.
+      </div>
+
+      <div class="results-link">
+        <a href="resultatmtx2025.html">📊 Voir les résultats du Montreux Contest 2025</a>
+      </div>
+    </section>
+
+    <!-- ✅ Message si pas connecté (mais on laisse les images) -->
+    <section class="login-wall" id="loginWall" aria-live="polite">
+      <div style="font-size:13px;color:var(--rsl-muted);line-height:1.5">
+        Les photos sont visibles ✅<br/>
+        Pour <strong>télécharger</strong> en HD : <strong>connecte-toi</strong>.
+      </div>
+      <div class="login-actions">
+        <a class="btn-main" href="access_photos.html?next=galerie_photos_hd.html">🔐 Se connecter</a>
+        <a class="btn-ghost" href="access_photos.html?next=galerie_photos_hd.html">Créer un compte</a>
+      </div>
+    </section>
+
+    <section class="batch-bar" id="batchBar" style="display:none">
+      <label for="batchSelect">Afficher :</label>
+      <select id="batchSelect" class="batch-select">
+        <option value="0">Photos m1 → m40</option>
+        <option value="1">Photos m41 → m80</option>
+        <option value="2">Photos m81 → m120</option>
+        <option value="3">Photos m121 → m160</option>
+        <option value="4">Photos m161 → m200</option>
+      </select>
+    </section>
+
+    <section>
+      <div id="galleryGrid" class="gallery-grid"></div>
+    </section>
+
+    <p class="copy">© 2025 — RSL Romandie Scooter League</p>
+  </main>
+
+  <div class="lightbox" id="lightbox" aria-hidden="true">
+    <img id="lightboxImg" src="" alt=""/>
+    <div class="actions">
+      <button class="dl-big-btn" id="downloadLightboxBtn" type="button">⬇ Télécharger</button>
+      <button class="close-btn" id="closeLightbox" type="button">✕ Fermer</button>
+    </div>
+  </div>
+
+  <script>
+    // Thème
+    (function(){
+      const STORAGE_KEY = 'rsl-theme';
+      const body = document.body;
+      const btn = document.getElementById('themeToggle');
+
+      function applyTheme(theme){
+        if(theme === 'light'){
+          body.classList.add('theme-light');
+          if(btn) btn.textContent = '☀️';
+        }else{
+          body.classList.remove('theme-light');
+          if(btn) btn.textContent = '🌙';
+        }
+      }
+
+      let saved = null;
+      try{ saved = localStorage.getItem(STORAGE_KEY); }catch(e){}
+      if(!saved){
+        const prefersLight = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
+        saved = prefersLight ? 'light' : 'dark';
+      }
+      applyTheme(saved);
+
+      btn?.addEventListener('click', ()=>{
+        const next = body.classList.contains('theme-light') ? 'dark' : 'light';
+        applyTheme(next);
+        try{ localStorage.setItem(STORAGE_KEY, next); }catch(e){}
+      });
+    })();
+
+    // Vidéo bg
+    (function(){
+      const vids = [
+        "https://jynxifufaauoxwzjapzq.supabase.co/storage/v1/object/public/videos_rsl/trottvideo1.mp4",
+        "https://jynxifufaauoxwzjapzq.supabase.co/storage/v1/object/public/videos_rsl/trottvideo2.mp4"
+      ];
+      const pick = vids[Math.floor(Math.random()*vids.length)];
+      const v = document.getElementById('rslBg');
+      if(!v) return;
+
+      const s = document.createElement('source');
+      s.src = pick;
+      s.type = 'video/mp4';
+      v.appendChild(s);
+
+      const start = () => {
+        try{
+          v.playbackRate = 0.6;
+          const p = v.play();
+          if(p && p.catch) p.catch(()=>{});
+        }catch(e){}
+      };
+
+      start();
+      document.addEventListener('visibilitychange', () => {
+        if(document.hidden) v.pause();
+        else start();
+      });
+    })();
+
+    // Menu mobile
+    (function(){
+      const menuBtn=document.getElementById('menuBtn');
+      const mobile=document.getElementById('mobileMenu');
+      if(!menuBtn || !mobile) return;
+
+      menuBtn.addEventListener('click',e=>{
+        e.stopPropagation();
+        mobile.classList.add('open');
+        mobile.setAttribute('aria-hidden','false');
+      });
+      mobile.querySelector('.mobile-dim')?.addEventListener('click',()=>{
+        mobile.classList.remove('open');
+        mobile.setAttribute('aria-hidden','true');
+      });
+      document.addEventListener('keydown',e=>{
+        if(e.key==='Escape'){
+          mobile.classList.remove('open');
+          mobile.setAttribute('aria-hidden','true');
+        }
+      });
+    })();
+
+    // Galerie: images visibles, download seulement si connecté
+    (function(){
+      const loginWall = document.getElementById('loginWall');
+      const batchBar  = document.getElementById('batchBar');
+      const grid      = document.getElementById('galleryGrid');
+      const select    = document.getElementById('batchSelect');
+
+      const lightbox            = document.getElementById('lightbox');
+      const lightboxImg         = document.getElementById('lightboxImg');
+      const closeLightboxBtn    = document.getElementById('closeLightbox');
+      const downloadLightboxBtn = document.getElementById('downloadLightboxBtn');
+
+      const BASE_URL   = "https://jynxifufaauoxwzjapzq.supabase.co/storage/v1/object/public/contest_photos_2025";
+      const MAX_PHOTO  = 200;
+      const BATCH_SIZE = 40;
+
+      let currentFullUrl = "";
+      let isLogged = false;
+
+      const sleep = (ms)=>new Promise(r=>setTimeout(r,ms));
+
+      async function waitForEnv(timeoutMs=8000){
+        const start = Date.now();
+        while(Date.now()-start < timeoutMs){
+          if(window.env?.SUPABASE_URL && window.env?.SUPABASE_ANON) return true;
+          await sleep(50);
+        }
+        return false;
+      }
+
+      function getSupa(){
+        if(window.__rslSupa) return window.__rslSupa;
+        if(!window.env?.SUPABASE_URL || !window.env?.SUPABASE_ANON) return null;
+        window.__rslSupa = supabase.createClient(window.env.SUPABASE_URL, window.env.SUPABASE_ANON);
+        return window.__rslSupa;
+      }
+
+      async function getSessionSafe(maxMs = 5000){
+        const start = Date.now();
+        while(Date.now() - start < maxMs){
+          const supa = getSupa();
+          if(supa){
+            try{
+              const { data } = await supa.auth.getSession();
+              if(data?.session) return data.session;
+            }catch(_){}
+          }
+          await sleep(250);
+        }
+        return null;
+      }
+
+      function openLightbox(src, alt){
+        currentFullUrl = src;
+        lightboxImg.src = src;
+        lightboxImg.alt = alt || "RSL Photo";
+        lightbox.classList.add('open');
+        lightbox.setAttribute('aria-hidden','false');
+
+        // bouton download lightbox
+        if(downloadLightboxBtn){
+          downloadLightboxBtn.disabled = !isLogged;
+          downloadLightboxBtn.textContent = isLogged ? "⬇ Télécharger" : "🔒 Connecte-toi pour télécharger";
+        }
+      }
+      function closeLightbox(){
+        lightbox.classList.remove('open');
+        lightbox.setAttribute('aria-hidden','true');
+        lightboxImg.src = "";
+        currentFullUrl = "";
+      }
+
+      closeLightboxBtn?.addEventListener('click', closeLightbox);
+      lightbox?.addEventListener('click', e=>{ if(e.target === lightbox) closeLightbox(); });
+      document.addEventListener('keydown', e=>{ if(e.key === 'Escape') closeLightbox(); });
+
+      downloadLightboxBtn?.addEventListener('click', async (e)=>{
+        e.preventDefault();
+        e.stopPropagation();
+        if(!isLogged){
+          window.location.href = "access_photos.html?next=galerie_photos_hd.html";
+          return;
+        }
+        if(currentFullUrl) await forceDownloadSmart(currentFullUrl);
+      });
+
+      async function forceDownloadSmart(url){
+        try{
+          const response = await fetch(url, { cache:"no-cache" });
+          if(!response.ok) throw new Error("fetch failed "+response.status);
+          const blob = await response.blob();
+          const blobUrl = URL.createObjectURL(blob);
+
+          const a = document.createElement('a');
+          a.href = blobUrl;
+          a.download = (url.split('/').pop() || 'photo.jpg');
+          a.style.display='none';
+          document.body.appendChild(a);
+          a.click();
+
+          setTimeout(()=>{
+            URL.revokeObjectURL(blobUrl);
+            a.remove();
+          }, 250);
+          return;
+        }catch(_){}
+
+        try{
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = (url.split('/').pop() || 'photo.jpg');
+          a.target = "_self";
+          a.style.display='none';
+          document.body.appendChild(a);
+          a.click();
+          setTimeout(()=>a.remove(), 250);
+          return;
+        }catch(_){}
+
+        window.location.href = url;
+      }
+
+      async function resolveImageUrl(lower, upper){
+        try{ const r = await fetch(lower, { method:"HEAD", cache:"force-cache" }); if(r.ok) return lower; }catch(_){}
+        try{ const r2 = await fetch(upper, { method:"HEAD", cache:"force-cache" }); if(r2.ok) return upper; }catch(_){}
+        return null;
+      }
+
+      function createPhotoCard(photoId){
+        const article = document.createElement('article');
+        article.className = 'ph-card';
+
+        const media = document.createElement('div');
+        media.className = 'ph-media';
+
+        const img = document.createElement('img');
+        img.loading = "lazy";
+        img.decoding = "async";
+
+        let baseName, label;
+        if(photoId === 0){ baseName="m0"; label="Flyer m0"; }
+        else{ baseName="m"+photoId; label="Photo "+baseName; }
+
+        const lower = BASE_URL + "/" + baseName + ".jpg";
+        const upper = BASE_URL + "/" + baseName + ".JPG";
+        img.alt = "RSL " + label;
+
+        img.addEventListener('click', () => { if(img.src) openLightbox(img.src, img.alt); });
+
+        media.appendChild(img);
+        article.appendChild(media);
+
+        const info = document.createElement('div');
+        info.className = 'ph-info';
+
+        const txt = document.createElement('div');
+        txt.textContent = label;
+
+        const btn = document.createElement('button');
+        btn.className = 'dl-btn';
+        btn.type = "button";
+
+        // ✅ état initial (sera update après check session)
+        btn.disabled = !isLogged;
+        btn.textContent = isLogged ? '⬇ Télécharger' : '🔒 Se connecter';
+
+        btn.addEventListener('click', async (e)=>{
+          e.preventDefault();
+          e.stopPropagation();
+
+          if(!isLogged){
+            window.location.href = "access_photos.html?next=galerie_photos_hd.html";
+            return;
+          }
+          if(img.src) await forceDownloadSmart(img.src);
+        });
+
+        info.appendChild(txt);
+        info.appendChild(btn);
+        article.appendChild(info);
+
+        (async ()=>{
+          const url = await resolveImageUrl(lower, upper);
+          if(!url){ article.style.display = "none"; return; }
+          img.src = url;
+          const show = ()=>{ img.style.opacity="1"; };
+          img.onload = show;
+          if(img.complete) show();
+        })();
+
+        // expose pour update plus tard
+        article.__dlBtn = btn;
+
+        return article;
+      }
+
+      function renderBatch(batchIndex){
+        if(!grid) return;
+        grid.innerHTML = "";
+
+        const first = createPhotoCard(0);
+        grid.appendChild(first);
+
+        const startPhotoNumber = batchIndex * BATCH_SIZE + 1;
+        const endPhotoNumber   = startPhotoNumber + BATCH_SIZE - 1;
+
+        for(let num = startPhotoNumber; num <= endPhotoNumber; num++){
+          if(num > MAX_PHOTO) break;
+          grid.appendChild(createPhotoCard(num));
+        }
+
+        // update boutons selon login
+        updateAllDownloadButtons();
+      }
+
+      function updateAllDownloadButtons(){
+        const cards = grid?.querySelectorAll('.ph-card') || [];
+        cards.forEach(card=>{
+          const btn = card.__dlBtn || card.querySelector('.dl-btn');
+          if(!btn) return;
+          btn.disabled = !isLogged;
+          btn.textContent = isLogged ? '⬇ Télécharger' : '🔒 Se connecter';
+        });
+      }
+
+      async function start(){
+        await waitForEnv(8000);
+
+        // 1) on rend la galerie DIRECT (images visibles)
+        if(batchBar) batchBar.style.display = "flex";
+        renderBatch(0);
+
+        // 2) ensuite on check si user loggué
+        const session = await getSessionSafe(5000);
+        isLogged = !!session;
+
+        // 3) si pas loggué: bandeau + désactivation download
+        if(!isLogged){
+          if(loginWall) loginWall.style.display = "block";
+        }else{
+          if(loginWall) loginWall.style.display = "none";
+        }
+        updateAllDownloadButtons();
+
+        select?.addEventListener('change', e=>{
+          const batchIndex = parseInt(e.target.value,10);
+          renderBatch(Number.isFinite(batchIndex) ? batchIndex : 0);
+        });
+      }
+
+      window.addEventListener('load', start);
+    })();
+  </script>
+
+</body>
+</html>

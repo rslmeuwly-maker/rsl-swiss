@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Résultats — Romandie Scooter League</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/common.css"/>
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <script defer src="js/env.js"></script>
+  <script defer src="js/auth.js"></script>
+  <script defer src="js/site.js"></script>
+</head>
+<body>
+  <nav class="nav">
+    <div class="container">
+      <a class="brand" href="index.html">
+        <img src="images/logo_rsl.png" alt="Logo RSL"/>
+        <span><b>RSL — Romandie Scooter League</b></span>
+      </a>
+      <ul>
+        <li><a href="formation.html">Formation RSL</a></li>
+        <li><a href="disciplines.html">Disciplines</a></li>
+        <li><a href="ou_rider.html">Où rider ?</a></li>
+        <li><a href="game.html">Games</a></li>
+        <li><a href="evenements.html">Événements</a></li>
+        <li><a href="comite.html">Comité</a></li>
+        <li><a href="contact.html">Contact</a></li>
+        <li><a href="cours.html">Cours</a></li>
+      </ul>
+      <button id="menuBtn" aria-label="Menu">☰</button>
+      <div class="cta">
+        <button class="btn dark" id="btnLogin">Se connecter</button>
+        <a class="btn dark" id="btnAccount" href="compte.html" style="display:none">Mon compte</a>
+        <a class="btn green" href="membres.html">Devenir membre</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="mobile-sheet" id="mobileMenu">
+    <div class="mobile-dim"></div>
+    <nav class="mobile-panel">
+      <a href="index.html">Accueil</a>
+      <a href="cours.html">Cours</a>
+      <a href="membres.html">Devenir membre</a>
+      <a href="formation.html">Formation RSL</a>
+      <a href="disciplines.html">Disciplines</a>
+      <a href="ou_rider.html">Où rider ?</a>
+      <a href="game.html">Games</a>
+      <a href="evenements.html">Événements</a>
+      <a href="comite.html">Comité</a>
+      <a href="contact.html">Contact</a>
+      <a href="conditions.html">Conditions générales</a>
+      <a href="compte.html">Mon compte</a>
+    </nav>
+  </div>
+
+  <main class='container'><div class='card'><h3>Résultats</h3><p class='muted'>Palmarès à venir.</p></div></main>
+
+  <footer class="footer">
+    <div class="container footer-grid">
+      <div>
+        <h4>RSL</h4>
+        <ul>
+          <li><a href="formation.html">Formation</a></li>
+          <li><a href="evenements.html">Événements</a></li>
+          <li><a href="reglement.html">Règlement</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Ressources</h4>
+        <ul>
+          <li><a href="membres.html">Adhésion</a></li>
+          <li><a href="comite.html">Comité</a></li>
+          <li><a href="ou_rider.html">Où rider</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Contest</h4>
+        <ul>
+          <li><a href="evenements.html">Événements</a></li>
+          <li><a href="inscriptions.html">Inscriptions</a></li>
+          <li><a href="resultats.html">Résultats</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Infos légales</h4>
+        <ul>
+          <li><a href="conditions.html">Conditions générales</a></li>
+          <li><a href="contact.html">Contact</a></li>
+        </ul>
+      </div>
+    </div>
+    <p class="copy">© <span id="rsl-year"></span> — Romandie Scooter League</p>
+  </footer>
+
+  <script>
+    (function(){ var y=document.getElementById('rsl-year'); if(y) y.textContent=(new Date()).getFullYear(); })();
+  </script>
+</body>
+</html>
