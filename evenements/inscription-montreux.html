@@ -5,7 +5,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Inscription Vidy 2026</title>
+  <title>Inscription Finale Montreux 2026</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     :root{
@@ -356,9 +356,9 @@
   <div class="wrap">
     <div class="hero">
       <span class="eyebrow">Infos riders</span>
-      <h1>Vidy — 27 juin 2026</h1>
+      <h1>Finale Montreux — 31 octobre 2026</h1>
       <p>
-        Inscriptions officielles pour l’étape de Vidy du Championnat Romand de Trottinette Freestyle.
+        Inscriptions officielles pour la finale à Montreux du Championnat Romand de Trottinette Freestyle.
         Choisis ta formule ci-dessous, puis complète le formulaire.
       </p>
     </div>
@@ -941,7 +941,7 @@
         canton: payload.canton,
         city: payload.city,
         club: payload.club,
-        notes: baseNotes ? baseNotes + "\n\n" + addressNote : addressNote,
+        notes: "[FINALE MONTREUX 31.10.2026]\n" + (baseNotes ? baseNotes + "\n\n" + addressNote : addressNote),
         pack_type: payload.packType,
         discipline: payload.discipline,
         federation: payload.federation,
@@ -1129,7 +1129,7 @@
             "✅ Inscription enregistrée !<br><br>" +
             "Effectue un virement de <strong>" + state.total + " CHF</strong> :<br>" +
             "<strong>IBAN :</strong> CH94 8080 8009 3546 9723 0<br>" +
-            "<strong>Bénéficiaire :</strong> Ride4Style.(Vidy Scooter Contest)<br>" +
+            "<strong>Bénéficiaire :</strong> Ride4Style (Finale Montreux)<br>" +
             "<strong>Banque :</strong> Raiffeisen Moléson — SWIFT : RAIFCH22<br>" +
             "<strong>Message de paiement :</strong> " + first_name + " " + last_name + " — " + category;
           okmsg.style.display = "block";
