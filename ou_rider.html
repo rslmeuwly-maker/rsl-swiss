@@ -4,108 +4,154 @@
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>Où rider ? — Romandie Scooter League</title>
+
+  <!-- Leaflet -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <!-- Supabase -->
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+
+  <!-- Fonts + styles globaux -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;900&display=swap" rel="stylesheet">
-  <script defer src="/js/env.js"></script>
-  <script defer src="/js/auth.js"></script>
-  <script defer src="/js/site.js"></script>
-  <style>
-    :root{--red:#cc0000;--red2:#e51010;--bg:#080808;--fg:#f0f0f0;--muted:#777;--border:rgba(255,255,255,.08);--card:#111;}
-    *,*:before,*:after{margin:0;padding:0;box-sizing:border-box;}
-    html,body{min-height:100vh;background:var(--bg);color:var(--fg);font-family:'Barlow Condensed',system-ui,sans-serif;overflow-x:hidden;}
-    a{color:inherit;text-decoration:none;}
-    #bg{position:fixed;inset:0;width:100%;height:100%;object-fit:cover;z-index:-3;filter:brightness(.18) saturate(.18) contrast(1.2);background:#000;}
-    .vig{position:fixed;inset:0;z-index:-2;pointer-events:none;background:radial-gradient(ellipse 60% 55% at 50% 15%, transparent 0%, rgba(0,0,0,.55) 55%, rgba(0,0,0,.97) 100%),linear-gradient(180deg,rgba(0,0,0,.2),#080808 70%);}
-    .grain{position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:.33;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.055'/%3E%3C/svg%3E");}
-    .sitenav{position:sticky;top:0;z-index:500;background:#000;border-bottom:3px solid var(--red);padding:0 28px;display:flex;align-items:center;justify-content:space-between;height:54px;}
-    .sitenav-brand{display:flex;align-items:center;text-decoration:none;}
-    .sitenav-tab{background:var(--red);height:54px;width:58px;display:flex;align-items:center;justify-content:center;margin-left:-28px;margin-right:16px;flex:0 0 auto;}
-    .sitenav-tab img{height:34px;object-fit:contain;}
-    .sitenav-name{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:.1em;color:#fff;line-height:1;}
-    .sitenav-name small{display:block;font-family:'Barlow Condensed',sans-serif;font-size:9px;font-weight:700;letter-spacing:.22em;color:var(--red);margin-top:-1px;}
-    .sitenav-links{display:flex;align-items:center;gap:0;list-style:none;height:54px;}
-    .sitenav-links li{height:100%;}
-    .sitenav-links a{display:flex;align-items:center;height:100%;padding:0 14px;font-weight:700;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:rgba(240,240,240,.5);text-decoration:none;border-bottom:3px solid transparent;margin-bottom:-3px;transition:.15s;}
-    .sitenav-links a:hover,.sitenav-links a[aria-current="page"]{color:#fff;border-bottom-color:var(--red);}
-    .sitenav-right{display:flex;align-items:center;gap:8px;}
-    .snbtn{padding:7px 14px;font-weight:700;font-size:11px;letter-spacing:.14em;text-transform:uppercase;text-decoration:none;cursor:pointer;border:1px solid rgba(255,255,255,.14);background:transparent;color:rgba(240,240,240,.6);transition:.15s;}
-    .snbtn:hover{border-color:rgba(255,255,255,.35);color:#fff;}
-    .snbtn.red{background:var(--red);border-color:var(--red);color:#fff;box-shadow:0 0 16px rgba(200,0,0,.45);}
-    #menuBtn{display:none;background:transparent;border:1px solid rgba(255,255,255,.15);color:#fff;padding:6px 10px;font-size:18px;cursor:pointer;}
-    .mobile-sheet{position:fixed;inset:0;display:none;z-index:600;}
-    .mobile-sheet.open{display:block;}
-    .mobile-dim{position:absolute;inset:0;background:rgba(0,0,0,.6);}
-    .mobile-panel{position:absolute;top:0;right:0;height:100%;width:80vw;max-width:320px;background:#0f0f0f;border-left:3px solid var(--red);padding:20px 18px;display:flex;flex-direction:column;gap:2px;overflow-y:auto;}
-    .mobile-panel .mp-title{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:.1em;color:#fff;margin-bottom:12px;border-bottom:1px solid rgba(255,255,255,.08);padding-bottom:10px;}
-    .mobile-panel .mp-title span{color:var(--red);}
-    .mobile-panel a{color:rgba(240,240,240,.6);text-decoration:none;font-weight:700;font-size:15px;letter-spacing:.1em;text-transform:uppercase;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.05);transition:.15s;}
-    .mobile-panel a:hover{color:#fff;padding-left:6px;}
-    .mobile-panel .mp-red{color:var(--red);}
-    .mp-close{position:absolute;top:14px;right:14px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);color:#fff;width:32px;height:32px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;}
+  <link rel="stylesheet" href="css/common.css"/>
 
-    /* PAGE */
-    .wrap{max-width:1200px;margin:0 auto;padding:28px 28px 60px;}
-    .intro{background:var(--card);border:1px solid rgba(200,0,0,.18);padding:20px 22px;position:relative;margin-bottom:18px;}
-    .intro:before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--red);box-shadow:0 0 20px rgba(200,0,0,.75);}
-    .intro h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(32px,5vw,54px);letter-spacing:.04em;color:#fff;line-height:1;margin-bottom:6px;}
-    .intro h1 span{color:var(--red);}
-    .intro p{font-size:15px;color:var(--muted);line-height:1.55;max-width:900px;}
-    .intro p b{color:#fff;}
-    .disclaimer{margin-top:8px;font-size:12px;color:#555;line-height:1.5;}
-    .disclaimer a{color:var(--red);}
+  <!-- RSL scripts -->
+  <script defer src="js/env.js"></script>
+  <script defer src="js/auth.js"></script>
+  <script defer src="js/site.js"></script>
+
+  <style>
+    :root{
+      --red:#c00;
+      --red2:#e51010;
+      --bg:#080808;
+      --fg:#f0f0f0;
+      --muted:#777;
+      --card:#111;
+      --border:rgba(255,255,255,.08);
+      --shadow:0 24px 70px rgba(0,0,0,.62);
+    }
+    *,*:before,*:after{margin:0;padding:0;box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    html,body{min-height:100%;background:var(--bg)!important;color:var(--fg);font-family:'Barlow Condensed',system-ui,sans-serif;overflow-x:hidden}
+    body{display:flex;flex-direction:column}
+    a{color:inherit;text-decoration:none}
+    button,input,select{font:inherit}
+    main{flex:1;position:relative;z-index:10}
+
+    /* BACKGROUND — DA RSL */
+    .site-bg-video{position:fixed;inset:0;width:100%;height:100%;object-fit:cover;z-index:-3;background:#000;filter:brightness(.18) saturate(.18) contrast(1.2);pointer-events:none}
+    .site-bg-dim{position:fixed;inset:0;z-index:-2;pointer-events:none;background:radial-gradient(ellipse 60% 55% at 50% 15%,transparent 0%,rgba(0,0,0,.55) 55%,rgba(0,0,0,.97) 100%),linear-gradient(180deg,rgba(0,0,0,.2),#080808 72%)}
+    body:after{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:.33;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.055'/%3E%3C/svg%3E")}
+
+    /* NAV — même logique visuelle que Location/Cours */
+    .sitenav{position:sticky;top:0;z-index:500;background:#000;border-bottom:3px solid var(--red);padding:0 28px;display:flex;align-items:center;justify-content:space-between;height:54px}
+    .sitenav-brand{display:flex;align-items:center}
+    .sitenav-tab{background:var(--red);height:54px;width:58px;display:flex;align-items:center;justify-content:center;margin-left:-28px;margin-right:16px}
+    .sitenav-tab img{height:34px;display:block}
+    .sitenav-name{font-family:'Bebas Neue';font-size:18px;letter-spacing:.1em;line-height:1}
+    .sitenav-name small{display:block;font-family:'Barlow Condensed';font-size:9px;font-weight:700;letter-spacing:.22em;color:var(--red)}
+    .sitenav-links{display:flex;align-items:center;list-style:none;height:54px}
+    .sitenav-links li{height:100%}
+    .sitenav-links a{display:flex;align-items:center;height:100%;padding:0 14px;font-weight:700;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:rgba(240,240,240,.5);border-bottom:3px solid transparent;margin-bottom:-3px}
+    .sitenav-links a:hover,.sitenav-links a[aria-current=page]{color:#fff;border-bottom-color:var(--red)}
+    .sitenav-right{display:flex;align-items:center;gap:8px}
+    .snbtn{padding:7px 14px;font-weight:700;font-size:11px;letter-spacing:.14em;text-transform:uppercase;border:1px solid rgba(255,255,255,.14);background:transparent;color:rgba(240,240,240,.6)}
+    .snbtn.red{background:var(--red);border-color:var(--red);color:#fff;box-shadow:0 0 16px rgba(200,0,0,.45)}
+    #menuBtn{display:none;background:transparent;border:1px solid rgba(255,255,255,.15);color:#fff;padding:6px 10px;font-size:18px;cursor:pointer}
+    .nav-avatar{width:31px;height:31px;border-radius:50%;object-fit:cover;border:2px solid var(--red);box-shadow:0 0 10px rgba(200,0,0,.55)}
+
+    .mobile-sheet{position:fixed;inset:0;display:none;z-index:600}.mobile-sheet.open{display:block}
+    .mobile-dim{position:absolute;inset:0;background:rgba(0,0,0,.65)}
+    .mobile-panel{position:absolute;top:0;right:0;height:100%;width:80vw;max-width:320px;background:#0f0f0f;border-left:3px solid var(--red);padding:20px 18px;display:flex;flex-direction:column;overflow-y:auto}
+    .mobile-panel .mp-title{font-family:'Bebas Neue';font-size:20px;letter-spacing:.1em;margin-bottom:12px;border-bottom:1px solid rgba(255,255,255,.08);padding-bottom:10px}
+    .mobile-panel .mp-title span,.mobile-panel .mp-red{color:var(--red)}
+    .mobile-panel a{color:rgba(240,240,240,.6);font-weight:700;font-size:15px;letter-spacing:.1em;text-transform:uppercase;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.05)}
+    .mp-close{position:absolute;top:14px;right:14px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);color:#fff;width:32px;height:32px;cursor:pointer}
+
+    /* HERO */
+    .page{max-width:1240px;margin:0 auto;padding:0 28px 70px;width:100%}
+    .intro{position:relative;min-height:330px;margin:0 -28px 30px;padding:62px 28px 54px;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;overflow:hidden;border-bottom:1px solid rgba(200,0,0,.18);background:transparent}
+    .intro:before{content:"";position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(540px,86vw);height:min(540px,86vw);border-radius:50%;background:radial-gradient(circle,rgba(200,0,0,.34),rgba(200,0,0,.08) 48%,transparent 70%);animation:breathe 3.8s ease-in-out infinite}
+    .intro>*{position:relative;z-index:1}
+    .map-kicker{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:15px}
+    .map-kicker .bar{width:28px;height:1px;background:rgba(255,255,255,.12)}
+    .map-kicker .dot{width:5px;height:5px;border-radius:50%;background:var(--red);box-shadow:0 0 8px var(--red)}
+    .map-kicker .txt{font-size:8px;font-weight:700;letter-spacing:.24em;text-transform:uppercase;color:rgba(255,255,255,.32)}
+    .intro h1{font-family:'Bebas Neue';font-size:clamp(58px,9vw,104px);line-height:.88;letter-spacing:.03em;text-shadow:0 0 34px rgba(200,0,0,.48);margin:0}
+    .intro h1 span{color:var(--red)}
+    .redsep{width:36px;height:3px;background:var(--red);box-shadow:0 0 12px rgba(200,0,0,.9);margin:20px auto 18px}
+    .intro p{max-width:760px;color:rgba(240,240,240,.64);font-size:18px;line-height:1.55;margin:0}
+    .intro p b{color:#fff}
+    .disclaimer{max-width:760px;margin-top:15px;font-size:12px;color:rgba(240,240,240,.38);line-height:1.5}
+    .disclaimer a{color:var(--red);font-weight:900}
 
     /* MAP */
-    .map-wrap{position:relative;margin-bottom:20px;}
-    #map{height:85vh;min-height:560px;border:1px solid rgba(200,0,0,.22);background:#0a0a0a;overflow:hidden;}
-    @media(max-width:900px){#map{height:80vh;min-height:420px;}}
-    .leaflet-pane,.leaflet-top,.leaflet-bottom{z-index:2;}
+    .map-wrap{position:relative;margin-top:0}
+    #map{height:78vh;min-height:620px;border:1px solid rgba(255,255,255,.09);border-top:3px solid var(--red);background:#0b0b0b;box-shadow:var(--shadow);overflow:hidden}
+    #map:focus{outline:none}
+    .leaflet-tile-pane{filter:grayscale(.72) saturate(.45) brightness(.62) contrast(1.18)}
+    .leaflet-pane,.leaflet-top,.leaflet-bottom{z-index:2}
+    .leaflet-control-zoom a{background:#0d0d0d!important;color:#fff!important;border-color:rgba(255,255,255,.12)!important}
+    .leaflet-control-attribution{background:rgba(0,0,0,.72)!important;color:#888!important}
+    .leaflet-control-attribution a{color:#bbb!important}
 
-    /* FILTRES */
-    .filters-fab{position:absolute;right:12px;top:12px;z-index:80;}
-    .map-btn{appearance:none;border:1px solid rgba(255,255,255,.2);background:rgba(0,0,0,.85);color:#fff;padding:9px 13px;font:700 12px 'Barlow Condensed',sans-serif;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;transition:.15s;}
-    .map-btn:hover{border-color:var(--red);color:#fff;}
-    .map-btn.red-btn{background:var(--red);border-color:var(--red);box-shadow:0 0 14px rgba(200,0,0,.5);}
-    body.show-filters .filters-wrap{display:block;}
-    .filters-wrap{position:absolute;top:12px;right:12px;z-index:75;width:min(92vw,340px);display:none;}
-    .filters-card{background:rgba(10,10,10,.92);border:1px solid rgba(200,0,0,.3);padding:14px;box-shadow:0 20px 60px rgba(0,0,0,.8);backdrop-filter:blur(6px);max-height:70vh;overflow:auto;}
-    .filters-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px;}
-    .chip{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);padding:9px 11px;font:700 12px 'Barlow Condensed',sans-serif;letter-spacing:.08em;text-transform:uppercase;color:rgba(240,240,240,.7);}
-    .chip input{width:16px;height:16px;}
-    .input,.select{width:100%;background:#0d0d0d;border:1px solid rgba(255,255,255,.14);color:#fff;padding:9px 11px;font:600 13px 'Barlow Condensed',sans-serif;outline:none;}
-    .select{appearance:none;}
-    select option{background:#0d0d0d;color:#fff;}
-    .filters-foot{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;}
+    /* FILTERS */
+    .filters-fab{position:absolute;right:14px;top:14px;z-index:80}
+    .map-btn{appearance:none;border:1px solid rgba(255,255,255,.14);background:#0d0d0d;color:rgba(240,240,240,.74);padding:10px 15px;font-weight:900;font-size:11px;letter-spacing:.13em;text-transform:uppercase;cursor:pointer;transition:.18s ease}
+    .map-btn:hover{color:#fff;border-color:rgba(200,0,0,.6)}
+    .map-btn.green{background:var(--red);color:#fff;border-color:var(--red);box-shadow:0 0 18px rgba(200,0,0,.4)}
+    body.show-filters .filters-wrap{display:block}
+    .filters-wrap{position:absolute;top:14px;right:14px;z-index:75;width:min(92vw,375px);display:none}
+    .filters-card{background:rgba(9,9,9,.96);border:1px solid rgba(255,255,255,.1);border-top:3px solid var(--red);padding:15px;box-shadow:0 24px 60px rgba(0,0,0,.68);backdrop-filter:blur(8px);max-height:72vh;overflow:auto}
+    .filters-title{font-family:'Bebas Neue';font-size:20px;letter-spacing:.08em;color:#fff}
+    .filters-title span{color:var(--red)}
+    .filters-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:12px}
+    .chip{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.075);padding:11px 12px;font-weight:800;font-size:13px;letter-spacing:.04em;color:rgba(240,240,240,.72)}
+    .chip input{width:17px;height:17px;accent-color:var(--red)}
+    .input,.select{width:100%;background:#090909;border:1px solid rgba(255,255,255,.12);color:#fff;padding:11px 12px;font-weight:700;font-size:14px;outline:none;border-radius:0}
+    .input:focus,.select:focus{border-color:rgba(200,0,0,.7)}
+    .select{appearance:none;padding-right:40px;background-image:linear-gradient(45deg,transparent 50%,var(--red) 50%),linear-gradient(135deg,var(--red) 50%,transparent 50%);background-position:calc(100% - 22px) center,calc(100% - 16px) center;background-size:6px 6px,6px 6px;background-repeat:no-repeat}
+    select option{background:#090909;color:#fff}
+    .filters-foot{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}
 
     /* POPUPS */
-    .leaflet-popup-content-wrapper{background:rgba(0,0,0,.9);border:1px solid rgba(200,0,0,.5);border-radius:0;box-shadow:0 20px 50px rgba(0,0,0,.9);color:#fff;}
-    .leaflet-popup-tip{background:rgba(0,0,0,.9);}
-    .leaflet-popup-content{margin:10px;min-width:180px;max-width:240px;}
-    .rsl-pop-title{font-family:'Bebas Neue',sans-serif;font-size:16px;color:#fff;letter-spacing:.05em;}
-    .rsl-pop-loc{color:var(--muted);font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin:2px 0 6px;}
-    .rsl-pop-desc{color:#aaa;font-size:13px;line-height:1.45;margin-bottom:8px;}
-    .rsl-pop-btn{display:inline-block;font:700 11px/1.2 'Barlow Condensed',sans-serif;letter-spacing:.12em;text-transform:uppercase;padding:7px 10px;background:var(--red);color:#fff;text-decoration:none;box-shadow:0 0 12px rgba(200,0,0,.5);}
+    .leaflet-popup-content-wrapper{background:rgba(8,8,8,.96);border:1px solid rgba(200,0,0,.42);border-radius:0;box-shadow:0 30px 60px rgba(0,0,0,.78);color:#fff}
+    .leaflet-popup-tip{background:#080808;border:1px solid rgba(200,0,0,.42)}
+    .leaflet-popup-content{margin:14px;min-width:215px;max-width:275px}
+    .rsl-pop-title{font-family:'Bebas Neue';font-size:20px;letter-spacing:.04em;line-height:1.05;color:#fff}
+    .rsl-pop-loc{color:var(--red);font-weight:800;font-size:12px;margin:4px 0 7px;text-transform:uppercase;letter-spacing:.05em}
+    .rsl-pop-desc{color:var(--muted);font-size:13px;line-height:1.45;margin-bottom:10px}
+    .rsl-pop-actions{display:flex;gap:5px;flex-wrap:wrap}
+    .rsl-pop-btn{display:inline-block;font-weight:900;font-size:10px;letter-spacing:.08em;text-transform:uppercase;padding:8px 10px;background:var(--red);color:#fff;text-decoration:none;box-shadow:0 0 16px rgba(200,0,0,.28)}
+    .rsl-pop-btn.secondary{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);box-shadow:none;color:#ddd}
 
-    footer{background:#000;border-top:3px solid var(--red);padding:28px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;}
-    .ft-brand{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:.1em;color:#fff;}
-    .ft-brand span{color:var(--red);}
-    .ft-copy{font-size:11px;color:var(--muted);margin-top:3px;}
-    .ft-links{display:flex;gap:16px;list-style:none;flex-wrap:wrap;}
-    .ft-links a{font-weight:700;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);text-decoration:none;transition:.15s;}
-    .ft-links a:hover{color:var(--red);}
+    /* FOOTER / COACH */
+    .footer-mini .copy{text-align:center;color:#555;font-size:11px;letter-spacing:.07em;padding:24px 16px;border-top:3px solid var(--red);background:#000;text-transform:uppercase}
+    .coach-fab{position:fixed;right:16px;bottom:16px;z-index:80;display:inline-flex;align-items:center;gap:8px;padding:10px 14px;background:var(--red);color:#fff;font-weight:900;font-size:11px;letter-spacing:.1em;text-transform:uppercase;text-decoration:none;box-shadow:0 0 22px rgba(200,0,0,.45)}
 
-    @media(max-width:980px){.sitenav-links{display:none;}.snbtn:not(.red){display:none;}.sitenav{padding:0 14px;}.sitenav-tab{margin-left:-14px;}#menuBtn{display:block;}.wrap{padding:20px 16px 50px;}}
-    @media(max-width:620px){footer{padding:20px 16px;flex-direction:column;align-items:flex-start;}}
+    @media(max-width:990px){
+      .sitenav-links{display:none}.snbtn:not(.red),#btnCart{display:none!important}.sitenav{padding:0 14px}.sitenav-tab{margin-left:-14px}#menuBtn{display:block}.coach-fab{display:none}
+      .page{padding-left:16px;padding-right:16px}.intro{margin-left:-16px;margin-right:-16px}
+    }
+    @media(max-width:700px){
+      .intro{min-height:300px;padding:48px 16px 42px}.intro p{font-size:16px}.disclaimer{font-size:11px}
+      #map{height:75vh;min-height:560px}.filters-grid{grid-template-columns:1fr}.filters-wrap{width:min(94vw,360px);right:8px;top:8px}.filters-fab{right:8px;top:8px}
+    }
+    @keyframes breathe{0%,100%{opacity:.55;transform:translate(-50%,-50%) scale(.92)}50%{opacity:1;transform:translate(-50%,-50%) scale(1.08)}}
   </style>
 </head>
-<body>
-  <video id="bg" autoplay muted loop playsinline poster="/images/hero-poster.jpg"></video>
-  <div class="vig"></div>
-  <div class="grain"></div>
 
+<body>
+
+  <!-- Fond vidéo -->
+  <video class="site-bg-video" autoplay muted loop playsinline id="rslBg" poster="images/hero-poster.jpg"></video>
+  <div class="site-bg-dim" aria-hidden="true"></div>
+
+  <!-- NAV RSL -->
   <nav class="sitenav">
     <a class="sitenav-brand" href="/">
       <div class="sitenav-tab"><img src="/images/logo_rsl.png" alt="RSL"></div>
@@ -124,176 +170,487 @@
     <div class="sitenav-right">
       <a class="snbtn" href="/access" id="btnLogin">Login</a>
       <a class="snbtn" href="/compte" id="btnAccount" style="display:none">Compte</a>
+      <a aria-label="Mon compte" href="/compte"><img id="navAvatar" class="nav-avatar" src="/images/logo_rsl.png" alt="Avatar" style="display:none"></a>
       <a class="snbtn red" href="/membres">Devenir membre</a>
       <button id="menuBtn" aria-label="Menu">☰</button>
     </div>
   </nav>
 
+  <!-- MENU MOBILE RSL -->
   <div class="mobile-sheet" id="mobileMenu" aria-hidden="true">
     <div class="mobile-dim"></div>
     <nav class="mobile-panel">
-      <button class="mp-close" type="button" id="closeMenu">×</button>
+      <button class="mp-close" id="closeMenu" aria-label="Fermer">×</button>
       <div class="mp-title"><span>RSL</span> MENU</div>
       <a href="/">Accueil</a>
       <a href="/cours">Cours</a>
       <a href="/membres" class="mp-red">Devenir membre</a>
       <a href="/formation">Formation RSL</a>
       <a href="/disciplines">Disciplines</a>
-      <a aria-current="page" href="/ou_rider">Où rider ?</a>
+      <a aria-current="page" href="/ou_rider" class="mp-red">Où rider ?</a>
       <a href="/evenements">Événements</a>
-      <a href="/game">Games</a>
       <a href="/shop-rsl">Shop</a>
       <a href="/comite">Comité</a>
       <a href="/contact">Contact</a>
-      <a href="/conditions">Conditions générales</a>
       <a href="/access">Se connecter</a>
       <a href="/compte">Mon compte</a>
       <a href="/coach">Je suis coach</a>
     </nav>
   </div>
 
-  <main>
-    <div class="wrap">
-      <section class="intro">
-        <h1>OÙ <span>RIDER ?</span></h1>
-        <p>Carte des <b>skateparks</b>, <b>street spots</b>, <b>shops partenaires</b> et <b>lieux de cours RSL</b>. Retrouve les riders sur la carte.</p>
-        <div class="disclaimer">⚠️ Les street spots sont à titre indicatif via <a href="https://ridly.ch" target="_blank" rel="noopener">Ridly.ch</a>. RSL décline toute responsabilité en cas d'usage du mobilier urbain.</div>
-      </section>
+  <!-- CONTENU -->
+  <main class="page">
+    <section class="intro">
+      <div class="map-kicker"><span class="bar"></span><span class="dot"></span><span class="txt">Skateparks · street · shops · cours RSL</span><span class="dot"></span><span class="bar"></span></div>
+      <h1>OÙ <span>RIDER ?</span></h1>
+      <div class="redsep"></div>
+      <p>Retrouve les <b>skateparks</b>, <b>street spots</b>, <b>shops partenaires</b> et <b>lieux de cours RSL</b> sur une seule carte.</p>
+      <div class="disclaimer">⚠️ Les street spots sont à titre indicatif et ajoutés par les riders via <a href="https://ridly.ch" target="_blank" rel="noopener">Ridly.ch</a>. Nous déclinons toute responsabilité en cas d’usage du mobilier urbain ou de dommages liés à ces spots.</div>
+    </section>
 
-      <div class="map-wrap">
-        <div class="filters-fab">
-          <button id="btnToggleFilters" class="map-btn">Filtres ▾</button>
-        </div>
-        <div class="filters-wrap" id="filtersWrap">
-          <div class="filters-card">
-            <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:4px;">
-              <b style="font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:.06em;color:#fff;">FILTRES</b>
-              <button id="btnCloseFilters" class="map-btn" style="padding:5px 9px;">✕</button>
-            </div>
-            <div class="filters-grid">
-              <label class="chip"><input type="checkbox" id="f-park" checked/> Parks</label>
-              <label class="chip"><input type="checkbox" id="f-street" checked/> Street</label>
-              <label class="chip"><input type="checkbox" id="f-shop" checked/> Shops</label>
-              <label class="chip"><input type="checkbox" id="f-cours" checked/> Cours</label>
-              <select id="f-country" class="select">
-                <option value="">Pays (tous)</option>
-                <option value="CH">Suisse</option>
-                <option value="FR">France</option>
-                <option value="DE">Allemagne</option>
-                <option value="EU">Autres Europe</option>
-                <option value="WORLD">Monde</option>
-              </select>
-              <select id="f-canton" class="select"><option value="">Canton (CH)</option></select>
-              <input id="f-type" class="input" placeholder="bowl, rail, pumptrack…" style="grid-column:1/-1;"/>
-            </div>
-            <div class="filters-foot">
-              <button id="btnReset" class="map-btn">Réinitialiser</button>
-              <button id="btnLocate" class="map-btn red-btn">📍 Ma position</button>
-            </div>
+    <div class="map-wrap">
+      <div class="filters-fab">
+        <button id="btnToggleFilters" class="map-btn">Filtres</button>
+      </div>
+
+      <div class="filters-wrap" id="filtersWrap">
+        <div class="filters-card">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
+            <div class="filters-title">FILTRES <span>CARTE</span></div>
+            <button id="btnCloseFilters" class="map-btn" style="padding:6px 10px">✕</button>
+          </div>
+
+          <div class="filters-grid">
+            <label class="chip"><input type="checkbox" id="f-park" checked/> Parks</label>
+            <label class="chip"><input type="checkbox" id="f-street" checked/> Street</label>
+            <label class="chip"><input type="checkbox" id="f-shop" checked/> Shops</label>
+            <label class="chip"><input type="checkbox" id="f-cours" checked/> Cours</label>
+
+            <select id="f-country" class="select">
+              <option value="">Pays (tous)</option>
+              <option value="CH">Suisse</option>
+              <option value="FR">France</option>
+              <option value="DE">Allemagne</option>
+              <option value="EU">Autres Europe</option>
+              <option value="WORLD">Monde</option>
+            </select>
+
+            <select id="f-canton" class="select"><option value="">Canton (CH)</option></select>
+
+            <input id="f-type" class="input" placeholder="Type/texte (bowl, pumptrack, rail…)" />
+          </div>
+
+          <div class="filters-foot">
+            <button id="btnReset" class="map-btn">Réinitialiser</button>
+            <button id="btnLocate" class="map-btn green">📍 Ma position</button>
           </div>
         </div>
-        <div id="map"></div>
       </div>
+
+      <div id="map"></div>
     </div>
   </main>
 
-  <footer>
-    <div>
-      <div class="ft-brand">ROMANDIE <span>SCOOTER LEAGUE</span></div>
-      <div class="ft-copy">© 2026 RSL — Tous droits réservés.</div>
-    </div>
-    <ul class="ft-links">
-      <li><a href="/cours">Cours</a></li>
-      <li><a href="/evenements">Événements</a></li>
-      <li><a href="/membres">Membres</a></li>
-      <li><a href="/contact">Contact</a></li>
-      <li><a href="/access">Login</a></li>
-    </ul>
+  <footer class="footer-mini">
+    <p class="copy">© 2026 — RSL Romandie Scooter League. Tous droits réservés.</p>
   </footer>
 
+  <a class='coach-fab' href='/coach'>👨‍🏫 Je suis coach</a>
+
   <script>
+    // Thème (clair / sombre) — identique index
     (function(){
-      const v=document.getElementById('bg');if(!v)return;
-      const vids=["https://jynxifufaauoxwzjapzq.supabase.co/storage/v1/object/public/videos_rsl/trottvideo1.mp4","https://jynxifufaauoxwzjapzq.supabase.co/storage/v1/object/public/videos_rsl/trottvideo2.mp4"];
-      v.src=vids[Math.floor(Math.random()*vids.length)];v.playbackRate=0.5;
-      try{const p=v.play();if(p&&p.catch)p.catch(()=>{});}catch(e){}
-      document.addEventListener('visibilitychange',()=>{if(document.hidden)v.pause();else{v.playbackRate=0.5;try{v.play();}catch(e){}}});
-    })();
-    (function(){
-      const menuBtn=document.getElementById('menuBtn'),mobile=document.getElementById('mobileMenu'),close=document.getElementById('closeMenu');
-      if(!menuBtn||!mobile)return;
-      const open=()=>{mobile.classList.add('open');mobile.setAttribute('aria-hidden','false');};
-      const shut=()=>{mobile.classList.remove('open');mobile.setAttribute('aria-hidden','true');};
-      menuBtn.addEventListener('click',e=>{e.stopPropagation();open();});
-      close?.addEventListener('click',shut);
-      mobile.querySelector('.mobile-dim')?.addEventListener('click',shut);
-      document.addEventListener('keydown',e=>{if(e.key==='Escape')shut();});
+      const STORAGE_KEY = 'rsl-theme';
+      const body = document.body;
+      const btn = document.getElementById('themeToggle');
+
+      function applyTheme(theme){
+        if(theme === 'light'){
+          body.classList.add('theme-light');
+          if(btn) btn.textContent = '☀️';
+        }else{
+          body.classList.remove('theme-light');
+          if(btn) btn.textContent = '🌙';
+        }
+      }
+
+      let saved = null;
+      try{ saved = localStorage.getItem(STORAGE_KEY); }catch(e){}
+      if(!saved){
+        const prefersLight = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
+        saved = prefersLight ? 'light' : 'dark';
+      }
+      applyTheme(saved);
+
+      if(btn){
+        btn.addEventListener('click', ()=>{
+          const current = body.classList.contains('theme-light') ? 'light' : 'dark';
+          const next = current === 'light' ? 'dark' : 'light';
+          applyTheme(next);
+          try{ localStorage.setItem(STORAGE_KEY, next); }catch(e){}
+        });
+      }
     })();
 
-    function waitForEnv(ms=3500){return new Promise(r=>{const s=Date.now();(function t(){if(window.env?.SUPABASE_URL&&window.env?.SUPABASE_ANON)return r(true);if(Date.now()-s>ms)return r(false);setTimeout(t,30);})();});}
-    function getSupa(){if(window.__rslSupa)return window.__rslSupa;if(!window.env?.SUPABASE_URL||!window.env?.SUPABASE_ANON)return null;window.__rslSupa=supabase.createClient(window.env.SUPABASE_URL,window.env.SUPABASE_ANON);return window.__rslSupa;}
+    // Vidéo de fond — identique index
+    (function(){
+      const vids = [
+        "https://jynxifufaauoxwzjapzq.supabase.co/storage/v1/object/public/videos_rsl/trottvideo1.mp4",
+        "https://jynxifufaauoxwzjapzq.supabase.co/storage/v1/object/public/videos_rsl/trottvideo2.mp4"
+      ];
+      const pick = vids[Math.floor(Math.random()*vids.length)];
+      const v = document.getElementById('rslBg');
+      if(!v) return;
 
+      const s = document.createElement('source');
+      s.src = pick;
+      s.type = 'video/mp4';
+      v.appendChild(s);
+
+      const start = () => {
+        try{
+          v.playbackRate = 0.6;
+          const p = v.play();
+          if(p && p.catch) p.catch(()=>{});
+        }catch(e){}
+      };
+
+      start();
+
+      document.addEventListener('visibilitychange', () => {
+        if(document.hidden) v.pause();
+        else start();
+      });
+    })();
+
+    // Menu mobile — identique index
+    (function(){
+      const menuBtn=document.getElementById('menuBtn');
+      const mobile=document.getElementById('mobileMenu');
+      if(!menuBtn || !mobile) return;
+
+      menuBtn.addEventListener('click',e=>{
+        e.stopPropagation();
+        mobile.classList.add('open');
+        mobile.setAttribute('aria-hidden','false');
+      });
+      const closeMobile = ()=>{ mobile.classList.remove('open'); mobile.setAttribute('aria-hidden','true'); };
+      document.getElementById('closeMenu')?.addEventListener('click', closeMobile);
+      mobile.querySelector('.mobile-dim')?.addEventListener('click',()=>{
+        mobile.classList.remove('open');
+        mobile.setAttribute('aria-hidden','true');
+      });
+      document.addEventListener('keydown',e=>{
+        if(e.key==='Escape'){
+          mobile.classList.remove('open');
+          mobile.setAttribute('aria-hidden','true');
+        }
+      });
+    })();
+
+    /* ===== Supabase singleton (IMPORTANT) ===== */
+    function waitForEnv(timeoutMs=3500){
+      return new Promise((resolve)=>{
+        const start=Date.now();
+        (function tick(){
+          const ok = !!(window.env && window.env.SUPABASE_URL && window.env.SUPABASE_ANON);
+          if(ok) return resolve(true);
+          if(Date.now()-start>timeoutMs) return resolve(false);
+          setTimeout(tick,30);
+        })();
+      });
+    }
+    function getSupa(){
+      if(window.__rslSupa) return window.__rslSupa;
+      if(!window.env?.SUPABASE_URL || !window.env?.SUPABASE_ANON) return null;
+      window.__rslSupa = supabase.createClient(window.env.SUPABASE_URL, window.env.SUPABASE_ANON);
+      return window.__rslSupa;
+    }
+
+    /* ===== APP MAP ===== */
     (async function(){
-      await waitForEnv();
-      const supa=getSupa();
-      if(supa){try{const{data:{user}}=await supa.auth.getUser();const bl=document.getElementById('btnLogin'),ba=document.getElementById('btnAccount');function ui(u){if(u){ba.style.display='inline-flex';bl.style.display='none';}else{ba.style.display='none';bl.style.display='inline-flex';}}ui(user);supa.auth.onAuthStateChange((_e,s)=>ui(s?.user??null));}catch(_){}}
+      await waitForEnv(3500);
+      const supa = getSupa();
 
-      const map=L.map('map',{zoomControl:true}).setView([46.8,8.2],8);
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'}).addTo(map);
+      // UI login/account (même logique que tes pages)
+      if(supa){
+        try{
+          const {data:{user}} = await supa.auth.getUser();
+          const btnLogin=document.getElementById('btnLogin');
+          const btnAccount=document.getElementById('btnAccount');
+          const navAvatar=document.getElementById('navAvatar');
 
-      const mk=(bg,emoji='🛹')=>L.divIcon({className:'rsl-marker',html:`<div style="width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:${bg};border:2px solid rgba(255,255,255,.8);font-size:16px">${emoji}</div>`,iconSize:[32,32],iconAnchor:[16,16]});
-      const icons={park:mk('#cc0000','🛹'),street:mk('#f97316','🧱'),shop:mk('#7c3aed','🏪'),int:mk('#16a34a','🏫'),ext:mk('#0ea5e9','🛼'),rider:mk('#06b6d4','👤')};
-      const layers={park:L.layerGroup().addTo(map),street:L.layerGroup().addTo(map),shop:L.layerGroup().addTo(map),int:L.layerGroup().addTo(map),ext:L.layerGroup().addTo(map),riders:L.layerGroup().addTo(map)};
-      const ALL_MARKERS=[];
+          function ui(u){
+            if(u){
+              if(btnAccount) btnAccount.style.display='inline-flex';
+              if(btnLogin) btnLogin.style.display='none';
+              if(navAvatar) navAvatar.style.display='inline-block';
+            }else{
+              if(btnAccount) btnAccount.style.display='none';
+              if(btnLogin) btnLogin.style.display='inline-flex';
+              if(navAvatar) navAvatar.style.display='none';
+            }
+          }
+          ui(user);
+          supa.auth.onAuthStateChange((_e,s)=>ui(s?.user ?? null));
+        }catch(_){}
+      }
 
-      document.getElementById('btnToggleFilters').onclick=()=>document.body.classList.toggle('show-filters');
-      document.getElementById('btnCloseFilters').onclick=()=>document.body.classList.remove('show-filters');
+      /* ===== Leaflet ===== */
+      const map = L.map('map', { zoomControl:true }).setView([46.8, 8.2], 8);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+        maxZoom:19,
+        attribution:'© OpenStreetMap'
+      }).addTo(map);
 
-      const F={park:document.getElementById('f-park'),street:document.getElementById('f-street'),shop:document.getElementById('f-shop'),cours:document.getElementById('f-cours'),country:document.getElementById('f-country'),canton:document.getElementById('f-canton'),type:document.getElementById('f-type'),reset:document.getElementById('btnReset'),locate:document.getElementById('btnLocate')};
-      document.body.classList.add('show-filters');
+      const mk = (bg, emoji='🛹') => L.divIcon({
+        className:'rsl-marker',
+        html:`<div style="width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:${bg};border:2px solid #fff;color:#fff;font-size:18px">${emoji}</div>`,
+        iconSize:[34,34], iconAnchor:[17,17]
+      });
+
+      const icons = {
+        park:  mk('#7c3aed','🛹'),
+        street:mk('#f97316','🧱'),
+        shop:  mk('#ef4444','🏪'),
+        int:   mk('#cc0000','🛴'),
+        ext:   mk('#e51010','🛴'),
+        rider: mk('#06b6d4','👤')
+      };
+
+      const layers = {
+        park:   L.layerGroup().addTo(map),
+        street: L.layerGroup().addTo(map),
+        shop:   L.layerGroup().addTo(map),
+        int:    L.layerGroup().addTo(map),
+        ext:    L.layerGroup().addTo(map),
+        riders: L.layerGroup().addTo(map)
+      };
+
+      const ALL_MARKERS = []; // {marker, group, canton, country, text}
+
+      /* ===== Filtres UI ===== */
+      const body = document.body;
+      document.getElementById('btnToggleFilters').onclick = ()=> body.classList.toggle('show-filters');
+      document.getElementById('btnCloseFilters').onclick  = ()=> body.classList.remove('show-filters');
+
+      const F = {
+        park:   document.getElementById('f-park'),
+        street: document.getElementById('f-street'),
+        shop:   document.getElementById('f-shop'),
+        cours:  document.getElementById('f-cours'),
+        country:document.getElementById('f-country'),
+        canton: document.getElementById('f-canton'),
+        type:   document.getElementById('f-type'),
+        reset:  document.getElementById('btnReset'),
+        locate: document.getElementById('btnLocate')
+      };
+
+      body.classList.add('show-filters');
 
       function applyFilters(){
-        const show={park:F.park.checked,street:F.street.checked,shop:F.shop.checked,int:F.cours.checked,ext:F.cours.checked};
-        const cantonSel=(F.canton.value||'').trim(),countrySel=(F.country.value||'').trim(),txt=(F.type.value||'').trim().toLowerCase();
+        const show = {
+          park:   F.park.checked,
+          street: F.street.checked,
+          shop:   F.shop.checked,
+          int:    F.cours.checked,
+          ext:    F.cours.checked
+        };
+
+        const cantonSel  = (F.canton.value||'').trim();
+        const countrySel = (F.country.value||'').trim();
+        const txt        = (F.type.value||'').trim().toLowerCase();
+
         ALL_MARKERS.forEach(o=>{
-          let vis=!!show[o.group]||o.group==='riders';
-          if(vis&&countrySel&&o.group!=='riders')vis=(o.country||'')===countrySel;
-          if(vis&&cantonSel&&o.group!=='riders')vis=(o.canton||'')===cantonSel;
-          if(vis&&txt&&o.group!=='riders')vis=(o.text||'').includes(txt);
-          if(vis){if(!map.hasLayer(o.marker))o.marker.addTo(layers[o.group]);}
-          else{if(map.hasLayer(o.marker))layers[o.group].removeLayer(o.marker);}
+          let vis = !!show[o.group] || o.group === 'riders';
+
+          if(vis && countrySel && o.group!=='riders') vis = (o.country||'') === countrySel;
+          if(vis && cantonSel && o.group!=='riders')  vis = (o.canton||'') === cantonSel;
+          if(vis && txt && o.group!=='riders')        vis = (o.text||'').includes(txt);
+
+          if(vis){
+            if(!map.hasLayer(o.marker)) o.marker.addTo(layers[o.group]);
+          }else{
+            if(map.hasLayer(o.marker)) layers[o.group].removeLayer(o.marker);
+          }
         });
       }
 
-      ['change','input'].forEach(ev=>{[F.park,F.street,F.shop,F.cours,F.country,F.canton,F.type].forEach(el=>el.addEventListener(ev,applyFilters));});
-      F.reset.onclick=()=>{F.park.checked=F.street.checked=F.shop.checked=F.cours.checked=true;F.country.value='';F.canton.value='';F.type.value='';applyFilters();};
-      F.locate.onclick=()=>{if(!navigator.geolocation){alert('Géolocalisation indisponible.');return;}navigator.geolocation.getCurrentPosition(pos=>{const{latitude,longitude}=pos.coords;L.circleMarker([latitude,longitude],{radius:6,color:'#cc0000',fillColor:'#cc0000',fillOpacity:.9,weight:2}).addTo(map);map.setView([latitude,longitude],14);},()=>alert("Impossible d'obtenir ta position."));};
+      ['change','input'].forEach(ev=>{
+        [F.park,F.street,F.shop,F.cours,F.country,F.canton,F.type].forEach(el=>{
+          el.addEventListener(ev,applyFilters);
+        });
+      });
 
+      F.reset.onclick = ()=>{
+        F.park.checked = F.street.checked = F.shop.checked = F.cours.checked = true;
+        F.country.value = '';
+        F.canton.value  = '';
+        F.type.value    = '';
+        applyFilters();
+      };
+
+      F.locate.onclick = ()=>{
+        if(!navigator.geolocation){ alert('Géolocalisation indisponible.'); return; }
+        navigator.geolocation.getCurrentPosition(pos=>{
+          const {latitude,longitude} = pos.coords;
+          L.circleMarker([latitude,longitude],{
+            radius:6,color:'#ffffff',fillColor:'#cc0000',fillOpacity:.95,weight:2
+          }).addTo(map);
+          map.setView([latitude,longitude],14);
+        },()=>alert("Impossible d'obtenir ta position."));
+      };
+
+      /* ===== Data Supabase ===== */
       async function loadData(){
-        if(!supa)return;
-        let{data:shops}=await supa.from('shops').select('*');
-        (shops||[]).forEach(s=>{if(!s.lat||!s.lng)return;const html=`<div class="rsl-pop"><div class="rsl-pop-title">${s.nom||'Shop'}</div><div class="rsl-pop-loc">${s.ville||''} ${s.canton?`(${s.canton})`:''}</div><div class="rsl-pop-desc">${s.description||''}</div>${s.site?`<a class="rsl-pop-btn" href="${s.site}" target="_blank" rel="noopener">Site du shop →</a>`:''}</div>`;const m=L.marker([s.lat,s.lng],{icon:icons.shop}).bindPopup(html);ALL_MARKERS.push({marker:m,group:'shop',canton:s.canton||'',country:s.country||'CH',text:`${s.nom||''} ${s.ville||''} ${s.description||''}`.toLowerCase()});m.addTo(layers.shop);});
-        let{data:parks}=await supa.from('spots').select('*');
-        (parks||[]).forEach(p=>{if(!p.lat||!p.lng)return;const html=`<div class="rsl-pop"><div class="rsl-pop-title">${p.nom||'Spot'}</div><div class="rsl-pop-loc">${p.ville||''} ${p.canton?`(${p.canton})`:''}</div><div class="rsl-pop-desc">${p.description?p.description:(p.type||'')}</div><a class="rsl-pop-btn" href="/spot?id=${p.id}">Voir le spot →</a></div>`;const m=L.marker([p.lat,p.lng],{icon:icons.park}).bindPopup(html);ALL_MARKERS.push({marker:m,group:'park',canton:p.canton||'',country:p.country||'CH',text:`${p.nom||''} ${p.ville||''} ${p.canton||''} ${p.type||''} ${p.description||''}`.toLowerCase()});m.addTo(layers.park);});
-        let{data:streets}=await supa.from('bunny').select('*');
-        (streets||[]).forEach(s=>{if(!s.lat||!s.lng)return;const html=`<div class="rsl-pop"><div class="rsl-pop-title">${s.nom||'Street spot'}</div><div class="rsl-pop-loc">${s.ville||''} ${s.canton?`(${s.canton})`:''}</div><div class="rsl-pop-desc">${s.description?s.description:(s.type||'')}</div><a class="rsl-pop-btn" href="/spot?id=${s.id}&street=1">Voir le spot →</a></div>`;const m=L.marker([s.lat,s.lng],{icon:icons.street}).bindPopup(html);ALL_MARKERS.push({marker:m,group:'street',canton:s.canton||'',country:s.country||'CH',text:`${s.nom||''} ${s.ville||''} ${s.canton||''} ${s.type||''} ${s.description||''}`.toLowerCase()});m.addTo(layers.street);});
-        [{group:'int',n:'Cours RSL — Montreux (indoor)',lat:46.433,lng:6.910,desc:'Session encadrée en intérieur'},{group:'int',n:'Cours RSL — Lausanne (La Fièvre)',lat:46.52229897,lng:6.61796801,desc:'Cours en salle / rampes / park'},{group:'ext',n:'Cours RSL — Vidy',lat:46.523,lng:6.610,desc:'En extérieur, bord du lac'}].forEach(c=>{const html=`<div class="rsl-pop"><div class="rsl-pop-title">${c.n}</div><div class="rsl-pop-desc">${c.desc||''}</div><a class="rsl-pop-btn" href="/cours">Infos cours →</a></div>`;const m=L.marker([c.lat,c.lng],{icon:icons[c.group]}).bindPopup(html);ALL_MARKERS.push({marker:m,group:c.group,canton:'',country:'CH',text:(c.n+' '+(c.desc||'')).toLowerCase()});m.addTo(layers[c.group]);});
-        const cantons=new Set();ALL_MARKERS.forEach(o=>{if(o.country==='CH'&&o.canton)cantons.add(o.canton);});
-        F.canton.innerHTML='<option value="">Canton (CH)</option>'+Array.from(cantons).sort().map(c=>`<option value="${c}">${c}</option>`).join('');
+        if(!supa){ console.warn("Supabase env manquant"); return; }
+
+        // shops
+        let { data: shops } = await supa.from('shops').select('*');
+        (shops||[]).forEach(s=>{
+          if(!s.lat||!s.lng) return;
+          const html = `
+            <div class="rsl-pop">
+              <div class="rsl-pop-title">${s.nom||'Shop'}</div>
+              <div class="rsl-pop-loc">${s.ville||''} ${s.canton?`(${s.canton})`:''}</div>
+              <div class="rsl-pop-desc">${s.description||''}</div>
+              ${s.site?`<a class="rsl-pop-btn" href="${s.site}" target="_blank" rel="noopener">Site du shop →</a>`:''}
+            </div>`;
+          const m = L.marker([s.lat,s.lng],{icon:icons.shop}).bindPopup(html);
+          ALL_MARKERS.push({
+            marker:m,
+            group:'shop',
+            canton:s.canton||'',
+            country:s.country||'CH',
+            text:`${s.nom||''} ${s.ville||''} ${s.description||''}`.toLowerCase()
+          });
+          m.addTo(layers.shop);
+        });
+
+        // parks (table spots)
+        let { data: parks } = await supa.from('spots').select('*');
+        (parks||[]).forEach(p=>{
+          if(!p.lat||!p.lng) return;
+          const html = `
+            <div class="rsl-pop">
+              <div class="rsl-pop-title">${p.nom||'Spot'}</div>
+              <div class="rsl-pop-loc">${p.ville||''} ${p.canton?`(${p.canton})`:''}</div>
+              <div class="rsl-pop-desc">${p.description ? p.description : (p.type||'')}</div>
+              <a class="rsl-pop-btn" href="spot.html?id=${p.id}" onclick="window.location.href='spot.html?id=${p.id}';return false;">Voir le spot →</a>
+            </div>`;
+          const m = L.marker([p.lat,p.lng],{icon:icons.park}).bindPopup(html);
+          const text = `${p.nom||''} ${p.ville||''} ${p.canton||''} ${p.type||''} ${p.description||''}`.toLowerCase();
+          ALL_MARKERS.push({ marker:m, group:'park', canton:p.canton||'', country:p.country||'CH', text });
+          m.addTo(layers.park);
+        });
+
+        // street (table bunny)
+        let { data: streets } = await supa.from('bunny').select('*');
+        (streets||[]).forEach(s=>{
+          if(!s.lat||!s.lng) return;
+          const html = `
+            <div class="rsl-pop">
+              <div class="rsl-pop-title">${s.nom||'Street spot'}</div>
+              <div class="rsl-pop-loc">${s.ville||''} ${s.canton?`(${s.canton})`:''}</div>
+              <div class="rsl-pop-desc">${s.description ? s.description : (s.type||'')}</div>
+              <a class="rsl-pop-btn" href="spot.html?id=${s.id}&street=1" onclick="window.location.href='spot.html?id=${s.id}&street=1';return false;">Voir le spot →</a>
+            </div>`;
+          const m = L.marker([s.lat,s.lng],{icon:icons.street}).bindPopup(html);
+          const text = `${s.nom||''} ${s.ville||''} ${s.canton||''} ${s.type||''} ${s.description||''}`.toLowerCase();
+          ALL_MARKERS.push({ marker:m, group:'street', canton:s.canton||'', country:s.country||'CH', text });
+          m.addTo(layers.street);
+        });
+
+        // La Fièvre : skatepark uniquement (pas affiché comme lieu de cours RSL)
+        const hasLaFievre = ALL_MARKERS.some(o => {
+          if(o.group !== 'park') return false;
+          const t = (o.text || '').toLowerCase();
+          return t.includes('fièvre') || t.includes('fievre');
+        });
+        if(!hasLaFievre){
+          const lafievreHtml = `
+            <div class="rsl-pop">
+              <div class="rsl-pop-title">La Fièvre Skatepark</div>
+              <div class="rsl-pop-loc">Lausanne</div>
+              <div class="rsl-pop-desc">Skatepark indoor</div>
+            </div>`;
+          const lafievre = L.marker([46.52229897,6.61796801],{icon:icons.park}).bindPopup(lafievreHtml);
+          ALL_MARKERS.push({
+            marker:lafievre,
+            group:'park',
+            canton:'VD',
+            country:'CH',
+            text:'la fièvre skatepark lausanne skatepark indoor'
+          });
+          lafievre.addTo(layers.park);
+        }
+
+        // lieux de cours RSL — synchronisés avec la page Cours
+        [
+          {group:'ext', n:'Cours RSL — Lausanne Vidy', lat:46.523, lng:6.610, desc:'Cours collectif RSL à Vidy', groupUrl:'https://chat.whatsapp.com/I6yVHc0EaaBAADx2RhqK8b'},
+          {group:'int', n:'Cours RSL — Montreux', lat:46.433, lng:6.910, desc:'Cours collectif RSL à Montreux', groupUrl:'https://chat.whatsapp.com/H0xTYyaULM6B0CiNGFPABG'},
+          {group:'ext', n:'Cours RSL — Martigny', lat:46.107425, lng:7.084939, desc:'Skatepark & Pumptrack, Rue des Vorziers 2', groupUrl:'https://chat.whatsapp.com/CJzHibc0rBmL7E2vSWu1Wj'},
+          {group:'ext', n:'Cours RSL — Yverdon', lat:46.784450, lng:6.644094, desc:'Skatepark des Rives du Lac', groupUrl:'https://chat.whatsapp.com/G6gPHACTjHYKAF7Km7joU1'}
+        ].forEach(c=>{
+          const html = `
+            <div class="rsl-pop">
+              <div class="rsl-pop-title">${c.n}</div>
+              <div class="rsl-pop-desc">${c.desc||''}</div>
+              <div class="rsl-pop-actions">
+                <a class="rsl-pop-btn" href="/cours">Voir les cours →</a>
+                <a class="rsl-pop-btn secondary" href="${c.groupUrl}" target="_blank" rel="noopener">Groupe WhatsApp</a>
+              </div>
+            </div>`;
+          const m = L.marker([c.lat,c.lng],{icon:icons[c.group]}).bindPopup(html);
+          ALL_MARKERS.push({ marker:m, group:c.group, canton:'', country:'CH', text:(c.n+' '+(c.desc||'')).toLowerCase() });
+          m.addTo(layers[c.group]);
+        });
+
+        // cantons CH
+        const cantons = new Set();
+        ALL_MARKERS.forEach(o=>{ if(o.country==='CH' && o.canton) cantons.add(o.canton); });
+        F.canton.innerHTML = '<option value="">Canton (CH)</option>' +
+          Array.from(cantons).sort().map(c=>`<option value="${c}">${c}</option>`).join('');
+
         applyFilters();
       }
 
-      let currentUser=null;
-      if(supa){try{const{data:{user}}=await supa.auth.getUser();currentUser=user||null;}catch(_){}}
-
-      async function loadRiders(){
-        if(!supa)return;
-        const{data:rows}=await supa.from('rider_locations_view').select('*').gt('expires_at',new Date().toISOString());
-        layers.riders.clearLayers();
-        (rows||[]).forEach(r=>{if(currentUser&&r.user_id===currentUser.id)return;if(!r.lat||!r.lng)return;const name=r.full_name||r.username||r.email||'Rider';L.marker([r.lat,r.lng],{icon:icons.rider}).bindPopup(`<div class="rsl-pop"><div class="rsl-pop-title">${name}</div><div class="rsl-pop-desc">Actif récemment</div></div>`).addTo(layers.riders);});
+      /* ===== Riders (affichage uniquement) ===== */
+      let currentUser = null;
+      if(supa){
+        try{
+          const { data:{ user } } = await supa.auth.getUser();
+          currentUser = user || null;
+        }catch(_){}
       }
 
-      await loadData();loadRiders();setInterval(loadRiders,20000);
+      async function loadRiders(){
+        if(!supa) return;
+
+        const { data: rows } = await supa
+          .from('rider_locations_view')
+          .select('*')
+          .gt('expires_at', new Date().toISOString());
+
+        layers.riders.clearLayers();
+
+        (rows||[]).forEach(r=>{
+          if(currentUser && r.user_id===currentUser.id) return;
+          if(!r.lat||!r.lng) return;
+
+          const name = r.full_name || r.username || r.email || 'Rider';
+          const popup = `
+            <div class="rsl-pop">
+              <div class="rsl-pop-title">${name}</div>
+              <div class="rsl-pop-desc">Actif récemment (via l’app)</div>
+            </div>`;
+          L.marker([r.lat,r.lng],{icon:icons.rider}).bindPopup(popup).addTo(layers.riders);
+        });
+      }
+
+      await loadData();
+      loadRiders();
+      setInterval(loadRiders, 20000);
     })();
   </script>
 </body>

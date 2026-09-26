@@ -1,3 +1,4 @@
+
 <!doctype html>
 <html lang="fr">
 <head>
@@ -188,6 +189,43 @@
       color:rgba(255,255,255,.55);
     }
     .lbtn.ghost:hover { background:rgba(255,255,255,.11); color:#fff; }
+
+    .lbtn.location {
+      background:#fff;
+      color:#080808;
+      border:2px solid var(--red);
+      box-shadow:0 0 24px rgba(200,0,0,.42);
+      position:relative;
+      overflow:hidden;
+    }
+    .lbtn.location::before {
+      content:"";
+      position:absolute;
+      left:0; top:0; bottom:0;
+      width:7px;
+      background:var(--red);
+    }
+    .lbtn.location:hover {
+      background:var(--red);
+      color:#fff;
+      transform:translateY(-2px);
+    }
+    .nav-rental-link {
+      color:#fff !important;
+      background:var(--red);
+      box-shadow:inset 0 -3px 0 #fff;
+    }
+    .nav-rental-link:hover {
+      background:var(--red2);
+      border-bottom-color:#fff !important;
+    }
+    .ov-card.rental {
+      background:linear-gradient(135deg,rgba(200,0,0,.18),#111 70%);
+      border-color:rgba(200,0,0,.5);
+    }
+    .ov-card.rental::before { transform:scaleY(1); }
+    .ov-card.rental .ov-card-desc { color:rgba(240,240,240,.68); }
+
 
     /* Flèche scroll vers le bas */
     .scroll-hint {
@@ -659,6 +697,7 @@
   <nav class="mobile-panel">
     <button class="mp-close" onclick="document.getElementById('mobileMenu').classList.remove('open')">✕</button>
     <div class="mp-title">RSL <span>Menu</span></div>
+      <a class="mp-red" href="location-rsl.html">🛠 Location matériel event</a>
     <a href="cours.html">Cours</a>
     <a href="evenements.html">Événements</a>
     <a href="membres.html" class="mp-red">Devenir membre</a>
@@ -691,6 +730,17 @@
   </div>
 
   <div class="ov-grid">
+
+      <a class="ov-card rental" href="location-rsl.html">
+        <div class="ov-icon">🛠</div>
+        <div class="ov-card-title">Location matériel event</div>
+        <div class="ov-card-desc">
+          Loue le matériel nécessaire pour tes événements RSL : équipement,
+          structures et matériel d’organisation.
+        </div>
+        <div class="ov-link">Voir le matériel disponible <span class="ov-arr">→</span></div>
+      </a>
+
     <a href="evenements.html" class="ov-card big">
       <div style="flex:1;">
         <div class="ov-badge">⭐ Championnat officiel</div>
@@ -823,6 +873,7 @@
     <div class="ft-copy">© 2026 · Association Ride4Style Montreux · Tous droits réservés.</div>
   </div>
   <ul class="ft-links">
+      <li><a href="location-rsl.html">Location matériel event</a></li>
     <li><a href="conditions.html">CGV</a></li>
     <li><a href="contact.html">Contact</a></li>
     <li><a href="coach.html">Coach</a></li>
