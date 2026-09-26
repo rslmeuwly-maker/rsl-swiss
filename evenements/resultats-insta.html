@@ -1,0 +1,438 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Résultats format Insta — RSL</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--red:#cc0000;--bg:#080808;--fg:#f0f0f0;--muted:#8a8a8a;--card:#111;--line:rgba(255,255,255,.08)}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:'Barlow Condensed',system-ui,sans-serif;min-height:100vh}
+header{background:#000;border-bottom:3px solid var(--red);padding:14px 22px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+header h1{font-family:'Bebas Neue';font-size:26px;letter-spacing:.08em}
+header h1 span{color:var(--red)}
+header a{color:var(--muted);font-weight:700;font-size:12px;letter-spacing:.14em;text-transform:uppercase;text-decoration:none}
+.layout{display:grid;grid-template-columns:340px 1fr;gap:24px;max-width:1200px;margin:0 auto;padding:24px 18px 60px}
+.panel{background:var(--card);border:1px solid var(--line);padding:18px;position:relative;align-self:start}
+.panel:before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--red)}
+label{display:block;font-size:11px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin:14px 0 6px}
+label:first-child{margin-top:0}
+select,input,textarea{width:100%;background:#050505;color:#fff;border:1px solid rgba(255,255,255,.15);padding:10px;font-family:inherit;font-size:16px}
+textarea{min-height:170px;font-size:14px;line-height:1.4}
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:4px}
+.seg button{background:#050505;color:var(--muted);border:1px solid rgba(255,255,255,.15);padding:10px;font-family:inherit;font-weight:700;font-size:14px;letter-spacing:.08em;text-transform:uppercase;cursor:pointer}
+.seg button.on{background:var(--red);border-color:var(--red);color:#fff}
+.hint{font-size:13px;color:var(--muted);line-height:1.4;margin-top:6px}
+.dl{margin-top:18px;width:100%;background:var(--red);color:#fff;border:0;padding:14px;font-family:inherit;font-weight:900;font-size:15px;letter-spacing:.14em;text-transform:uppercase;cursor:pointer;box-shadow:0 0 22px rgba(200,0,0,.5)}
+.preview{display:flex;justify-content:center}
+canvas{width:100%;max-width:540px;height:auto;border:1px solid var(--line);box-shadow:0 20px 60px rgba(0,0,0,.6);background:#000}
+#manualBox{display:none}
+@media(max-width:860px){.layout{grid-template-columns:1fr}.preview{order:-1}}
+</style>
+</head>
+<body>
+<header>
+  <h1>RÉSULTATS <span>FORMAT INSTA</span></h1>
+  <a href="/evenements">← Événements</a>
+</header>
+
+<div class="layout">
+  <div class="panel">
+    <label>Événement</label>
+    <select id="event">
+      <option value="mtx">Montreux — 30 mai 2026 (1re manche)</option>
+      <option value="vidy">Vidy — 27 juin 2026 (2e manche)</option>
+      <option value="best">Général — meilleur des 2 manches</option>
+      <option value="manual">Saisie manuelle (ex. Finale)</option>
+    </select>
+
+    <div id="autoBox">
+      <label>Catégorie</label>
+      <select id="cat"></select>
+    </div>
+
+    <div id="manualBox">
+      <label>Titre de l'image</label>
+      <input id="mTitle" value="FINALE MONTREUX">
+      <label>Date / lieu</label>
+      <input id="mDate" value="31 octobre 2026 · Montreux">
+      <label>Catégorie</label>
+      <input id="mCat" value="PRO · PARK">
+      <label>Résultats (1 rider par ligne)</label>
+      <textarea id="mList">Nom Prénom; 82,5; Club / Sponsor
+Nom Prénom; 77; Club / Sponsor
+Nom Prénom; 70; Club / Sponsor</textarea>
+      <div class="hint">Format : Nom ; Score ; Infos (les infos sont facultatives). Dans l'ordre du classement.</div>
+    </div>
+
+    <label>Format</label>
+    <div class="seg" id="fmt">
+      <button data-f="post" class="on">Post 4:5</button>
+      <button data-f="story">Story 9:16</button>
+    </div>
+
+    <label>Nombre de riders affichés</label>
+    <select id="top">
+      <option value="3">Podium (Top 3)</option>
+      <option value="5">Top 5</option>
+      <option value="8" selected>Top 8</option>
+      <option value="12">Top 12</option>
+    </select>
+
+    <button class="dl" id="dl">⬇ Télécharger l'image</button>
+    <div class="hint">L'image se télécharge en PNG, prête à poster sur Instagram.</div>
+  </div>
+
+  <div class="preview"><canvas id="cv" width="1080" height="1350"></canvas></div>
+</div>
+
+<script>
+const MTX_RAW = {
+  'street-pro': [
+    { name:'Ruben Victorio',     info:'JF Rideshop / Swissskate',             score:76.3, bt:50 },
+    { name:'Doud Zak',           info:'Surfmachine',                           score:75.6, bt:70 },
+    { name:'Martin Rolle',       info:'Swissskate',                            score:71,   bt:60 },
+    { name:'Pierrick Frossard',  info:'Swissskate',                            score:69 },
+    { name:'Mathieu Vilminot',   info:'MULLET TEA / Swissskate',               score:62,   bt:60 },
+    { name:'Mulaxx Mulaxx',      info:'Surfmachine / Swissskate',              score:59 },
+    { name:'Adrien Gay-Crosier', info:'Swissskate',                            score:58 },
+    { name:'Julien Rouge',       info:'33 / Swissskate',                       score:55 },
+    { name:'Maxime Pellet',      info:'',                                      score:50,   bt:90 },
+    { name:'Hermès Favre',       info:'Swissskate',                            score:49 },
+    { name:'Valentin Buhler',    info:'JF Rideshop / Swissskate',              score:48 },
+    { name:'Eros Napoli',        info:'Swissskate',                            score:47.6 },
+    { name:'Fernando Alves',     info:'',                                      score:47.3 },
+    { name:'Jeremy Matthey',     info:'Swissskate',                            score:38 },
+  ],
+  'pro-park': [
+    { name:'Enak Markwalder',    info:'Decathlon / Swissskate',                score:81,   bt:95 },
+    { name:'Karim Heritier',     info:'Apex Pro Scooter / Swissskate',         score:77,   bt:85 },
+    { name:'Janosch Steinmann',  info:'Ridesidescooters / Gainprotection / Swissskate', score:73, bt:83 },
+    { name:'Theo Matthey',       info:'Swissskate',                            score:66,   bt:80 },
+    { name:'Vladimir Muzhchinin',info:'JF Rideshop',                           score:58,   bt:82 },
+    { name:'Colin Cavallin',     info:'Swissskate',                            score:54,   bt:53 },
+    { name:'Gabriel Stawarz',    info:'Swissskate',                            score:54,   bt:43 },
+    { name:'Jari Brandstetter',  info:'Sportmania / Swissskate',               score:50,   bt:70 },
+    { name:'Alexandre Yerly',    info:'JF Rideshop',                           score:47,   bt:20 },
+    { name:'Mathieu Vilminot',   info:'MULLET TEA',                            score:36 },
+    { name:'Fernando Alves',     info:'',                                      score:26,   bt:30 },
+  ],
+  'amateur-street': [
+    { name:'Aidin Rubin',        info:'JF Rideshop / RSL / Swissskate',        score:70,   bt:70 },
+    { name:'Matthieu Carnal',    info:'',                                      score:63,   bt:50 },
+    { name:'Noé Schalbi',        info:'195Zoo / Swissskate',                   score:61,   bt:10 },
+    { name:'Florian Barbezat',   info:'JF RSL / Swissskate',                   score:56 },
+    { name:'Eliot Benoit',       info:'DISSIDENCE FAMILY / Swissskate',        score:53,   bt:60 },
+    { name:'Quentin Favre',      info:'',                                      score:45 },
+    { name:'Josh Vuille',        info:'',                                      score:44 },
+    { name:'Matteo Pesenti',     info:'Swissskate',                            score:43,   bt:20 },
+    { name:'Curtis Mackrory',    info:'195Zoo',                                score:41,   bt:40 },
+    { name:'Livio Eugster',      info:'',                                      score:40 },
+    { name:'Djamal Momoh',       info:'RSL / Swissskate',                      score:37 },
+    { name:'Sébastien Huck',     info:'Swissskate',                            score:29,   bt:30 },
+    { name:'Arthur Vennin',      info:'Swissskate',                            score:21 },
+  ],
+  'amateur-park': {
+    amateur: [
+      { name:'Séo De Frtuos Oleon', info:'Valence Sport Extrême',             score:74,   bt:70 },
+      { name:'Livio Eugster',      info:'Swissskate',                          score:65,   bt:100 },
+      { name:'Tahar Marinoni',     info:'Swissskate',                          score:61,   bt:70 },
+      { name:'Jérémy Dufaux',      info:'JF Rideshop / Swissskate',            score:57 },
+      { name:'Romain Abramowski',  info:'Sportmania',                          score:49 },
+      { name:'Arthur Olloz',       info:'Swissskate',                          score:43,   bt:50 },
+      { name:'Reijo Karjalainen',  info:'',                                    score:37,   bt:30 },
+      { name:'Marlow Fasnacht',    info:'JF Rideshop / RSL',                   score:35 },
+      { name:'Theo Deferne',       info:'',                                    score:22 },
+    ],
+    femme: [
+      { name:'Zoé Stockar',        info:'Swissskate',                          score:35 },
+    ],
+  },
+  'u15-street': [
+    { name:'Natan Siegenthaler',  info:'Swissskate',                           score:44,   bt:50 },
+    { name:'Dmytro Lisovyi',      info:'Swissskate',                           score:31,   bt:20 },
+    { name:'Jairo Werquin',       info:'',                                     score:28,   bt:20 },
+    { name:'Enzo Borgeau',        info:'Swissskate',                           score:23 },
+  ],
+  'u15-park': [
+    { name:'Ilan Milligan',       info:'Swissskate',                           score:80,   bt:70 },
+    { name:'Natan Siegenthaler',  info:'Swissskate',                           score:53,   bt:30 },
+    { name:'Ernest Viard',        info:'Swissskate',                           score:42,   bt:25 },
+  ],
+  'u13-street': [
+    { name:'Jonathan Sandala',    info:'',                                     score:61,   bt:50 },
+    { name:'Theo Berdoz',         info:'RSL / Swissskate',                     score:39,   bt:20 },
+    { name:'Enzo La Mendola',     info:'RSL / Swissskate',                     score:35.6, bt:23 },
+    { name:'Martin Gerard',       info:'',                                     score:35.3 },
+    { name:'Nils Cary',           info:'',                                     score:26 },
+    { name:'Loïc Messerli',       info:'RSL / Swissskate',                     score:18 },
+    { name:'Isak Pera',           info:'Swissskate',                           score:14 },
+    { name:'Lenny Abdulla',       info:'',                                     score:12,   bt:1 },
+    { name:'Maylone Meuwly',      info:'JF Rideshop / RSL',                    score:7 },
+  ],
+  'u13-park': [
+    { name:'Nilo Schaltegger',    info:'',                                     score:71,   bt:60 },
+    { name:'Isak Pera',           info:'Swissskate',                           score:51 },
+    { name:'Loïc Messerli',       info:'RSL / Swissskate',                     score:38 },
+    { name:'Theo Berdoz',         info:'RSL / Swissskate',                     score:34,   bt:30 },
+  ],
+};
+
+const VIDY_RAW = {
+  u13: {
+    park: [
+      {r:1,n:'Nilo Schaltegger',m:'Vaud • Suisse',s:'75,6',bt:'86,7'},
+      {r:2,n:'Etan Burkharde',m:'Vaud • Suisse',s:'73,3',bt:'3,3'},
+      {r:3,n:'Vincent Hesse',m:'Vaud • Suisse',s:'63,3',bt:'0,0'},
+      {r:4,n:'Jonathan Sandala',m:'Fribourg • Suisse',s:'55,6',bt:'70,0'},
+      {r:5,n:'Isak Pera',m:'Vaud • Suisse',s:'40,0',bt:'0,0'},
+      {r:6,n:'Maylone Meuwly',m:'Fribourg • Suisse',s:'16,7',bt:'0,0'},
+    ],
+    street: [
+      {r:1,n:'Malek Tawakoli',m:'Vaud • Suisse',s:'65,6',bt:'73,3'},
+      {r:2,n:'Theo Berdoz',m:'Fribourg • Suisse',s:'43,3',bt:'50,0'},
+      {r:3,n:'Maylone Meuwly',m:'Fribourg • Suisse',s:'12,2',bt:null},
+      {r:4,n:'Vincent Hesse',m:'Vaud • Suisse',s:null,bt:null},
+    ]
+  },
+  u15: {
+    park: [
+      {r:1,n:'Natan Siegenthaler',m:'Vaud • Suisse',s:'72,2',bt:'40,0'},
+      {r:2,n:'Arno Perret',m:'Vaud • Suisse',s:'48,9',bt:'36,7'},
+      {r:3,n:'Aïdan Ganière',m:'Vaud • Suisse',s:'46,7',bt:'0,0'},
+      {r:4,n:'Nathan Pradervand',m:'Vaud • Suisse',s:'36,7',bt:'28,3'},
+    ],
+    street: [
+      {r:1,n:'Dmytro Lisovyi',m:'Vaud • Autre',s:'48,9',bt:'25,0'},
+      {r:2,n:'Natan Siegenthaler',m:'Vaud • Suisse',s:'44,4',bt:'36,7'},
+    ]
+  },
+  amateur: {
+    park: [
+      {r:1,n:'Rubin Aidin',m:'Valais • Suisse',s:'81,0',bt:'95,0'},
+      {r:2,n:'Romain Abramowski',m:'Vaud • Suisse',s:'73,8',bt:'81,7'},
+      {r:3,n:'Eugster Livio',m:'Zurich • Suisse',s:'71,1',bt:'90,0'},
+      {r:4,n:'Sébastien Huck',m:'Vaud • Suisse',s:'62,2',bt:'0,0'},
+      {r:5,n:'Reijo Karjalainen',m:'Zurich • Suisse',s:'57,8',bt:'0,0'},
+      {r:6,n:'Tahar Marinoni',m:'Vaud • Suisse',s:'51,1',bt:'48,3'},
+    ],
+    street: [
+      {r:1,n:'Rubin Aidin',m:'Valais • Suisse',s:'70,6',bt:'6,7'},
+      {r:2,n:'Eliot Benoit',m:'— • France',s:'62,7',bt:'66,7'},
+      {r:3,n:'Matthieu Carnal',m:'Neuchâtel • Suisse',s:'61,1',bt:'56,7'},
+      {r:4,n:'Florian Barbezat',m:'Vaud • Suisse',s:'59,0',bt:'63,3'},
+      {r:5,n:'Sébastien Huck',m:'Vaud • Suisse',s:'52,8',bt:'30,0'},
+      {r:6,n:'Josh Vuille',m:'Fribourg • Suisse',s:'51,1',bt:'56,7'},
+    ],
+    femme: [
+      {r:1,n:'Zoé Stockar',m:'Vaud • Suisse',s:'61,1',bt:'53,3'},
+    ]
+  },
+  pro: {
+    park: [
+      {r:1,n:'Janosch Steinmann',m:'Saint-Gall • Suisse',s:'82,5',bt:'100,0'},
+      {r:2,n:'Fernando Alves',m:'Vaud • Suisse',s:'72,8',bt:'0,0'},
+      {r:3,n:'Jari Brandstetter',m:'Schaffhouse • Suisse',s:'70,0',bt:'70,0'},
+      {r:4,n:'Colin Cavallin',m:'Neuchâtel • Suisse',s:'64,4',bt:'63,3'},
+    ],
+    street: [
+      {r:1,n:'Felix Corcoran',m:'Autre • Autre',s:'76,8',bt:'5,0'},
+      {r:2,n:'Ruben Victorio',m:'Vaud • Suisse',s:'72,0',bt:'70,0'},
+      {r:3,n:'Pierrick Frossard',m:'Valais • Suisse',s:'71,7',bt:'0,0'},
+      {r:4,n:'Clément Laugier',m:'— • France',s:'61,6',bt:'90,0'},
+      {r:5,n:'Mathias Gaudiano',m:'Neuchâtel • Suisse',s:'61,4',bt:'71,3'},
+      {r:6,n:'Adrien Gay-Crosier',m:'Valais • Suisse',s:'60,6',bt:'56,7'},
+      {r:7,n:'Martin Rolle',m:'Valais • Suisse',s:'59,4',bt:'38,0'},
+      {r:8,n:'Djamal Momoh',m:'Vaud • Suisse',s:'53,9',bt:'0,0'},
+      {r:9,n:'Mathieu Vilminot',m:'Valais • Suisse',s:'53,8',bt:'16,7'},
+      {r:10,n:'Julien Rouge',m:'Valais • Suisse',s:'53,6',bt:'20,0'},
+      {r:11,n:'Killian Froidevaux',m:'Berne • Suisse',s:'51,1',bt:'0,0'},
+      {r:12,n:'Darragh Hudson',m:'Autre • Autre',s:'45,0',bt:'0,0'},
+      {r:13,n:'Fernando Alves',m:'Vaud • Suisse',s:null,bt:null},
+    ]
+  }
+};
+
+/* ===== Normalisation des données ===== */
+const fmtNum=n=>n==null?null:String(n).replace('.',',');
+const btOk=b=>b!=null && parseFloat(String(b).replace(',','.'))>0;
+const EVENTS={
+  mtx:{title:'MONTREUX',date:'30 mai 2026 · 1re manche',cats:[]},
+  vidy:{title:'VIDY',date:'27 juin 2026 · 2e manche · Lausanne',cats:[]}
+};
+const MTX_LABEL={'street-pro':'PRO · STREET','pro-park':'PRO · PARK','amateur-street':'AMATEUR · STREET','amateur-park':'AMATEUR · PARK','u15-street':'U15 · STREET','u15-park':'U15 · PARK','u13-street':'U13 · STREET','u13-park':'U13 · PARK'};
+Object.entries(MTX_RAW).forEach(([k,v])=>{
+  const toRows=a=>a.map(r=>({name:r.name,info:r.info||'',score:fmtNum(r.score),bt:fmtNum(r.bt)}));
+  if(Array.isArray(v)) EVENTS.mtx.cats.push({label:MTX_LABEL[k],rows:toRows(v)});
+  else{
+    if(v.amateur) EVENTS.mtx.cats.push({label:MTX_LABEL[k],rows:toRows(v.amateur)});
+    if(v.femme) EVENTS.mtx.cats.push({label:'FEMME · PARK',rows:toRows(v.femme)});
+  }
+});
+const VL={u13:'U13',u15:'U15',amateur:'AMATEUR',pro:'PRO'};
+Object.entries(VIDY_RAW).forEach(([k,v])=>{
+  ['park','street','femme'].forEach(d=>{
+    if(!v[d]) return;
+    const label=d==='femme'?'FEMME · PARK':VL[k]+' · '+d.toUpperCase();
+    EVENTS.vidy.cats.push({label,rows:v[d].map(r=>({name:r.n,info:r.m||'',score:r.s,bt:r.bt}))});
+  });
+});
+
+/* ===== Général : meilleur score des 2 manches ===== */
+const keyName=n=>n.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').split(/\s+/).filter(Boolean).sort().join(' ');
+const toNum=v=>v==null?null:parseFloat(String(v).replace(',','.'));
+EVENTS.best={title:'GÉNÉRAL',date:'Meilleur score · Montreux + Vidy',cats:[]};
+(function(){
+  const labels=[...new Set([...EVENTS.mtx.cats,...EVENTS.vidy.cats].map(c=>c.label))];
+  const order=['U13 · PARK','U13 · STREET','U15 · PARK','U15 · STREET','AMATEUR · PARK','AMATEUR · STREET','FEMME · PARK','PRO · PARK','PRO · STREET'];
+  labels.sort((a,b)=>(order.indexOf(a)+1||99)-(order.indexOf(b)+1||99));
+  labels.forEach(label=>{
+    const map={};
+    [['mtx','MONTREUX'],['vidy','VIDY']].forEach(([ev,tag])=>{
+      const c=EVENTS[ev].cats.find(x=>x.label===label); if(!c) return;
+      c.rows.forEach(r=>{
+        const sc=toNum(r.score); if(sc==null||isNaN(sc)) return;
+        const k=keyName(r.name);
+        if(!map[k]||sc>map[k].n) map[k]={name:r.name,info:r.info,score:fmtNum(sc),n:sc,bt:null,tag:'MEILLEUR : '+tag};
+      });
+    });
+    const rows=Object.values(map).sort((a,b)=>b.n-a.n);
+    if(rows.length) EVENTS.best.cats.push({label,rows});
+  });
+})();
+
+/* ===== UI ===== */
+const $=id=>document.getElementById(id);
+let format='post';
+const logo=new Image(); logo.src='/images/logo_rsl.png'; logo.onload=draw;
+
+function fillCats(){
+  const ev=EVENTS[$('event').value]; if(!ev) return;
+  $('cat').innerHTML=ev.cats.map((c,i)=>`<option value="${i}">${c.label}</option>`).join('');
+}
+$('event').addEventListener('change',()=>{
+  const man=$('event').value==='manual';
+  $('manualBox').style.display=man?'block':'none';
+  $('autoBox').style.display=man?'none':'block';
+  if(!man) fillCats();
+  draw();
+});
+['cat','top','mTitle','mDate','mCat','mList'].forEach(id=>$(id).addEventListener('input',draw));
+$('fmt').addEventListener('click',e=>{
+  const b=e.target.closest('button'); if(!b) return;
+  format=b.dataset.f;
+  [...$('fmt').children].forEach(x=>x.classList.toggle('on',x===b));
+  draw();
+});
+
+function current(){
+  if($('event').value==='manual'){
+    const rows=$('mList').value.split('\n').map(l=>l.trim()).filter(Boolean).map(l=>{
+      const p=l.split(';').map(s=>s.trim());
+      return {name:p[0]||'',score:p[1]||null,info:p[2]||'',bt:null};
+    });
+    return {title:$('mTitle').value.toUpperCase(),date:$('mDate').value,cat:$('mCat').value.toUpperCase(),rows};
+  }
+  const ev=EVENTS[$('event').value]; const c=ev.cats[+$('cat').value]||ev.cats[0];
+  return {title:ev.title,date:ev.date,cat:c.label,rows:c.rows.filter(r=>r.score!=null)};
+}
+
+/* ===== Dessin ===== */
+function fit(ctx,text,max,size,font){
+  let s=size; ctx.font=`${s}px ${font}`;
+  while(ctx.measureText(text).width>max && s>18){ s-=2; ctx.font=`${s}px ${font}`; }
+  return s;
+}
+function draw(){
+  const cv=$('cv'), W=1080, H=format==='story'?1920:1350;
+  cv.width=W; cv.height=H;
+  const ctx=cv.getContext('2d');
+  const d=current(); const top=+$('top').value; const rows=d.rows.slice(0,top);
+  const B="'Bebas Neue', Impact, sans-serif", C="'Barlow Condensed', Arial, sans-serif";
+
+  // fond
+  ctx.fillStyle='#080808'; ctx.fillRect(0,0,W,H);
+  let g=ctx.createRadialGradient(W*.5,H*.22,0,W*.5,H*.22,W*.75);
+  g.addColorStop(0,'rgba(204,0,0,.42)'); g.addColorStop(.5,'rgba(204,0,0,.08)'); g.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+  ctx.fillStyle='rgba(255,255,255,.025)'; ctx.font=`520px ${B}`; ctx.textAlign='center';
+  ctx.fillText('RSL',W/2,H*.62);
+
+  // bande haut
+  const off=format==='story'?150:0;
+  ctx.fillStyle='#000'; ctx.fillRect(0,off,W,110);
+  ctx.fillStyle='#cc0000'; ctx.fillRect(0,off+110,W,6); ctx.fillRect(0,off,120,110);
+  if(logo.complete && logo.naturalWidth){ const h=78,w=h*logo.naturalWidth/logo.naturalHeight; ctx.drawImage(logo,60-w/2,off+16,w,h); }
+  ctx.textAlign='left'; ctx.fillStyle='#fff'; ctx.font=`44px ${B}`; ctx.fillText('ROMANDIE SCOOTER LEAGUE',150,off+56);
+  ctx.fillStyle='#cc0000'; ctx.font=`700 22px ${C}`; ctx.fillText('CHAMPIONNAT ROMAND DE TROTTINETTE FREESTYLE 2026',150,off+88);
+
+  // titre
+  let y=off+230;
+  ctx.textAlign='center';
+  ctx.fillStyle='rgba(255,255,255,.55)'; ctx.font=`700 28px ${C}`;
+  ctx.fillText('RÉSULTATS OFFICIELS',W/2,y);
+  y+=122;
+  ctx.fillStyle='#fff'; const ts=fit(ctx,d.title,W-120,128,B); ctx.font=`${ts}px ${B}`;
+  ctx.shadowColor='rgba(204,0,0,.6)'; ctx.shadowBlur=30; ctx.fillText(d.title,W/2,y); ctx.shadowBlur=0;
+  y+=24; ctx.fillStyle='#cc0000'; ctx.fillRect(W/2-30,y,60,5);
+  y+=58; ctx.fillStyle='rgba(255,255,255,.7)'; ctx.font=`600 30px ${C}`; ctx.fillText(d.date,W/2,y);
+  // pastille catégorie
+  y+=38; ctx.font=`44px ${B}`; const cw=ctx.measureText(d.cat).width+70;
+  ctx.fillStyle='#cc0000'; ctx.fillRect(W/2-cw/2,y,cw,66);
+  ctx.fillStyle='#fff'; ctx.fillText(d.cat,W/2,y+50);
+  y+=110;
+
+  // lignes
+  const footer=format==='story'?260:110;
+  const avail=H-y-footer;
+  const rh=Math.min(format==='story'?120:104,Math.floor(avail/Math.max(rows.length,1)));
+  const medal=['#f5c518','#c9c9c9','#cd7f32'];
+  rows.forEach((r,i)=>{
+    const x=70, w=W-140, h=rh-12, yy=y+i*rh;
+    ctx.fillStyle=i<3?'rgba(255,255,255,.07)':'rgba(255,255,255,.035)';
+    ctx.fillRect(x,yy,w,h);
+    ctx.fillStyle=i<3?medal[i]:'#cc0000'; ctx.fillRect(x,yy,h,h);
+    ctx.fillStyle=i<3?'#111':'#fff'; ctx.textAlign='center';
+    ctx.font=`${Math.round(h*.62)}px ${B}`; ctx.fillText(String(i+1),x+h/2,yy+h*.72);
+    ctx.textAlign='left';
+    const hasInfo=!!r.info && h>70;
+    ctx.fillStyle='#fff';
+    const ns=fit(ctx,r.name.toUpperCase(),w-h-260,Math.round(h*(hasInfo?.46:.56)),B);
+    ctx.font=`${ns}px ${B}`;
+    ctx.fillText(r.name.toUpperCase(),x+h+26,yy+(hasInfo?h*.52:h*.66));
+    if(hasInfo){ ctx.fillStyle='rgba(255,255,255,.5)'; ctx.font=`600 ${Math.round(h*.24)}px ${C}`;
+      let info=r.info; while(ctx.measureText(info).width>w-h-280 && info.length>3) info=info.slice(0,-2);
+      if(info!==r.info) info=info.trim()+'…';
+      ctx.fillText(info,x+h+26,yy+h*.84); }
+    ctx.textAlign='right';
+    ctx.fillStyle='#fff'; ctx.font=`${Math.round(h*.58)}px ${B}`;
+    ctx.fillText(r.score??'NC',x+w-24,yy+((btOk(r.bt)||r.tag)?h*.56:h*.68));
+    if(r.tag){ ctx.fillStyle='#ff6b6b'; ctx.font=`700 ${Math.round(h*.2)}px ${C}`; ctx.fillText(r.tag,x+w-24,yy+h*.86); }
+    if(btOk(r.bt)){ ctx.fillStyle='#ff6b6b'; ctx.font=`700 ${Math.round(h*.2)}px ${C}`; ctx.fillText('BEST TRICK '+r.bt,x+w-24,yy+h*.86); }
+  });
+  if(!rows.length){ ctx.textAlign='center'; ctx.fillStyle='rgba(255,255,255,.5)'; ctx.font=`600 34px ${C}`; ctx.fillText('Aucun résultat',W/2,y+80); }
+
+  // pied
+  const fy=H-(format==='story'?190:60);
+  ctx.textAlign='center'; ctx.fillStyle='rgba(255,255,255,.6)'; ctx.font=`700 26px ${C}`;
+  ctx.fillText('RSL-SWISS.CH  ·  @RSL.SWISS',W/2,fy);
+  ctx.fillStyle='#cc0000'; ctx.fillRect(0,H-10,W,10);
+}
+
+$('dl').addEventListener('click',()=>{
+  draw();
+  const d=current();
+  const name=('rsl-'+d.title+'-'+d.cat+'-'+format).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/-+$/,'');
+  const a=document.createElement('a'); a.download=name+'.png'; a.href=$('cv').toDataURL('image/png'); a.click();
+});
+
+fillCats();
+Promise.all([document.fonts.load("40px 'Bebas Neue'"),document.fonts.load("700 20px 'Barlow Condensed'")]).finally(draw);
+draw();
+</script>
+</body>
+</html>
