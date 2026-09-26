@@ -1,517 +1,387 @@
 <!doctype html>
 <html lang="fr">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Événements — Romandie Scooter League</title>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="description" content="Événements RSL — Championnat Romand de Trottinette Freestyle 2026, contests, résultats, finale et événements partenaires."/>
+<title>Événements — Romandie Scooter League</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;900&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script defer src="/js/env.js"></script>
+<script defer src="/js/auth.js"></script>
+<script defer src="/js/site.js"></script>
+<style>
+:root{
+  --red:#cc0000;
+  --red2:#e51010;
+  --bg:#080808;
+  --fg:#f0f0f0;
+  --muted:#777;
+  --card:#111;
+  --line:rgba(255,255,255,.075);
+}
+*,*:before,*:after{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{min-height:100vh;background:var(--bg);color:var(--fg);font-family:'Barlow Condensed',system-ui,sans-serif;overflow-x:hidden}
+a{color:inherit;text-decoration:none}
+b,strong{color:#fff}
+#bg{position:fixed;inset:0;width:100%;height:100%;object-fit:cover;z-index:-3;filter:brightness(.17) saturate(.2) contrast(1.25);background:#000}
+.vig{position:fixed;inset:0;z-index:-2;pointer-events:none;background:radial-gradient(ellipse 60% 55% at 50% 15%,transparent 0%,rgba(0,0,0,.56) 55%,rgba(0,0,0,.98) 100%),linear-gradient(180deg,rgba(0,0,0,.18),#080808 72%)}
+.grain{position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:.33;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.055'/%3E%3C/svg%3E")}
 
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;900&display=swap" rel="stylesheet">
+/* NAV */
+.sitenav{position:sticky;top:0;z-index:500;background:#000;border-bottom:3px solid var(--red);padding:0 28px;display:flex;align-items:center;justify-content:space-between;height:54px}
+.sitenav-brand{display:flex;align-items:center}
+.sitenav-tab{background:var(--red);height:54px;width:58px;display:flex;align-items:center;justify-content:center;margin-left:-28px;margin-right:16px}
+.sitenav-tab img{height:34px}
+.sitenav-name{font-family:'Bebas Neue';font-size:18px;letter-spacing:.1em;line-height:1}
+.sitenav-name small{display:block;font-family:'Barlow Condensed';font-size:9px;font-weight:700;letter-spacing:.22em;color:var(--red)}
+.sitenav-links{display:flex;align-items:center;list-style:none;height:54px}
+.sitenav-links li{height:100%}
+.sitenav-links a{display:flex;align-items:center;height:100%;padding:0 14px;font-weight:700;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:rgba(240,240,240,.5);border-bottom:3px solid transparent;margin-bottom:-3px}
+.sitenav-links a:hover,.sitenav-links a[aria-current=page]{color:#fff;border-bottom-color:var(--red)}
+.sitenav-right{display:flex;align-items:center;gap:8px}
+.snbtn{padding:7px 14px;font-weight:700;font-size:11px;letter-spacing:.14em;text-transform:uppercase;border:1px solid rgba(255,255,255,.14);background:transparent;color:rgba(240,240,240,.6)}
+.snbtn.red{background:var(--red);border-color:var(--red);color:#fff;box-shadow:0 0 16px rgba(200,0,0,.45)}
+#menuBtn{display:none;background:transparent;border:1px solid rgba(255,255,255,.15);color:#fff;padding:6px 10px;font-size:18px}
+.mobile-sheet{position:fixed;inset:0;display:none;z-index:600}
+.mobile-sheet.open{display:block}
+.mobile-dim{position:absolute;inset:0;background:rgba(0,0,0,.65)}
+.mobile-panel{position:absolute;top:0;right:0;height:100%;width:80vw;max-width:320px;background:#0f0f0f;border-left:3px solid var(--red);padding:20px 18px;display:flex;flex-direction:column;overflow-y:auto}
+.mobile-panel .mp-title{font-family:'Bebas Neue';font-size:20px;letter-spacing:.1em;margin-bottom:12px;border-bottom:1px solid rgba(255,255,255,.08);padding-bottom:10px}
+.mobile-panel .mp-title span,.mobile-panel .mp-red{color:var(--red)}
+.mobile-panel a{color:rgba(240,240,240,.6);font-weight:700;font-size:15px;letter-spacing:.1em;text-transform:uppercase;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.05)}
+.mp-close{position:absolute;top:14px;right:14px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);color:#fff;width:32px;height:32px}
 
-  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-  <script defer src="js/env.js"></script>
-  <script defer src="js/auth.js"></script>
-  <script defer src="js/site.js"></script>
+/* HERO */
+.page-hero{position:relative;min-height:500px;display:flex;align-items:center;justify-content:center;padding:82px 20px 74px;overflow:hidden;border-bottom:1px solid rgba(200,0,0,.18)}
+.page-hero:before{content:"";position:absolute;left:50%;top:48%;transform:translate(-50%,-50%);width:min(650px,92vw);height:min(650px,92vw);border-radius:50%;background:radial-gradient(circle,rgba(200,0,0,.34),rgba(200,0,0,.08) 46%,transparent 70%);animation:breathe 3.8s ease-in-out infinite}
+.page-hero:after{content:"2026";position:absolute;left:50%;top:52%;transform:translate(-50%,-50%);font-family:'Bebas Neue';font-size:min(38vw,460px);letter-spacing:-.03em;color:rgba(255,255,255,.018);pointer-events:none}
+.hero-inner{position:relative;z-index:1;text-align:center;max-width:980px}
+.fed{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:16px}
+.fed-bar{width:28px;height:1px;background:rgba(255,255,255,.12)}
+.fed-dot{width:5px;height:5px;border-radius:50%;background:var(--red);box-shadow:0 0 8px var(--red)}
+.fed-txt{font-size:8px;font-weight:700;letter-spacing:.24em;text-transform:uppercase;color:rgba(255,255,255,.36)}
+h1{font-family:'Bebas Neue';font-size:clamp(60px,10vw,116px);line-height:.84;letter-spacing:.03em;text-shadow:0 0 34px rgba(200,0,0,.48)}
+h1 span,.section-title span,.big-title span,.sp-title span,.ft-brand span{color:var(--red)}
+.redsep{width:36px;height:3px;background:var(--red);box-shadow:0 0 12px rgba(200,0,0,.9);margin:22px auto 18px}
+.hero-sub{max-width:760px;margin:auto;color:rgba(240,240,240,.66);font-size:19px;line-height:1.55}
+.hero-actions,.actions{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:28px}
+.btn{display:inline-flex;align-items:center;justify-content:center;padding:11px 20px;font-weight:900;font-size:12px;letter-spacing:.16em;text-transform:uppercase;border:0;cursor:pointer;transition:.2s}
+.btn.red{background:var(--red);color:#fff;clip-path:polygon(7px 0,100% 0,calc(100% - 7px) 100%,0 100%);box-shadow:0 0 20px rgba(200,0,0,.55)}
+.btn.red:hover{background:var(--red2);transform:translateY(-1px)}
+.btn.ghost{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.14);color:rgba(255,255,255,.72)}
+.btn.ghost:hover{border-color:rgba(200,0,0,.45);color:#fff}
 
-  <style>
-    :root{
-      --red:#cc0000;
-      --red2:#e51010;
-      --bg:#080808;
-      --fg:#f0f0f0;
-      --muted:#777;
-      --border:rgba(255,255,255,.08);
-      --card:#111;
-      --card2:rgba(255,255,255,.035);
-    }
+/* GENERAL */
+.wrap{max-width:1200px;margin:auto;padding:62px 28px 78px}
+.section-head{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;flex-wrap:wrap;border-bottom:2px solid rgba(255,255,255,.06);padding-bottom:16px;margin-bottom:28px}
+.section-kicker{display:flex;align-items:flex-end;gap:12px}
+.num{font-family:'Bebas Neue';font-size:56px;color:rgba(200,0,0,.18);line-height:1}
+.section-title{font-family:'Bebas Neue';font-size:clamp(34px,4.5vw,54px);line-height:1;letter-spacing:.04em}
+.section-sub{max-width:420px;text-align:right;font-size:14px;color:var(--muted);line-height:1.55}
+.badge{display:inline-flex;width:max-content;font-size:9px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--red);border:1px solid rgba(200,0,0,.35);padding:4px 10px}
+.badge.done{color:#fff;border-color:rgba(255,255,255,.16);background:rgba(255,255,255,.055)}
+.badge.live{color:#fff;background:var(--red);border-color:var(--red);box-shadow:0 0 16px rgba(200,0,0,.38)}
 
-    *,*:before,*:after{margin:0;padding:0;box-sizing:border-box;}
-    html{scroll-behavior:smooth;}
-    body{
-      min-height:100vh;
-      background:var(--bg);
-      color:var(--fg);
-      font-family:'Barlow Condensed',system-ui,sans-serif;
-      overflow-x:hidden;
-    }
+/* SEASON FEATURE */
+.season-feature{position:relative;background:linear-gradient(135deg,rgba(200,0,0,.15),rgba(17,17,17,.98) 42%,rgba(12,12,12,.98));border:1px solid rgba(200,0,0,.28);padding:36px 34px;overflow:hidden}
+.season-feature:before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--red);box-shadow:0 0 22px rgba(200,0,0,.8)}
+.season-feature:after{content:"RSL";position:absolute;right:-8px;bottom:-35px;font-family:'Bebas Neue';font-size:190px;line-height:1;color:rgba(255,255,255,.018)}
+.season-grid{position:relative;z-index:1;display:grid;grid-template-columns:1.25fr .75fr;gap:28px;align-items:end}
+.big-title{font-family:'Bebas Neue';font-size:clamp(46px,6vw,78px);line-height:.92;letter-spacing:.025em;margin-top:10px}
+.big-copy{max-width:680px;color:rgba(240,240,240,.62);font-size:17px;line-height:1.6;margin-top:16px}
+.season-side{display:grid;grid-template-columns:1fr 1fr;gap:3px}
+.stat{background:rgba(0,0,0,.28);border:1px solid rgba(255,255,255,.07);padding:18px 16px}
+.stat b{display:block;font-family:'Bebas Neue';font-size:35px;line-height:1;color:#fff;margin-bottom:6px}
+.stat span{font-size:11px;color:var(--muted);letter-spacing:.12em;text-transform:uppercase;font-weight:700}
 
-    /* Fond vidéo comme l’index */
-    #bg{
-      position:fixed;inset:0;width:100%;height:100%;
-      object-fit:cover;z-index:-3;
-      filter:brightness(.18) saturate(.18) contrast(1.2);
-      background:#000;
-    }
-    .vig{
-      position:fixed;inset:0;z-index:-2;pointer-events:none;
-      background:
-        radial-gradient(ellipse 60% 55% at 50% 15%, transparent 0%, rgba(0,0,0,.55) 55%, rgba(0,0,0,.97) 100%),
-        linear-gradient(180deg,rgba(0,0,0,.2),#080808 70%);
-    }
-    .grain{
-      position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:.33;
-      background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.055'/%3E%3C/svg%3E");
-    }
+/* TIMELINE */
+.rounds{display:grid;grid-template-columns:repeat(3,1fr);gap:3px;position:relative}
+.round{background:var(--card);border:1px solid var(--line);padding:26px 22px 24px;min-height:330px;position:relative;overflow:hidden;display:flex;flex-direction:column}
+.round:before{content:"";position:absolute;left:0;right:0;top:0;height:3px;background:rgba(255,255,255,.1)}
+.round.done:before,.round.next:before{background:var(--red)}
+.round.next{background:linear-gradient(145deg,rgba(200,0,0,.12),var(--card) 66%);border-color:rgba(200,0,0,.25)}
+.round-no{font-family:'Bebas Neue';font-size:64px;line-height:.8;color:rgba(255,255,255,.055);position:absolute;right:16px;top:20px}
+.round-status{display:flex;align-items:center;gap:8px;margin-bottom:22px}
+.status-dot{width:6px;height:6px;border-radius:50%;background:#666}
+.done .status-dot,.next .status-dot{background:var(--red);box-shadow:0 0 10px rgba(200,0,0,.8)}
+.round h3{font-family:'Bebas Neue';font-size:36px;line-height:.95;letter-spacing:.04em;margin-bottom:10px}
+.round .date{font-size:14px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--red)}
+.round p{color:var(--muted);font-size:15px;line-height:1.58;margin-top:18px;flex:1}
+.round .actions{justify-content:flex-start;margin-top:20px}
+.next .soon{display:flex;align-items:center;gap:10px;color:#fff;font-weight:900;text-transform:uppercase;letter-spacing:.12em;font-size:12px;margin-top:18px}
+.next .soon:before{content:"";width:26px;height:2px;background:var(--red);box-shadow:0 0 8px rgba(200,0,0,.8)}
 
-    /* NAV style index */
-    .sitenav{
-      position:sticky;top:0;z-index:500;
-      background:#000;border-bottom:3px solid var(--red);
-      padding:0 28px;display:flex;align-items:center;justify-content:space-between;height:54px;
-    }
-    .sitenav-brand{display:flex;align-items:center;text-decoration:none;}
-    .sitenav-tab{
-      background:var(--red);height:54px;width:58px;
-      display:flex;align-items:center;justify-content:center;
-      margin-left:-28px;margin-right:16px;flex:0 0 auto;
-    }
-    .sitenav-tab img{height:34px;object-fit:contain;}
-    .sitenav-name{
-      font-family:'Bebas Neue',sans-serif;font-size:18px;
-      letter-spacing:.1em;color:#fff;line-height:1;
-    }
-    .sitenav-name small{
-      display:block;font-family:'Barlow Condensed',sans-serif;
-      font-size:9px;font-weight:700;letter-spacing:.22em;
-      color:var(--red);margin-top:-1px;
-    }
-    .sitenav-links{display:flex;align-items:center;gap:0;list-style:none;height:54px;}
-    .sitenav-links li{height:100%;}
-    .sitenav-links a{
-      display:flex;align-items:center;height:100%;padding:0 14px;
-      font-weight:700;font-size:12px;letter-spacing:.12em;text-transform:uppercase;
-      color:rgba(240,240,240,.5);text-decoration:none;
-      border-bottom:3px solid transparent;margin-bottom:-3px;transition:.15s;
-    }
-    .sitenav-links a:hover,.sitenav-links a[aria-current="page"]{color:#fff;border-bottom-color:var(--red);}
-    .sitenav-right{display:flex;align-items:center;gap:8px;}
-    .snbtn{
-      padding:7px 14px;font-weight:700;font-size:11px;letter-spacing:.14em;text-transform:uppercase;
-      text-decoration:none;cursor:pointer;border:1px solid rgba(255,255,255,.14);
-      background:transparent;color:rgba(240,240,240,.6);transition:.15s;
-    }
-    .snbtn:hover{border-color:rgba(255,255,255,.35);color:#fff;}
-    .snbtn.red{background:var(--red);border-color:var(--red);color:#fff;box-shadow:0 0 16px rgba(200,0,0,.45);}
-    .snbtn.red:hover{background:var(--red2);}
-    #menuBtn{
-      display:none;background:transparent;border:1px solid rgba(255,255,255,.15);
-      color:#fff;padding:6px 10px;font-size:18px;cursor:pointer;
-    }
+/* CATEGORIES */
+.categories{display:grid;grid-template-columns:1fr 1fr;gap:3px;margin-top:3px}
+.catbox{background:rgba(255,255,255,.035);border:1px solid var(--line);padding:24px 22px}
+.catbox h3{font-family:'Bebas Neue';font-size:30px;letter-spacing:.04em;margin-bottom:14px}
+.chips{display:flex;gap:7px;flex-wrap:wrap}
+.chip{border:1px solid rgba(255,255,255,.12);background:#0d0d0d;padding:7px 11px;font-size:11px;font-weight:700;letter-spacing:.11em;text-transform:uppercase;color:rgba(255,255,255,.7)}
+.chip.red{border-color:rgba(200,0,0,.4);color:#fff;background:rgba(200,0,0,.08)}
 
-    .mobile-sheet{position:fixed;inset:0;display:none;z-index:600;}
-    .mobile-sheet.open{display:block;}
-    .mobile-dim{position:absolute;inset:0;background:rgba(0,0,0,.6);}
-    .mobile-panel{
-      position:absolute;top:0;right:0;height:100%;width:80vw;max-width:320px;
-      background:#0f0f0f;border-left:3px solid var(--red);
-      padding:20px 18px;display:flex;flex-direction:column;gap:2px;overflow-y:auto;
-    }
-    .mobile-panel .mp-title{
-      font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:.1em;color:#fff;
-      margin-bottom:12px;border-bottom:1px solid rgba(255,255,255,.08);padding-bottom:10px;
-    }
-    .mobile-panel .mp-title span{color:var(--red);}
-    .mobile-panel a{
-      color:rgba(240,240,240,.6);text-decoration:none;font-weight:700;
-      font-size:15px;letter-spacing:.1em;text-transform:uppercase;
-      padding:10px 0;border-bottom:1px solid rgba(255,255,255,.05);transition:.15s;
-    }
-    .mobile-panel a:hover{color:#fff;padding-left:6px;}
-    .mobile-panel .mp-red{color:var(--red);}
-    .mp-close{
-      position:absolute;top:14px;right:14px;background:rgba(255,255,255,.07);
-      border:1px solid rgba(255,255,255,.12);color:#fff;width:32px;height:32px;
-      cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;
-    }
+/* RESULTS */
+.results-grid{display:grid;grid-template-columns:1.2fr .8fr .8fr;gap:3px}
+.result-main,.result-card{background:var(--card);border:1px solid var(--line);padding:28px 24px;position:relative;overflow:hidden}
+.result-main{background:linear-gradient(135deg,rgba(200,0,0,.12),var(--card) 62%);border-color:rgba(200,0,0,.2)}
+.result-main:before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--red)}
+.result-kicker{font-size:9px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--red)}
+.result-main h3,.result-card h3{font-family:'Bebas Neue';font-size:36px;letter-spacing:.03em;line-height:1;margin-top:8px}
+.result-card h3{font-size:30px}
+.result-main p,.result-card p{font-size:15px;color:var(--muted);line-height:1.58;margin-top:12px}
+.result-main .coming{font-family:'Bebas Neue';font-size:26px;color:#fff;margin-top:22px;letter-spacing:.05em}
+.result-card .actions,.result-main .actions{justify-content:flex-start}
 
-    /* HERO page événements */
-    .page-hero{
-      position:relative;
-      min-height:430px;
-      display:flex;align-items:center;justify-content:center;
-      padding:74px 20px 64px;
-      overflow:hidden;
-      border-bottom:1px solid rgba(200,0,0,.18);
-    }
-    .page-hero:before{
-      content:"";position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
-      width:min(540px,82vw);height:min(540px,82vw);border-radius:50%;
-      background:radial-gradient(circle,rgba(200,0,0,.34),rgba(200,0,0,.08) 48%,transparent 70%);
-      filter:blur(2px);animation:breathe 3.8s ease-in-out infinite;
-    }
-    .hero-inner{position:relative;z-index:1;text-align:center;max-width:920px;}
-    .fed{
-      display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:16px;
-      animation:fadeDown .5s .1s both;
-    }
-    .fed-bar{width:28px;height:1px;background:rgba(255,255,255,.12);}
-    .fed-dot{width:5px;height:5px;border-radius:50%;background:var(--red);box-shadow:0 0 8px var(--red);animation:pulse 2s ease-in-out infinite;}
-    .fed-txt{font-size:8px;font-weight:700;letter-spacing:.24em;text-transform:uppercase;color:rgba(255,255,255,.32);white-space:nowrap;}
-    h1{
-      font-family:'Bebas Neue',sans-serif;
-      font-size:clamp(58px,11vw,112px);
-      line-height:.86;letter-spacing:.03em;color:#fff;
-      text-shadow:0 0 34px rgba(200,0,0,.48);
-      animation:fadeUp .6s .18s both;
-    }
-    h1 span{color:var(--red);}
-    .redsep{
-      width:36px;height:3px;background:var(--red);
-      box-shadow:0 0 12px rgba(200,0,0,.9);
-      margin:20px auto 18px;animation:expandLine .45s .35s both;
-    }
-    .hero-sub{
-      max-width:720px;margin:0 auto;
-      color:rgba(240,240,240,.62);font-size:18px;line-height:1.55;
-      animation:fadeUp .6s .32s both;
-    }
+/* LEGACY + AWARDS */
+.extra-grid{display:grid;grid-template-columns:1fr 1fr;gap:3px}
+.extra-card{background:var(--card);border:1px solid var(--line);padding:30px 26px;position:relative;overflow:hidden}
+.extra-card.redwash{background:linear-gradient(135deg,rgba(200,0,0,.12),var(--card) 64%);border-color:rgba(200,0,0,.2)}
+.extra-card h3{font-family:'Bebas Neue';font-size:38px;line-height:1;letter-spacing:.03em;margin:10px 0 12px}
+.extra-card p{font-size:15px;color:var(--muted);line-height:1.6;max-width:570px}
+.extra-card .actions{justify-content:flex-start}
+.year-watermark{position:absolute;right:12px;bottom:-25px;font-family:'Bebas Neue';font-size:120px;color:rgba(255,255,255,.025)}
 
-    main{position:relative;}
-    .wrap{max-width:1200px;margin:0 auto;padding:64px 28px 80px;}
+/* SPONSORS + FOOTER */
+.sp-card{background:var(--card);border:1px solid rgba(200,0,0,.18);padding:38px 34px;position:relative}
+.sp-card:before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--red)}
+.sp-title{font-family:'Bebas Neue';font-size:36px;letter-spacing:.05em;margin-bottom:22px}
+.sponsors-grid{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap}
+.sponsor-card{min-width:190px;min-height:96px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;padding:18px 22px}
+.sponsor-card img{max-width:220px;max-height:70px}
+footer{background:#000;border-top:3px solid var(--red);padding:28px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.ft-brand{font-family:'Bebas Neue';font-size:18px;letter-spacing:.1em}
+.ft-copy{font-size:11px;color:var(--muted);margin-top:3px}
+.ft-links{display:flex;gap:16px;list-style:none;flex-wrap:wrap}
+.ft-links a{font-weight:700;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
 
-    .section-head{
-      display:flex;align-items:flex-end;justify-content:space-between;gap:20px;flex-wrap:wrap;
-      border-bottom:2px solid rgba(255,255,255,.06);padding-bottom:16px;margin-bottom:28px;
-    }
-    .section-kicker{display:flex;align-items:flex-end;gap:12px;}
-    .num{font-family:'Bebas Neue',sans-serif;font-size:56px;color:rgba(200,0,0,.18);line-height:1;}
-    .section-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(34px,4.5vw,54px);line-height:1;letter-spacing:.04em;color:#fff;}
-    .section-title span{color:var(--red);}
-    .section-sub{max-width:360px;text-align:right;font-size:14px;color:var(--muted);line-height:1.55;}
-
-    /* Highlights */
-    .highlights{display:grid;grid-template-columns:1fr 1fr;gap:3px;margin-bottom:36px;}
-    .highlight{
-      background:#111;border:1px solid rgba(200,0,0,.18);
-      padding:24px 22px;position:relative;overflow:hidden;display:flex;gap:20px;justify-content:space-between;align-items:center;
-    }
-    .highlight:before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--red);box-shadow:0 0 20px rgba(200,0,0,.75);}
-    .h-tag{font-size:9px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:var(--red);margin-bottom:8px;}
-    .h-title{font-family:'Bebas Neue',sans-serif;font-size:28px;color:#fff;line-height:1;}
-    .h-desc{font-size:14px;color:var(--muted);line-height:1.55;margin-top:8px;max-width:560px;}
-    .h-desc b{color:#fff;}
-
-    /* Cards événements */
-    .cards{
-      display:grid;
-      grid-template-columns:repeat(3,1fr);
-      gap:3px;
-    }
-    .card{
-      background:#111;border:1px solid rgba(255,255,255,.06);
-      padding:25px 20px;min-height:236px;
-      display:flex;flex-direction:column;gap:10px;
-      position:relative;overflow:hidden;text-decoration:none;color:inherit;
-      transition:border-color .2s,transform .2s;
-    }
-    .card:before{
-      content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--red);
-      transform:scaleY(0);transform-origin:bottom;transition:transform .22s;
-    }
-    .card:hover{border-color:rgba(200,0,0,.42);transform:translateY(-3px);}
-    .card:hover:before{transform:scaleY(1);}
-    .card.featured{
-      grid-column:span 2;
-      background:linear-gradient(135deg,rgba(200,0,0,.09),#111 72%);
-      border-color:rgba(200,0,0,.22);
-    }
-    .card.featured:before{transform:scaleY(1);}
-    .badge{
-      display:inline-flex;width:max-content;
-      font-size:9px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--red);
-      border:1px solid rgba(200,0,0,.35);padding:3px 10px;margin-bottom:4px;
-    }
-    .card h2,.card h3{
-      font-family:'Barlow Condensed',sans-serif;font-weight:900;
-      font-size:24px;letter-spacing:.04em;text-transform:uppercase;color:#fff;line-height:1.05;
-    }
-    .card.featured h2{font-size:32px;}
-    .meta{font-size:14px;color:var(--red);font-weight:700;letter-spacing:.05em;text-transform:uppercase;}
-    .card p{font-size:15px;color:var(--muted);line-height:1.62;flex:1;}
-    .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px;}
-
-    .btn{
-      display:inline-flex;align-items:center;justify-content:center;gap:6px;
-      padding:11px 20px;font-weight:900;font-size:12px;letter-spacing:.16em;text-transform:uppercase;
-      text-decoration:none;cursor:pointer;border:0;transition:.15s ease;line-height:1;
-    }
-    .btn.red{
-      background:var(--red);color:#fff;
-      clip-path:polygon(7px 0%,100% 0%,calc(100% - 7px) 100%,0% 100%);
-      box-shadow:0 0 20px rgba(200,0,0,.55);
-    }
-    .btn.red:hover{background:var(--red2);transform:translateY(-1px);}
-    .btn.ghost{
-      background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.14);color:rgba(255,255,255,.66);
-    }
-    .btn.ghost:hover{background:rgba(255,255,255,.09);color:#fff;transform:translateY(-1px);}
-
-    /* Sponsors */
-    .sponsors{
-      max-width:1200px;margin:0 auto;padding:0 28px 78px;
-    }
-    .sp-card{
-      background:#111;border:1px solid rgba(200,0,0,.18);
-      padding:38px 34px;position:relative;overflow:hidden;
-    }
-    .sp-card:before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--red);box-shadow:0 0 24px rgba(200,0,0,.8);}
-    .sp-card:after{
-      content:"RSL";position:absolute;right:28px;bottom:-10px;
-      font-family:'Bebas Neue',sans-serif;font-size:120px;color:rgba(200,0,0,.045);
-      pointer-events:none;line-height:1;
-    }
-    .sp-title{font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:.05em;color:#fff;line-height:1;margin-bottom:22px;}
-    .sp-title span{color:var(--red);}
-    .sponsors-grid{position:relative;z-index:1;display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;}
-    .sponsor-card{
-      min-width:190px;min-height:96px;
-      background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.08);
-      display:flex;align-items:center;justify-content:center;padding:18px 22px;
-      text-decoration:none;transition:.18s;
-    }
-    .sponsor-card:hover{border-color:rgba(200,0,0,.42);transform:translateY(-3px);}
-    .sponsor-card img{display:block;object-fit:contain;max-width:220px;max-height:70px;}
-    .sponsor-card.jf img,.sponsor-card.isaac img{filter:brightness(1.25);}
-
-    footer{
-      background:#000;border-top:3px solid var(--red);
-      padding:28px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;
-    }
-    .ft-brand{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:.1em;color:#fff;}
-    .ft-brand span{color:var(--red);}
-    .ft-copy{font-size:11px;color:var(--muted);margin-top:3px;}
-    .ft-links{display:flex;gap:16px;list-style:none;flex-wrap:wrap;}
-    .ft-links a{font-weight:700;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);text-decoration:none;transition:.15s;}
-    .ft-links a:hover{color:var(--red);}
-
-    @media (max-width:980px){
-      .sitenav-links{display:none;}
-      .snbtn:not(.red){display:none;}
-      .sitenav{padding:0 14px;}
-      .sitenav-tab{margin-left:-14px;}
-      #menuBtn{display:block;}
-      .cards{grid-template-columns:1fr 1fr;}
-      .card.featured{grid-column:span 2;}
-      .highlights{grid-template-columns:1fr;}
-    }
-    @media (max-width:620px){
-      .page-hero{min-height:360px;padding:54px 16px 50px;}
-      .wrap,.sponsors{padding-left:16px;padding-right:16px;}
-      .wrap{padding-top:48px;}
-      .section-head{align-items:flex-start;}
-      .section-sub{text-align:left;}
-      .cards{grid-template-columns:1fr;}
-      .card.featured{grid-column:span 1;}
-      .highlight{flex-direction:column;align-items:flex-start;}
-      .btn{width:100%;}
-      footer{padding:20px 16px;flex-direction:column;align-items:flex-start;}
-      .fed-txt{font-size:7px;letter-spacing:.18em;}
-    }
-
-    @keyframes fadeDown{from{opacity:0;transform:translateY(-10px);}to{opacity:1;transform:translateY(0);}}
-    @keyframes fadeUp{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
-    @keyframes expandLine{from{width:0;opacity:0;}to{width:36px;opacity:1;}}
-    @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.25;}}
-    @keyframes breathe{0%,100%{opacity:.55;transform:translate(-50%,-50%) scale(.92);}50%{opacity:1;transform:translate(-50%,-50%) scale(1.08);}}
-  </style>
+@media(max-width:1040px){
+  .sitenav-links{display:none}.snbtn:not(.red){display:none}.sitenav{padding:0 14px}.sitenav-tab{margin-left:-14px}#menuBtn{display:block}
+  .season-grid{grid-template-columns:1fr}.rounds{grid-template-columns:1fr 1fr}.round.next{grid-column:1/-1;min-height:260px}
+  .results-grid{grid-template-columns:1fr 1fr}.result-main{grid-column:1/-1}
+}
+@media(max-width:720px){
+  .page-hero{min-height:430px;padding:66px 16px 58px}.wrap{padding:44px 16px 60px}.section-sub{text-align:left}.season-feature{padding:28px 21px}.season-side{grid-template-columns:1fr 1fr}
+  .rounds,.categories,.results-grid,.extra-grid{grid-template-columns:1fr}.round.next,.result-main{grid-column:auto}.round{min-height:280px}.btn{width:100%}.actions{width:100%}
+  .sp-card{padding:28px 20px}footer{padding:20px 16px;flex-direction:column;align-items:flex-start}
+}
+@media(max-width:430px){.season-side{grid-template-columns:1fr}.sitenav-name{display:none}.snbtn.red{display:none}}
+@keyframes breathe{0%,100%{opacity:.55;transform:translate(-50%,-50%) scale(.92)}50%{opacity:1;transform:translate(-50%,-50%) scale(1.08)}}
+</style>
 </head>
 <body>
-  <video id="bg" autoplay muted loop playsinline poster="images/hero-poster.jpg"></video>
-  <div class="vig"></div>
-  <div class="grain"></div>
+<video id="bg" autoplay muted loop playsinline poster="/images/hero-poster.jpg"></video><div class="vig"></div><div class="grain"></div>
 
-  <nav class="sitenav">
-    <a class="sitenav-brand" href="/">
-      <div class="sitenav-tab"><img src="images/logo_rsl.png" alt="RSL"></div>
-      <div class="sitenav-name">RSL<small>Romandie Scooter League</small></div>
-    </a>
-
-    <ul class="sitenav-links">
-      <li><a href="/cours">Cours</a></li>
-      <li><a href="/formation">Formation</a></li>
-      <li><a href="/ou_rider">Où rider ?</a></li>
-      <li><a aria-current="page" href="/evenements">Événements</a></li>
-      <li><a href="/disciplines">Disciplines</a></li>
-      <li><a href="/shop-rsl">Shop</a></li>
-      <li><a href="/comite">Comité</a></li>
-      <li><a href="/contact">Contact</a></li>
-    </ul>
-
-    <div class="sitenav-right">
-      <a class="snbtn" href="/access" id="btnLogin">Login</a>
-      <a class="snbtn" href="/compte" id="btnAccount" style="display:none">Compte</a>
-      <a class="snbtn red" href="/membres">Devenir membre</a>
-      <button id="menuBtn" aria-label="Menu">☰</button>
-    </div>
-  </nav>
-
-  <div class="mobile-sheet" id="mobileMenu" aria-hidden="true">
-    <div class="mobile-dim"></div>
-    <nav class="mobile-panel">
-      <button class="mp-close" type="button" id="closeMenu">×</button>
-      <div class="mp-title"><span>RSL</span> MENU</div>
-      <a href="/">Accueil</a>
-      <a href="/cours">Cours</a>
-      <a href="/membres" class="mp-red">Devenir membre</a>
-      <a href="/formation">Formation RSL</a>
-      <a href="/disciplines">Disciplines</a>
-      <a href="/ou_rider">Où rider ?</a>
-      <a href="/evenements" class="mp-red">Événements</a>
-      <a href="/game">Games</a>
-      <a href="/shop-rsl">Shop</a>
-      <a href="/comite">Comité</a>
-      <a href="/contact">Contact</a>
-      <a href="/conditions">Conditions générales</a>
-      <a href="/access">Se connecter</a>
-      <a href="/compte">Mon compte</a>
-      <a href="/coach">Je suis coach</a>
-    </nav>
+<nav class="sitenav">
+  <a class="sitenav-brand" href="/">
+    <div class="sitenav-tab"><img src="/images/logo_rsl.png" alt="RSL"></div>
+    <div class="sitenav-name">RSL<small>Romandie Scooter League</small></div>
+  </a>
+  <ul class="sitenav-links">
+    <li><a href="/cours">Cours</a></li>
+    <li><a href="/formation">Formation</a></li>
+    <li><a href="/ou_rider">Où rider ?</a></li>
+    <li><a href="/evenements" aria-current="page">Événements</a></li>
+    <li><a href="/disciplines">Disciplines</a></li>
+    <li><a href="/shop-rsl">Shop</a></li>
+    <li><a href="/comite">Comité</a></li>
+    <li><a href="/contact">Contact</a></li>
+  </ul>
+  <div class="sitenav-right">
+    <a class="snbtn" href="/access" id="btnLogin">Login</a>
+    <a class="snbtn" href="/compte" id="btnAccount" style="display:none">Compte</a>
+    <a class="snbtn red" href="/membres">Devenir membre</a>
+    <button id="menuBtn" aria-label="Menu">☰</button>
   </div>
+</nav>
 
-  <header class="page-hero">
-    <div class="hero-inner">
-      <div class="fed">
-        <div class="fed-bar"></div><div class="fed-dot"></div>
-        <div class="fed-txt">Contests officiels · jams · événements partenaires</div>
-        <div class="fed-dot"></div><div class="fed-bar"></div>
-      </div>
-      <h1>ÉVÉNEMENTS <span>RSL</span></h1>
-      <div class="redsep"></div>
-      <p class="hero-sub">Retrouve les contests officiels, journées street encadrées, résultats, votes et événements partenaires de la Romandie Scooter League.</p>
+<div class="mobile-sheet" id="mobileMenu" aria-hidden="true">
+  <div class="mobile-dim"></div>
+  <nav class="mobile-panel">
+    <button class="mp-close" id="closeMenu">×</button>
+    <div class="mp-title"><span>RSL</span> MENU</div>
+    <a href="/">Accueil</a>
+    <a href="/cours">Cours</a>
+    <a href="/membres" class="mp-red">Devenir membre</a>
+    <a href="/formation">Formation RSL</a>
+    <a href="/disciplines">Disciplines</a>
+    <a href="/ou_rider">Où rider ?</a>
+    <a href="/evenements" class="mp-red">Événements</a>
+    <a href="/shop-rsl">Shop</a>
+    <a href="/comite">Comité</a>
+    <a href="/contact">Contact</a>
+  </nav>
+</div>
+
+<header class="page-hero">
+  <div class="hero-inner">
+    <div class="fed"><div class="fed-bar"></div><div class="fed-dot"></div><div class="fed-txt">Contests · championnat · jams · événements partenaires</div><div class="fed-dot"></div><div class="fed-bar"></div></div>
+    <h1>ÉVÉNEMENTS <span>RSL</span></h1>
+    <div class="redsep"></div>
+    <p class="hero-sub">Le Championnat Romand de Trottinette Freestyle réunit les riders de toute la Romandie autour de contests Park & Street, des catégories jeunes jusqu’aux Pros.</p>
+    <div class="hero-actions">
+      <a class="btn red" href="#saison">Voir la saison 2026</a>
+      <a class="btn ghost" href="#resultats">Résultats</a>
     </div>
-  </header>
+  </div>
+</header>
 
-  <main>
-    <section class="wrap">
-      <div class="section-head">
-        <div class="section-kicker">
-          <div class="num">01</div>
-          <div class="section-title">À LA <span>UNE</span></div>
-        </div>
-        <p class="section-sub">Les accès importants autour des événements RSL et de l’histoire du Montreux Scooter Contest.</p>
-      </div>
-
-      <div class="highlights">
-        <article class="highlight">
-          <div>
-            <div class="h-tag">Histoire</div>
-            <div class="h-title">Montreux Scooter Contest</div>
-            <p class="h-desc"><b>Contest pionnier en Suisse</b>, organisé à Montreux depuis 2005. Découvre l’histoire sur MontreuxTV.</p>
-          </div>
-          <a class="btn ghost" href="https://rsl-swiss.ch/montreuxtv" target="_blank" rel="noopener">Video history ▶</a>
-        </article>
-
-        <article class="highlight">
-          <div>
-            <div class="h-tag">Vote officiel</div>
-            <div class="h-title">AwardsBest 2026</div>
-            <p class="h-desc">Classement en direct et vote officiel pour la saison 2026.</p>
-          </div>
-          <a class="btn red" href="https://rsl-swiss.ch/riderswisss" target="_blank" rel="noopener noreferrer">Accéder au vote</a>
-        </article>
-      </div>
-
-      <div class="section-head" style="margin-top:46px;">
-        <div class="section-kicker">
-          <div class="num">02</div>
-          <div class="section-title">EVENTS <span>& RÉSULTATS</span></div>
-        </div>
-        <p class="section-sub">Championnat romand, résultats officiels et archives des éditions précédentes.</p>
-      </div>
-
-      <div class="cards">
-        <article class="card featured">
-          <span class="badge">Saison 2026</span>
-          <h2>Championnat Romand 2026</h2>
-          <div class="meta">📍 Romandie — Saison 2026</div>
-          <p>Le Championnat Romand de Trottinette Freestyle 2026 est lancé. Plusieurs étapes dans toute la Romandie, avec classement officiel, catégories U13, U15, Amateur et Pro.</p>
-          <div class="actions">
-            <a class="btn red" href="/evenements/compte-a-rebours">Infos & inscription</a>
-            <a class="btn ghost" href="/evenements/resultats-montreux-2026">🏆 Résultats</a>
-          </div>
-        </article>
-
-        <article class="card">
-          <span class="badge">Résultats</span>
-          <h3>Résultats — Montreux Scooter Contest 2025</h3>
-          <div class="meta">📍 Montreux — 6 décembre 2025</div>
-          <p>Retrouve le classement officiel de la 20e édition : Park, Street, Kids et Pros.</p>
-          <div class="actions">
-            <a class="btn red" href="/evenements/resultats-montreux-2026">Voir les résultats</a>
-          </div>
-        </article>
-
-        <article class="card">
-          <span class="badge">Archive</span>
-          <h3>Montreux Scooter Contest — 20e édition</h3>
-          <div class="meta">📍 Montreux — 6 décembre 2025</div>
-          <p>Le plus grand contest de Suisse romande a fêté ses 20 ans. Une édition historique avec Park, Street, kids et pros. Merci à tous les riders, juges et bénévoles.</p>
-          <div class="actions">
-            <a class="btn ghost" href="/access_photos">📸 Photos 2025</a>
-          </div>
-        </article>
-      </div>
-    </section>
-
-    <section class="sponsors">
-      <div class="sp-card">
-        <div class="sp-title">AVEC LE <span>SOUTIEN DE</span></div>
-        <div class="sponsors-grid">
-          <a class="sponsor-card tsb" href="https://travaux-sur-bois.ch/" target="_blank" rel="noopener">
-            <img src="images/sponsors/travaux-sur-bois.png" alt="Travaux sur Bois">
-          </a>
-          <a class="sponsor-card jf" href="https://www.jfrideshop.ch/" target="_blank" rel="noopener">
-            <img src="images/logo_jf.png" alt="JF Rideshop">
-          </a>
-          <a class="sponsor-card isaac" href="https://www.isaac-isaac.com/fr-ch" target="_blank" rel="noopener">
-            <img src="images/sponsors/isaac.png" alt="Isaac">
-          </a>
-        </div>
-      </div>
-    </section>
-  </main>
-
-  <footer>
-    <div>
-      <div class="ft-brand">ROMANDIE <span>SCOOTER LEAGUE</span></div>
-      <div class="ft-copy">© 2026 RSL — Tous droits réservés.</div>
+<main>
+  <section class="wrap" id="saison">
+    <div class="section-head">
+      <div class="section-kicker"><div class="num">01</div><div class="section-title">CHAMPIONNAT <span>ROMAND 2026</span></div></div>
+      <p class="section-sub">Deux manches sont déjà disputées. La prochaine étape sera la finale de la saison 2026.</p>
     </div>
-    <ul class="ft-links">
-      <li><a href="/cours">Cours</a></li>
-      <li><a href="/evenements">Événements</a></li>
-      <li><a href="/membres">Membres</a></li>
-      <li><a href="/contact">Contact</a></li>
-      <li><a href="/access">Login</a></li>
-    </ul>
-  </footer>
 
-  <script>
-    (function(){
-      const v=document.getElementById('bg');
-      if(!v) return;
-      const vids=[
-        "https://jynxifufaauoxwzjapzq.supabase.co/storage/v1/object/public/videos_rsl/trottvideo1.mp4",
-        "https://jynxifufaauoxwzjapzq.supabase.co/storage/v1/object/public/videos_rsl/trottvideo2.mp4"
-      ];
-      v.src=vids[Math.floor(Math.random()*vids.length)];
-      v.playbackRate=0.5;
-      try{const p=v.play();if(p&&p.catch)p.catch(()=>{});}catch(e){}
-      document.addEventListener('visibilitychange',()=>{if(document.hidden)v.pause();else{v.playbackRate=0.5;try{v.play();}catch(e){}}});
-    })();
+    <div class="season-feature">
+      <div class="season-grid">
+        <div>
+          <span class="badge live">Saison en cours</span>
+          <div class="big-title">LA SAISON <span>CONTINUE</span></div>
+          <p class="big-copy">Montreux a lancé le championnat le 30 mai, Vidy a accueilli la deuxième manche le 27 juin. Prochaine étape : la finale du Championnat Romand 2026, le 31 octobre à Montreux.</p>
+        </div>
+        <div class="season-side">
+          <div class="stat"><b>2</b><span>manches disputées</span></div>
+          <div class="stat"><b>1</b><span>finale à venir</span></div>
+          <div class="stat"><b>5</b><span>catégories</span></div>
+          <div class="stat"><b>2</b><span>disciplines</span></div>
+        </div>
+      </div>
+    </div>
 
-    (function(){
-      const menuBtn=document.getElementById('menuBtn');
-      const mobile=document.getElementById('mobileMenu');
-      const close=document.getElementById('closeMenu');
-      if(!menuBtn||!mobile) return;
-      const open=()=>{mobile.classList.add('open');mobile.setAttribute('aria-hidden','false');};
-      const shut=()=>{mobile.classList.remove('open');mobile.setAttribute('aria-hidden','true');};
-      menuBtn.addEventListener('click',e=>{e.stopPropagation();open();});
-      close?.addEventListener('click',shut);
-      mobile.querySelector('.mobile-dim')?.addEventListener('click',shut);
-      document.addEventListener('keydown',e=>{if(e.key==='Escape') shut();});
-    })();
-  </script>
+    <div class="rounds" style="margin-top:3px">
+      <article class="round done">
+        <div class="round-no">01</div>
+        <div class="round-status"><span class="status-dot"></span><span class="badge done">Terminé</span></div>
+        <h3>MONTREUX</h3>
+        <div class="date">30 mai 2026 · 1re manche</div>
+        <p>Ouverture du Championnat Romand 2026 à Montreux. Park, Street et classement officiel RSL.</p>
+        <div class="actions"><a class="btn ghost" href="/evenements/resultats-montreux-2026">Voir les résultats</a></div>
+      </article>
+
+      <article class="round done">
+        <div class="round-no">02</div>
+        <div class="round-status"><span class="status-dot"></span><span class="badge done">Terminé</span></div>
+        <h3>LAUSANNE · VIDY</h3>
+        <div class="date">27 juin 2026 · 2e manche</div>
+        <p>Deuxième rendez-vous de la saison à Vidy avec les catégories Park et Street, des U13 aux Pros.</p>
+        <div class="actions"><a class="btn ghost" href="/evenements/resultats_vidy_2026">Voir les résultats</a></div>
+      </article>
+
+      <article class="round next">
+        <div class="round-no">03</div>
+        <div class="round-status"><span class="status-dot"></span><span class="badge live">Prochaine étape</span></div>
+        <h3>FINALE · MONTREUX</h3>
+        <div class="date">31 octobre 2026 · Finale</div>
+        <p>La saison se terminera avec la finale du Championnat Romand à Montreux. Toutes les informations pratiques, horaires et inscriptions seront publiés ici dès confirmation.</p>
+        <div class="soon">Rendez-vous le 31 octobre</div>
+      </article>
+    </div>
+
+    <div class="categories">
+      <div class="catbox">
+        <h3>CATÉGORIES</h3>
+        <div class="chips"><span class="chip red">U13</span><span class="chip red">U15</span><span class="chip red">Amateur</span><span class="chip red">Femme</span><span class="chip red">Pro</span></div>
+      </div>
+      <div class="catbox">
+        <h3>DISCIPLINES</h3>
+        <div class="chips"><span class="chip">Park</span><span class="chip">Street</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="wrap" id="resultats" style="padding-top:0">
+    <div class="section-head">
+      <div class="section-kicker"><div class="num">02</div><div class="section-title">CLASSEMENT & <span>RÉSULTATS</span></div></div>
+      <p class="section-sub">Retrouve les résultats officiels des manches déjà disputées et suis la saison jusqu’à la finale.</p>
+    </div>
+
+    <div class="results-grid">
+      <article class="result-main">
+        <div class="result-kicker">Championnat Romand 2026</div>
+        <h3>CLASSEMENT GÉNÉRAL</h3>
+        <p>La zone du classement général peut être mise à jour au fil de la saison. Les résultats détaillés de Montreux et Vidy restent accessibles manche par manche.</p>
+        <div class="coming">MISE À JOUR AVANT LA FINALE</div>
+      </article>
+
+      <article class="result-card">
+        <div class="result-kicker">1re manche</div>
+        <h3>MONTREUX</h3>
+        <p>Résultats officiels du 30 mai 2026.</p>
+        <div class="actions"><a class="btn ghost" href="/evenements/resultats-montreux-2026">Résultats Montreux</a></div>
+      </article>
+
+      <article class="result-card">
+        <div class="result-kicker">2e manche</div>
+        <h3>VIDY</h3>
+        <p>Résultats officiels du 27 juin 2026.</p>
+        <div class="actions"><a class="btn ghost" href="/evenements/resultats_vidy_2026">Résultats Vidy</a></div>
+      </article>
+    </div>
+  </section>
+
+  <section class="wrap" id="plus" style="padding-top:0">
+    <div class="section-head">
+      <div class="section-kicker"><div class="num">03</div><div class="section-title">AUTOUR DE <span>LA RSL</span></div></div>
+      <p class="section-sub">Le championnat, c’est aussi une histoire, une communauté et des projets qui vivent toute l’année.</p>
+    </div>
+
+    <div class="extra-grid">
+      <article class="extra-card redwash">
+        <span class="badge">Depuis 2005</span>
+        <h3>MONTREUX SCOOTER CONTEST</h3>
+        <p>Montreux Scooter Contest fait partie des contests pionniers de la trottinette freestyle en Suisse. Une histoire qui accompagne l’évolution de la discipline depuis plus de vingt ans.</p>
+        <div class="actions"><a class="btn ghost" href="/montreuxtv">Voir l’histoire</a></div>
+        <div class="year-watermark">2005</div>
+      </article>
+
+      <article class="extra-card">
+        <span class="badge">Awards · Best 2026</span>
+        <h3>VOTE OFFICIEL</h3>
+        <p>Découvre les Awards Best 2026 et participe au vote officiel de la communauté RSL.</p>
+        <div class="actions"><a class="btn red" href="/riderswisss">Accéder au vote</a></div>
+        <div class="year-watermark">26</div>
+      </article>
+    </div>
+  </section>
+
+  <section style="max-width:1200px;margin:0 auto;padding:0 28px 78px">
+    <div class="sp-card">
+      <div class="sp-title">AVEC LE <span>SOUTIEN DE</span></div>
+      <div class="sponsors-grid">
+        <a class="sponsor-card" href="https://travaux-sur-bois.ch/" target="_blank" rel="noopener"><img src="/images/sponsors/travaux-sur-bois.png" alt="Travaux sur Bois"></a>
+        <a class="sponsor-card" href="https://www.jfrideshop.ch/" target="_blank" rel="noopener"><img src="/images/logo_jf.png" alt="JF Rideshop"></a>
+        <a class="sponsor-card" href="https://www.isaac-isaac.com/fr-ch" target="_blank" rel="noopener"><img src="/images/sponsors/isaac.png" alt="Isaac"></a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div><div class="ft-brand">ROMANDIE <span>SCOOTER LEAGUE</span></div><div class="ft-copy">© 2026 RSL — Tous droits réservés.</div></div>
+  <ul class="ft-links"><li><a href="/cours">Cours</a></li><li><a href="/formation">Formation</a></li><li><a href="/evenements">Événements</a></li><li><a href="/contact">Contact</a></li></ul>
+</footer>
+
+<script>
+(function(){
+  const v=document.getElementById('bg');if(!v)return;
+  const vids=[
+    'https://jynxifufaauoxwzjapzq.supabase.co/storage/v1/object/public/videos_rsl/trottvideo1.mp4',
+    'https://jynxifufaauoxwzjapzq.supabase.co/storage/v1/object/public/videos_rsl/trottvideo2.mp4'
+  ];
+  v.src=vids[Math.floor(Math.random()*vids.length)];
+  v.playbackRate=.5;
+  try{v.play()}catch(e){}
+})();
+(function(){
+  const b=document.getElementById('menuBtn'),m=document.getElementById('mobileMenu'),c=document.getElementById('closeMenu');
+  if(!b||!m)return;
+  const open=()=>{m.classList.add('open');m.setAttribute('aria-hidden','false')};
+  const close=()=>{m.classList.remove('open');m.setAttribute('aria-hidden','true')};
+  b.addEventListener('click',open);c?.addEventListener('click',close);m.querySelector('.mobile-dim')?.addEventListener('click',close);document.addEventListener('keydown',e=>{if(e.key==='Escape')close()});
+})();
+</script>
 </body>
 </html>
