@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <meta name="description" content="Inscriptions aux cours de trottinette freestyle RSL à Lausanne Vidy, Montreux, Martigny et Yverdon."/>
+  <meta name="description" content="Cours de trottinette freestyle RSL à Montreux, tous les samedis. Inscription par WhatsApp. Cours individuels à 60 CHF."/>
   <title>Cours — Romandie Scooter League</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -206,7 +206,7 @@
 
     /* AUTRES FORMULES */
     .extras{margin-top:58px}
-    .extra-grid{display:grid;grid-template-columns:1fr 1fr;gap:3px}
+    .extra-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:3px}
     .extra-card{
       background:var(--card);border:1px solid var(--border);padding:28px 24px;position:relative;overflow:hidden;
     }
@@ -305,7 +305,7 @@
       </div>
       <h1>COURS <span>RSL</span></h1>
       <div class="redsep"></div>
-      <p class="hero-sub">Choisis ton lieu et ton samedi, puis inscris-toi directement via WhatsApp.</p>
+      <p class="hero-sub">Cours à Montreux tous les samedis. Choisis ta date et inscris-toi directement via WhatsApp.</p>
       <div class="hero-actions">
         <a class="btn red" href="#cours">Voir les cours</a>
         <a class="btn ghost" href="/membres">Devenir membre RSL</a>
@@ -315,39 +315,29 @@
 
   <main>
     <section class="wrap" id="cours">
-      <div class="section-head">
-        <div class="section-kicker">
-          <div class="num">01</div>
-          <div class="section-title">INSCRIPTIONS <span>AUX COURS</span></div>
-        </div>
-        <p class="section-sub">Lausanne Vidy · Montreux · Martigny · Yverdon. Sélectionne un lieu pour afficher uniquement ses prochaines dates.</p>
-      </div>
-
-      <div class="lieu-filters" aria-label="Filtrer les cours par lieu">
-        <button class="lieu-btn active" data-lieu="Tous">Tous les lieux</button>
-        <button class="lieu-btn" data-lieu="Lausanne Vidy">Lausanne Vidy</button>
-        <button class="lieu-btn" data-lieu="Montreux">Montreux</button>
-        <button class="lieu-btn" data-lieu="Martigny">Martigny</button>
-        <button class="lieu-btn yverdon" data-lieu="Yverdon">Yverdon</button>
-      </div>
-
-      <div class="grid" id="courseGrid"></div>
-
-      <div class="extras">
+      <div class="extras" style="margin-top:0;margin-bottom:56px">
         <div class="section-head">
           <div class="section-kicker">
-            <div class="num">02</div>
+            <div class="num">01</div>
             <div class="section-title">AUTRES <span>FORMULES</span></div>
           </div>
-          <p class="section-sub">En plus des cours collectifs, la RSL propose des accompagnements adaptés aux riders, écoles et structures.</p>
+          <p class="section-sub">Cours privé, autre ville ou intervention scolaire : on trouve une solution.</p>
         </div>
 
         <div class="extra-grid">
           <article class="extra-card">
             <div class="extra-tag">Progression personnalisée</div>
-            <h3>COACHING INDIVIDUEL</h3>
-            <p>Cours privés personnalisés avec un coach RSL certifié. Progresse à ton rythme sur un spot adapté à tes objectifs.</p>
-            <a class="btn red" href="/contact">Demander un devis</a>
+            <h3>COURS INDIVIDUEL · 60 CHF</h3>
+            <p>Cours privé à Montreux avec un coach RSL. Tu progresses à ton rythme, sur les tricks que tu veux travailler.</p>
+            <a class="btn red" href="https://wa.me/41783008043?text=Bonjour%2C%20j%27aimerais%20r%C3%A9server%20un%20cours%20individuel%20%C3%A0%20Montreux%20%2860%20CHF%29.%0APr%C3%A9nom%20%3A%0A%C3%82ge%20%3A%0ADisponibilit%C3%A9s%20%3A" target="_blank" rel="noopener">Réserver sur WhatsApp</a>
+          </article>
+
+          <article class="extra-card">
+            <div class="extra-tag">Autre ville</div>
+            <h3>UN COURS AILLEURS ?</h3>
+            <p>Tu as un bon plan pour organiser un cours dans une autre ville, ou tu aimerais participer à un cours ailleurs qu'à Montreux ? Écris-nous sur WhatsApp.</p>
+            <a class="btn red" href="https://wa.me/41783008043?text=Salut%20la%20RSL%20%21%20J%27ai%20un%20bon%20real%20deal%20pour%20un%20cours%20dans%20une%20autre%20ville.%0AVille%20%3A%0ASpot%20/%20skatepark%20%3A%0ANombre%20de%20riders%20int%C3%A9ress%C3%A9s%20%3A" target="_blank" rel="noopener">J'ai un bon real deal</a>
+            <a class="btn ghost" href="https://wa.me/41783008043?text=Salut%20la%20RSL%20%21%20J%27aimerais%20participer%20%C3%A0%20un%20cours%20ailleurs%20qu%27%C3%A0%20Montreux.%0AVille%20%3A%0APr%C3%A9nom%20%3A%0A%C3%82ge%20%3A" target="_blank" rel="noopener" style="margin-left:6px">Je veux un cours ailleurs</a>
           </article>
 
           <article class="extra-card">
@@ -358,6 +348,16 @@
           </article>
         </div>
       </div>
+      <div class="section-head">
+        <div class="section-kicker">
+          <div class="num">02</div>
+          <div class="section-title">INSCRIPTIONS <span>AUX COURS</span></div>
+        </div>
+        <p class="section-sub">Tous les cours ont lieu à Montreux. Choisis ton samedi et réserve ta place.</p>
+      </div>
+
+      <div class="grid" id="courseGrid"></div>
+
     </section>
   </main>
 
@@ -417,12 +417,9 @@
     /* Cours */
     const WHATSAPP="41783008043";
     const MOIS_FR=["janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"];
-    const LIEUX=["Lausanne Vidy","Montreux","Martigny","Yverdon"];
+    const LIEUX=["Montreux"];
     const GROUPES_WHATSAPP={
-      "Lausanne Vidy":"https://chat.whatsapp.com/I6yVHc0EaaBAADx2RhqK8b",
       "Montreux":"https://chat.whatsapp.com/H0xTYyaULM6B0CiNGFPABG",
-      "Martigny":"https://chat.whatsapp.com/CJzHibc0rBmL7E2vSWu1Wj",
-      "Yverdon":"https://chat.whatsapp.com/G6gPHACTjHYKAF7Km7joU1"
     };
 
     function getRemainingSaturdays(){
@@ -452,7 +449,7 @@
       return `https://wa.me/${WHATSAPP}?text=${msg}`;
     }
 
-    let activeLieu="Tous";
+    let activeLieu="Montreux";
     const allCourses=buildCourses();
 
     function renderCards(){
