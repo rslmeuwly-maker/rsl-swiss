@@ -409,8 +409,8 @@ $('listM').onclick=async e=>{
 /* ===== Demandes de carte ===== */
 const PRICE={starter:50,rider:80,support:149,progression:289,premium:490};
 let reqs=[];
-const PAY_DEFAULT='Virement : Ride4Style Montreux\nIBAN CH94 8080 8009 3546 9723 0\nCommunication : carte membre + nom du rider';
-try{ $('payInfo').value=localStorage.getItem('rsl-pay-info')||PAY_DEFAULT; }catch(_){ $('payInfo').value=PAY_DEFAULT; }
+const PAY_DEFAULT='TWINT : 078 300 80 43\nou virement : Ride4Style Montreux, IBAN CH94 8080 8009 3546 9723 0\nCommunication : carte membre + nom du rider';
+try{ const sv=localStorage.getItem('rsl-pay-info'); $('payInfo').value=(sv&&sv.includes('TWINT'))?sv:PAY_DEFAULT; }catch(_){ $('payInfo').value=PAY_DEFAULT; }
 $('payInfo').oninput=()=>{ try{ localStorage.setItem('rsl-pay-info',$('payInfo').value); }catch(_){} };
 function waNum(p){ let d=String(p||'').replace(/[^0-9+]/g,''); if(d.startsWith('+')) d=d.slice(1); else if(d.startsWith('00')) d=d.slice(2); else if(d.startsWith('0')) d='41'+d.slice(1); return d; }
 function billText(r){ return `Bonjour ${r.full_name.split(' ')[0]},\n\nMerci pour ta demande de carte membre RSL ${TIER[r.tier]||r.tier} !\nMontant : ${PRICE[r.tier]||''}.– CHF (valable jusqu’au 31.12.2026)\n\n${$('payInfo').value}\n\nDès réception du paiement, on active ta carte et on t’envoie ton lien.\n\nRomandie Scooter League`; }
