@@ -63,6 +63,10 @@ input,select{width:100%;background:#050505;color:#fff;border:1px solid rgba(255,
 .qrzone .t{font-weight:900;font-size:15px;line-height:1.3}
 .qrzone .c{font-family:monospace;font-size:14px;color:#555;margin-top:4px;letter-spacing:.08em}
 #qr canvas,#qr img{display:block;width:110px!important;height:110px!important}
+.cards-nav{max-width:440px;margin:0 auto 10px;display:flex;gap:6px;flex-wrap:wrap}
+.cards-nav button{flex:1 1 auto;background:#111;color:#bbb;border:1px solid rgba(255,255,255,.15);padding:10px 12px;font-family:inherit;font-weight:900;font-size:14px;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;border-radius:10px}
+.cards-nav button.on{background:#cc0000;border-color:#cc0000;color:#fff}
+.cards-nav .add{flex:0 0 auto;background:transparent;color:#fff;border-style:dashed}
 .foot{text-align:center;font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);padding:12px 0 16px}
 @media all and (display-mode: standalone){header{display:none}}
 
@@ -80,6 +84,7 @@ input,select{width:100%;background:#050505;color:#fff;border:1px solid rgba(255,
     <button class="btn full" id="go">Afficher ma carte</button>
     <div class="msg" id="msg"></div>
   </div>
+  <div class="cards-nav" id="nav"></div>
   <div id="out"></div>
   <p class="hint" id="tip" style="text-align:center;margin-top:14px;display:none">Astuce : ajoute cette page à ton écran d'accueil pour avoir ta carte toujours sur toi.</p>
 </div>
@@ -110,6 +115,19 @@ const tierOf=t=>TIERS[(t||'').toLowerCase()]||{label:t||'Membre',color:'#cc0000'
 const CARTE='https://rsl-swiss.ch/carte?c=';
 
 const AVATAR="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 120%27%3E%3Crect width=%27100%27 height=%27120%27 fill=%27%23222%27/%3E%3Ccircle cx=%2750%27 cy=%2745%27 r=%2722%27 fill=%27%23555%27/%3E%3Crect x=%2718%27 y=%2774%27 width=%2764%27 height=%2746%27 rx=%2730%27 fill=%27%23555%27/%3E%3C/svg%3E";
+function loadSaved(){ try{ const a=JSON.parse(localStorage.getItem('rsl-cartes')||'[]'); if(Array.isArray(a)&&a.length) return a; const old=localStorage.getItem('rsl-carte-code'); return old?[{code:old,name:''}]:[]; }catch(_){ return []; } }
+function saveSaved(a){ try{ localStorage.setItem('rsl-cartes',JSON.stringify(a)); }catch(_){} }
+let current=null;
+function renderNav(){
+  const a=loadSaved();
+  if(a.length<1||!current){ $('nav').innerHTML=''; return; }
+  $('nav').innerHTML=a.map(x=>`<button data-c="${esc(x.code)}" class="${x.code===current?'on':''}">${esc((x.name||x.code).split(' ')[0])}</button>`).join('')+'<button class="add" id="addCard">+ Carte</button>';
+}
+$('nav').onclick=e=>{
+  const b=e.target.closest('button'); if(!b) return;
+  if(b.id==='addCard'){ $('out').innerHTML=''; $('entry').style.display='block'; $('code').value=''; $('code').focus(); current=null; renderNav(); return; }
+  show(b.dataset.c);
+};
 const benefitsHtml=b=>Array.isArray(b)&&b.length?b.map(x=>`<li>${esc(x)}</li>`).join(''):'<li>Membre officiel RSL</li>';
 function dispDate(v){ if(!v) return '—'; const s=String(v); if(/^\d{4}-\d{2}-\d{2}$/.test(s)){const [y,m,d]=s.split('-');return `${d}.${m}.${y}`;} return s; }
 
@@ -140,7 +158,8 @@ async function show(code){
       <div class="foot">Carte officielle RSL · ${m.valid_date?m.valid_date.slice(0,4):new Date().getFullYear()}</div>
     </div>`;
     new QRCode($('qr'),{text:CARTE+encodeURIComponent(m.code),width:220,height:220,correctLevel:QRCode.CorrectLevel.M});
-    try{ localStorage.setItem('rsl-carte-code',m.code); }catch(_){}
+    const saved=loadSaved().filter(x=>x.code.toUpperCase()!==m.code.toUpperCase()); saved.push({code:m.code,name:m.full_name}); saveSaved(saved);
+    current=m.code; renderNav();
     if(new URLSearchParams(location.search).get('c')!==m.code) history.replaceState(null,'','/carte?c='+encodeURIComponent(m.code));
   }catch(err){ $('msg').textContent=err.message; }
 }
@@ -148,7 +167,7 @@ $('go').onclick=()=>{ const c=$('code').value.trim(); if(c) show(c); };
 $('code').onkeydown=e=>{ if(e.key==='Enter') $('go').click(); };
 (function(){
   let c=new URLSearchParams(location.search).get('c');
-  if(!c){ try{ c=localStorage.getItem('rsl-carte-code'); }catch(_){} }
+  if(!c){ const a=loadSaved(); if(a.length) c=a[0].code; }
   if(c) show(c.trim());
 })();
 </script>
