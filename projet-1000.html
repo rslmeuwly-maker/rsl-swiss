@@ -1,0 +1,419 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Projet 1000 — Romandie Scooter League</title>
+<meta name="description" content="1'000 riders. Un objectif. Faire avancer la trottinette freestyle en Suisse. 1 inscription = 15 CHF.">
+<meta property="og:title" content="Projet 1000 — RSL">
+<meta property="og:description" content="1'000 riders. Un objectif. Faire avancer la trottinette freestyle en Suisse.">
+<meta property="og:image" content="https://rsl-swiss.ch/images/p1000/poster.jpg">
+<meta name="theme-color" content="#000000">
+<link rel="icon" href="/images/logo_rsl.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Michroma&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#000;
+  --line:#f2f2f2;
+  --red:#ff1426;
+  --grid:#262626;
+  --dim:#8c8c8c;
+  --panel:#070707;
+  --wide:'Michroma','Eurostile','Arial Black',sans-serif;
+  --body:'Barlow',system-ui,-apple-system,sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:70px}
+body{background:var(--ink);color:var(--line);font-family:var(--body);font-size:18px;line-height:1.55;-webkit-font-smoothing:antialiased;padding-bottom:env(safe-area-inset-bottom)}
+img{max-width:100%;display:block}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--red);outline-offset:3px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+
+/* Barre du haut */
+.top{position:sticky;top:0;z-index:20;background:rgba(0,0,0,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--grid);padding:10px 16px;padding-top:calc(10px + env(safe-area-inset-top));display:flex;align-items:center;justify-content:space-between;gap:12px}
+.top a.home{display:flex;align-items:center;gap:10px;text-decoration:none;font-family:var(--wide);font-size:12px;letter-spacing:.08em}
+.top a.home img{height:34px;width:auto;background:#fff;border-radius:6px;padding:2px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;font-family:var(--wide);font-size:12px;letter-spacing:.1em;text-decoration:none;border:0;cursor:pointer;padding:14px 20px;background:var(--red);color:#fff;text-transform:uppercase;transition:transform .15s}
+.btn:active{transform:scale(.98)}
+.btn.ghost{background:transparent;border:1px solid var(--line);color:var(--line)}
+.btn.small{padding:10px 14px;font-size:10px}
+
+/* Cadre "plan technique" */
+.sheet{position:relative;max-width:1100px;margin:0 auto;padding:56px 20px}
+.cross{position:relative}
+.cross:before,.cross:after{content:"";position:absolute;width:18px;height:18px;pointer-events:none;background:
+  linear-gradient(var(--line),var(--line)) center/1px 100% no-repeat,
+  linear-gradient(var(--line),var(--line)) center/100% 1px no-repeat;opacity:.55}
+.cross:before{top:-9px;left:-9px}
+.cross:after{bottom:-9px;right:-9px}
+.hazard{height:10px;background:repeating-linear-gradient(-45deg,var(--red) 0 8px,transparent 8px 14px)}
+.fig{font-family:var(--wide);font-size:10px;letter-spacing:.14em;color:var(--red)}
+
+/* Hero */
+.hero{border-bottom:1px solid var(--grid);background:
+  radial-gradient(circle,rgba(255,255,255,.14) 1px,transparent 1.5px) 0 0/22px 22px}
+.hero .sheet{display:grid;gap:28px;padding-top:40px}
+.logo{font-family:var(--wide);font-size:clamp(58px,17vw,150px);line-height:.92;letter-spacing:-.02em}
+.logo .p{color:var(--line)}
+.logo .n{color:var(--red)}
+.hero h1{font-family:var(--wide);font-size:clamp(15px,3.6vw,22px);letter-spacing:.06em;margin-top:6px;font-weight:400}
+.hero .lead{font-size:clamp(19px,4.6vw,24px);max-width:30ch;margin-top:14px;color:#dcdcdc}
+.spec{display:flex;flex-wrap:wrap;gap:0;margin-top:22px;border:1px solid var(--line)}
+.spec div{flex:1 1 150px;padding:12px 14px;border-right:1px solid var(--line)}
+.spec div:last-child{border-right:0}
+.spec b{display:block;font-family:var(--wide);font-size:18px;color:#fff;font-weight:400}
+.spec span{font-size:15px;color:var(--dim)}
+.cta{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px}
+.poster{border:1px solid var(--grid)}
+@media(min-width:900px){.hero .sheet{grid-template-columns:1.1fr .9fr;align-items:center}}
+
+/* Les 3 chiffres (équation) */
+.equation{display:grid;grid-template-columns:1fr;gap:0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.equation div{padding:22px 4px;border-bottom:1px dashed var(--grid);display:flex;align-items:baseline;gap:16px;flex-wrap:wrap}
+.equation div:last-child{border-bottom:0}
+.equation .opr{padding:2px 4px;border-bottom:0}
+.equation b{font-family:var(--wide);font-size:clamp(34px,10vw,64px);font-weight:400;line-height:1}
+.equation .op{font-family:var(--wide);color:var(--red);font-size:clamp(26px,7vw,44px)}
+.equation span{color:var(--dim);font-size:17px}
+@media(min-width:900px){.equation{grid-template-columns:auto auto auto auto auto;align-items:center}.equation div{border-bottom:0;flex-direction:column;gap:4px}}
+
+h2{font-family:var(--wide);font-size:clamp(22px,5.6vw,34px);font-weight:400;letter-spacing:.02em;line-height:1.15;margin-bottom:16px}
+.prose{max-width:62ch}
+.prose p+p{margin-top:12px}
+.prose strong{color:#fff}
+
+/* Jauge (règle) */
+.gauge{margin-top:28px}
+.gauge .amount{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.gauge .amount b{font-family:var(--wide);font-size:clamp(34px,9vw,56px);font-weight:400;line-height:1}
+.gauge .amount span{color:var(--dim)}
+.ruler{position:relative;height:70px;margin:26px 0 54px}
+.ruler .track{position:absolute;left:0;right:0;top:22px;height:18px;border:1px solid var(--line)}
+.ruler .fill{position:absolute;left:0;top:22px;height:18px;background:var(--red);width:0;transition:width 1.4s cubic-bezier(.2,.8,.2,1)}
+.ruler .ticks{position:absolute;left:0;right:0;top:40px;height:10px;background:repeating-linear-gradient(90deg,var(--line) 0 1px,transparent 1px 4%)}
+.mark{position:absolute;top:0;transform:translateX(-50%);text-align:center;white-space:nowrap}
+.mark:before{content:"";display:block;width:1px;height:58px;background:var(--line);margin:0 auto}
+.mark small{display:block;font-size:12px;color:var(--dim);margin-top:2px;line-height:1.2}
+.mark small b{color:#fff;font-weight:600}
+.mark.main:before{background:var(--red);width:2px}
+.mark.end{transform:translateX(-100%);text-align:right}
+.mark.end:before{margin:0 0 0 auto}
+@media(max-width:600px){.mark small .l{display:none}.mark small{font-size:11px}.mark:not(.main):not(.end) small b{font-weight:500;color:var(--dim)}}
+.mark.main small b{color:var(--red)}
+.counter{display:flex;gap:12px;align-items:baseline;border:1px solid var(--grid);padding:14px 16px;background:var(--panel)}
+.counter b{font-family:var(--wide);font-size:28px;font-weight:400}
+.counter span{color:var(--dim)}
+
+/* Contreparties : fiches techniques */
+.rewards{display:grid;gap:0;border-top:1px solid var(--line)}
+.reward{display:grid;grid-template-columns:1fr;gap:16px;padding:22px 0;border-bottom:1px solid var(--grid)}
+.reward .vis{background:#0d0d0d;border:1px solid var(--grid);aspect-ratio:4/3;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.reward .vis img{width:100%;height:100%;object-fit:cover}
+.reward .vis svg{width:78%;height:auto}
+.reward .price{font-family:var(--wide);font-size:30px;color:var(--red);line-height:1}
+.reward h3{font-family:var(--wide);font-size:17px;font-weight:400;margin:8px 0 8px;letter-spacing:.02em}
+.reward p{color:#cfcfcf;font-size:17px;max-width:48ch}
+.reward ul{list-style:none;margin:10px 0 0;font-size:15px;color:var(--dim)}
+.reward li{padding:3px 0 3px 16px;position:relative}
+.reward li:before{content:"";position:absolute;left:0;top:13px;width:8px;height:1px;background:var(--red)}
+.reward .buy{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:14px}
+.reward select,.free input{background:#000;color:#fff;border:1px solid var(--line);padding:12px;font-family:var(--body);font-size:16px}
+@media(min-width:760px){.reward{grid-template-columns:320px 1fr;gap:26px;align-items:center}}
+.free .amounts{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.free .amounts button{background:#000;color:#fff;border:1px solid var(--grid);padding:10px 12px;font-family:var(--wide);font-size:12px;cursor:pointer}
+.free .amounts button.on{border-color:var(--red);color:var(--red)}
+.free input{width:140px}
+
+/* Où va l'argent : ordre de priorité */
+.flow{display:grid;gap:0;border-left:2px solid var(--red);margin-left:6px}
+.flow div{position:relative;padding:4px 0 22px 22px}
+.flow div:before{content:"";position:absolute;left:-7px;top:10px;width:12px;height:12px;background:var(--ink);border:2px solid var(--red)}
+.flow b{font-family:var(--wide);font-size:15px;font-weight:400;display:block}
+.flow span{color:#cfcfcf;font-size:17px}
+.note{margin-top:8px;border:1px dashed var(--grid);padding:14px 16px;color:#cfcfcf;font-size:16px;max-width:62ch}
+
+.who{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}
+.who span{border:1px solid var(--grid);padding:6px 10px;font-size:15px}
+
+/* FAQ */
+details{border-bottom:1px solid var(--grid);padding:16px 0}
+details summary{cursor:pointer;font-weight:700;font-size:18px;list-style:none;display:flex;justify-content:space-between;gap:12px}
+details summary::-webkit-details-marker{display:none}
+details summary:after{content:"+";font-family:var(--wide);color:var(--red)}
+details[open] summary:after{content:"–"}
+details p{margin-top:8px;color:#cfcfcf;max-width:62ch}
+
+/* Final */
+.final{text-align:center;border-top:1px solid var(--grid)}
+.final .big{font-family:var(--wide);font-size:clamp(24px,7vw,48px);line-height:1.15}
+.final .big span{display:block}
+.final .big span:last-child{color:var(--red)}
+.final p{max-width:46ch;margin:18px auto 0;color:#cfcfcf}
+.final .btn{margin-top:24px}
+footer{border-top:1px solid var(--grid);padding:22px 20px 34px;text-align:center;color:var(--dim);font-size:14px}
+footer .coords{font-family:var(--wide);font-size:10px;color:var(--red);letter-spacing:.12em;margin-top:6px}
+
+.partner{border:1px solid var(--line);padding:20px;display:grid;gap:12px}
+@media(min-width:760px){.partner{grid-template-columns:1fr auto;align-items:center}}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <a class="home" href="/"><img src="/images/logo_rsl.png" alt="RSL">Romandie Scooter League</a>
+  <a class="btn small" href="#soutenir">Soutenir</a>
+</header>
+
+<section class="hero">
+  <div class="sheet">
+    <div class="cross">
+      <div class="fig">RSL · 2027</div>
+      <div class="logo" aria-hidden="true"><span class="p">P</span><span class="n">1000</span></div>
+      <h1>PROJET 1000</h1>
+      <p class="lead">1’000 riders. Un objectif. Faire avancer la trottinette freestyle en Suisse.</p>
+      <div class="spec">
+        <div><b>15 CHF</b><span>1 inscription</span></div>
+        <div><b>1’000</b><span>inscriptions visées</span></div>
+      </div>
+      <div class="cta">
+        <a class="btn" href="#soutenir">Soutenir le projet</a>
+        <a class="btn ghost" href="#projet">Découvrir le Projet 1000</a>
+      </div>
+    </div>
+    <img class="poster" src="/images/p1000/poster.jpg" alt="Affiche Projet 1000 : plan technique d’une trottinette freestyle, 1000 riders, 1 communauté" width="1200" height="1200">
+  </div>
+</section>
+
+<section id="projet">
+  <div class="sheet">
+    <div class="equation" role="img" aria-label="1000 inscriptions fois 15 francs égale 15000 francs">
+      <div><b>1’000</b><span>inscriptions recherchées</span></div>
+      <div class="opr"><span class="op">×</span></div>
+      <div><b>15 CHF</b><span>par inscription</span></div>
+      <div class="opr"><span class="op">=</span></div>
+      <div><b>15’000 CHF</b><span>pour financer les 1’000 inscriptions</span></div>
+    </div>
+
+    <div class="prose" style="margin-top:44px">
+      <h2>Le projet</h2>
+      <p>La trottinette freestyle rassemble aujourd’hui énormément de jeunes en Suisse. Avec le Projet 1000, la RSL veut franchir une nouvelle étape.</p>
+      <p>Notre objectif pour 2027 : réunir <strong>1’000 inscriptions</strong> et créer une mobilisation assez forte pour faire avancer la reconnaissance et le développement de notre discipline.</p>
+      <p>Chaque inscription coûte 15 CHF. Ensemble, on veut supprimer ce frein financier et permettre au maximum de riders de rejoindre le mouvement.</p>
+    </div>
+  </div>
+</section>
+
+<section id="progression" style="border-top:1px solid var(--grid)">
+  <div class="sheet">
+    <h2>Où on en est</h2>
+    <div class="gauge">
+      <div class="amount"><b id="raised">0 CHF</b><span>récoltés sur 20’000 CHF</span></div>
+      <div class="ruler" aria-hidden="true">
+        <div class="track"></div>
+        <div class="fill" id="fill"></div>
+        <div class="ticks"></div>
+        <div class="mark" style="left:40%"><small><b>10’000</b><span class="l"><br>seuil minimum</span></small></div>
+        <div class="mark" style="left:60%"><small><b>15’000</b><span class="l"><br>1’000 × 15</span></small></div>
+        <div class="mark main" style="left:80%"><small><b>20’000</b><span class="l"><br>objectif</span></small></div>
+        <div class="mark end" style="left:100%"><small><b>25’000</b><span class="l"><br>bonus</span></small></div>
+      </div>
+      <div class="counter"><b id="funded">0</b><span>/ 1’000 inscriptions financées</span></div>
+      <p class="note">Le nombre d’inscriptions financées compte l’argent vraiment disponible pour les inscriptions, après la fabrication des contreparties et les frais de la campagne.</p>
+    </div>
+  </div>
+</section>
+
+<section id="soutenir" style="border-top:1px solid var(--grid)">
+  <div class="sheet">
+    <h2>Choisis ton soutien</h2>
+    <p class="prose" style="color:#cfcfcf">Les produits sont fabriqués après la campagne, selon les commandes reçues. Pas de gros stock, pas de gaspillage.</p>
+    <div class="rewards" style="margin-top:22px">
+
+      <article class="reward">
+        <div class="vis">
+          <svg viewBox="0 0 200 120" aria-hidden="true"><rect x="10" y="10" width="180" height="100" fill="none" stroke="#f2f2f2" stroke-dasharray="4 4"/><text x="100" y="72" text-anchor="middle" font-family="Michroma,Arial Black" font-size="34" fill="#ff1426">1</text><text x="100" y="98" text-anchor="middle" font-family="Barlow,Arial" font-size="11" fill="#8c8c8c">inscription financée</text></svg>
+        </div>
+        <div>
+          <div class="price">15 CHF</div>
+          <h3>Je finance une inscription</h3>
+          <p>Pas de produit, juste ta place dans le mouvement. Tu prends en charge le coût d’une inscription du Projet 1000.</p>
+          <div class="buy"><button class="btn" data-reward="Je finance une inscription" data-price="15">Soutenir · 15 CHF</button></div>
+        </div>
+      </article>
+
+      <article class="reward">
+        <div class="vis"><img src="/images/p1000/stickers.jpg" alt="Pack de 3 stickers Projet 1000 : P1000 avec trottinette, badge rond guidon, P1000 style graffiti" loading="lazy" width="1200" height="900"></div>
+        <div>
+          <div class="price">20 CHF</div>
+          <h3>Pack stickers Projet 1000</h3>
+          <p>Un pack de stickers créé uniquement pour la campagne, aux couleurs du Projet 1000.</p>
+          <div class="buy"><button class="btn" data-reward="Pack stickers Projet 1000" data-price="20">Soutenir · 20 CHF</button></div>
+        </div>
+      </article>
+
+      <article class="reward">
+        <div class="vis"><img src="/images/p1000/griptape.jpg" alt="Griptape noir pour trottinette avec le logo P1000" loading="lazy" width="1200" height="900"></div>
+        <div>
+          <div class="price">50 CHF</div>
+          <h3>Griptape Projet 1000</h3>
+          <p>Un griptape pour ta trottinette, en édition spéciale Projet 1000 avec le logo P1000.</p>
+          <div class="buy"><button class="btn" data-reward="Griptape Projet 1000" data-price="50">Soutenir · 50 CHF</button></div>
+        </div>
+      </article>
+
+      <article class="reward">
+        <div class="vis"><img src="/images/p1000/tshirt.jpg" alt="T-shirt noir Projet 1000, logo P1000 devant, plan de trottinette au dos" loading="lazy" width="1200" height="900"></div>
+        <div>
+          <div class="price">80 CHF</div>
+          <h3>T-shirt Projet 1000</h3>
+          <p>Le t-shirt officiel, design exclusif à la campagne. Logo P1000 devant, plan technique au dos.</p>
+          <ul><li>Pack stickers inclus</li><li>Tailles enfant et adulte</li></ul>
+          <div class="buy">
+            <label class="sr" for="sizeT" style="position:absolute;left:-9999px">Taille du t-shirt</label>
+            <select id="sizeT"><option value="">Taille</option><option>Enfant 128</option><option>Enfant 140</option><option>Enfant 152</option><option>Enfant 164</option><option>S</option><option>M</option><option>L</option><option>XL</option><option>XXL</option></select>
+            <button class="btn" data-reward="T-shirt Projet 1000" data-price="80" data-size="sizeT">Soutenir · 80 CHF</button>
+          </div>
+        </div>
+      </article>
+
+      <article class="reward">
+        <div class="vis"><img src="/images/p1000/hoodie.jpg" alt="Hoodie noir Projet 1000, logo P1000 devant, plan de trottinette au dos" loading="lazy" width="1200" height="900"></div>
+        <div>
+          <div class="price">130 CHF</div>
+          <h3>Hoodie Projet 1000</h3>
+          <p>Le hoodie officiel, pour celles et ceux qui veulent donner un gros coup de pouce au projet.</p>
+          <ul><li>Pack stickers inclus</li><li>Tailles enfant et adulte</li></ul>
+          <div class="buy">
+            <label for="sizeH" style="position:absolute;left:-9999px">Taille du hoodie</label>
+            <select id="sizeH"><option value="">Taille</option><option>Enfant 128</option><option>Enfant 140</option><option>Enfant 152</option><option>Enfant 164</option><option>S</option><option>M</option><option>L</option><option>XL</option><option>XXL</option></select>
+            <button class="btn" data-reward="Hoodie Projet 1000" data-price="130" data-size="sizeH">Soutenir · 130 CHF</button>
+          </div>
+        </div>
+      </article>
+
+      <article class="reward free">
+        <div class="vis">
+          <svg viewBox="0 0 200 120" aria-hidden="true"><text x="100" y="72" text-anchor="middle" font-family="Michroma,Arial Black" font-size="30" fill="#f2f2f2">CHF <tspan fill="#ff1426">?</tspan></text></svg>
+        </div>
+        <div>
+          <div class="price">Montant libre</div>
+          <h3>Je soutiens simplement le projet</h3>
+          <p>Sans contrepartie. Chaque franc aide la RSL à développer la trottinette freestyle.</p>
+          <div class="amounts" id="amounts">
+            <button data-v="15">15</button><button data-v="30">30</button><button data-v="50" class="on">50</button><button data-v="100">100</button><button data-v="250">250</button><button data-v="500">500</button><button data-v="1000">1’000</button>
+          </div>
+          <div class="buy">
+            <label for="freeAmount" style="position:absolute;left:-9999px">Montant en CHF</label>
+            <input id="freeAmount" type="number" min="5" step="1" value="50" inputmode="numeric"> <span style="color:var(--dim)">CHF</span>
+            <button class="btn" id="freeBtn">Soutenir</button>
+          </div>
+        </div>
+      </article>
+    </div>
+
+    <div class="partner" style="margin-top:34px">
+      <div>
+        <h3 style="font-family:var(--wide);font-size:17px;font-weight:400">Entreprise, shop, club ou commune ?</h3>
+        <p style="color:#cfcfcf;margin-top:6px">Pour une contribution importante, contacte directement la RSL. On étudie ensemble la visibilité et le partenariat.</p>
+      </div>
+      <a class="btn ghost" id="partnerBtn" target="_blank" rel="noopener" href="#">Contacter la RSL</a>
+    </div>
+  </div>
+</section>
+
+<section style="border-top:1px solid var(--grid)">
+  <div class="sheet">
+    <h2>Où va mon argent ?</h2>
+    <p class="prose" style="color:#cfcfcf;margin-bottom:22px">Dans cet ordre, et en toute transparence.</p>
+    <div class="flow">
+      <div><b>Les inscriptions</b><span>Financer les participants du Projet 1000 : 1’000 × 15 CHF.</span></div>
+      <div><b>Les contreparties</b><span>Fabriquer les stickers, griptapes, t-shirts et hoodies commandés.</span></div>
+      <div><b>La campagne</b><span>Couvrir les frais directs : paiement, emballages, envois.</span></div>
+      <div><b>La RSL</b><span>Le reste va aux cours, événements, compétitions, matériel et jeunes riders.</span></div>
+    </div>
+    <p class="note">Pourquoi l’objectif est de 20’000 CHF et pas 15’000 ? Parce qu’une partie de l’argent des t-shirts, hoodies et autres produits sert à les fabriquer. 15’000 CHF, c’est le coût des 1’000 inscriptions ; 20’000 CHF permet de les financer tout en payant les contreparties.</p>
+  </div>
+</section>
+
+<section style="border-top:1px solid var(--grid)">
+  <div class="sheet prose">
+    <h2>Pourquoi 1’000 ?</h2>
+    <p>Pour réunir une communauté assez grande pour montrer que la trottinette freestyle existe, qu’elle rassemble et qu’elle mérite de continuer à se structurer en Suisse.</p>
+    <p>Ce projet ne concerne pas seulement la compétition. Il concerne toute la communauté :</p>
+    <div class="who"><span>jeunes riders</span><span>familles</span><span>coachs</span><span>shops</span><span>associations</span><span>skateparks</span><span>marques</span><span>passionnés</span></div>
+  </div>
+</section>
+
+<section style="border-top:1px solid var(--grid)">
+  <div class="sheet">
+    <h2>Questions fréquentes</h2>
+    <details><summary>Puis-je simplement faire un don ?</summary><p>Oui. Tu peux donner le montant de ton choix, sans contrepartie.</p></details>
+    <details><summary>Pourquoi 15 CHF ?</summary><p>C’est le coût d’une inscription dans le cadre du Projet 1000.</p></details>
+    <details><summary>Les produits existent-ils déjà ?</summary><p>Non. Ils seront fabriqués après la campagne, selon les commandes réelles. Ça évite de produire du stock pour rien.</p></details>
+    <details><summary>Quand les produits seront-ils livrés ?</summary><p>La production commence après la clôture et la réussite de la campagne. Une date estimée sera communiquée pour chaque contrepartie.</p></details>
+    <details><summary>Et si vous dépassez l’objectif ?</summary><p>L’argent en plus finance davantage d’actions de la RSL et le développement de la trottinette freestyle.</p></details>
+    <details><summary>Et si seulement 10’000 CHF sont récoltés ?</summary><p>10’000 CHF est le seuil minimum pour lancer le projet. La RSL cherchera ensuite le reste grâce à ses événements, sponsors et partenaires.</p></details>
+  </div>
+</section>
+
+<section class="final">
+  <div class="hazard"></div>
+  <div class="sheet">
+    <div class="big"><span>1’000 riders.</span><span>1’000 inscriptions.</span><span>Un même projet.</span></div>
+    <p>Riders, parents, clubs, shops, marques, entreprises ou simples passionnés : vous pouvez tous faire partie du Projet 1000. Même 15 CHF font avancer le projet.</p>
+    <a class="btn" href="#soutenir">Je soutiens le Projet 1000</a>
+  </div>
+</section>
+
+<footer>
+  Projet 1000 · 2027 · Romandie Scooter League / Association Ride4Style Montreux
+  <div class="coords">46.9480° N · 7.4474° E</div>
+</footer>
+
+<script>
+/* ===== À MODIFIER ICI ===== */
+const CROWDFUND_URL = '';   // lien de la plateforme de crowdfunding (vide = WhatsApp)
+const RAISED = 0;           // montant récolté en CHF
+const FUNDED = 0;           // inscriptions réellement financées
+const WHATSAPP = '41783008043';
+/* ========================= */
+
+const fmt=n=>Math.round(n).toLocaleString('fr-CH').replace(/[\u202f\u00a0\s]/g,'’');
+document.getElementById('raised').textContent=fmt(RAISED)+' CHF';
+document.getElementById('funded').textContent=fmt(FUNDED);
+const fill=document.getElementById('fill');
+const pct=Math.min(100,RAISED/25000*100);
+const io=new IntersectionObserver(es=>{ if(es.some(e=>e.isIntersecting)){ fill.style.width=pct+'%'; io.disconnect(); } },{threshold:.4});
+io.observe(fill);
+
+function support(label,price,size){
+  if(CROWDFUND_URL){ window.open(CROWDFUND_URL,'_blank','noopener'); return; }
+  const msg=`Salut la RSL ! Je veux soutenir le Projet 1000 🛴\n${label} : ${price} CHF${size?'\nTaille : '+size:''}\nPrénom et nom :\nAdresse d’envoi :`;
+  window.open('https://wa.me/'+WHATSAPP+'?text='+encodeURIComponent(msg),'_blank','noopener');
+}
+document.querySelectorAll('[data-reward]').forEach(b=>b.addEventListener('click',()=>{
+  let size='';
+  if(b.dataset.size){
+    const s=document.getElementById(b.dataset.size);
+    if(!s.value){ s.focus(); s.style.borderColor='#ff1426'; return; }
+    size=s.value; s.style.borderColor='';
+  }
+  support(b.dataset.reward,b.dataset.price,size);
+}));
+const amounts=document.getElementById('amounts'), free=document.getElementById('freeAmount');
+amounts.addEventListener('click',e=>{
+  const b=e.target.closest('button'); if(!b) return;
+  [...amounts.children].forEach(x=>x.classList.toggle('on',x===b)); free.value=b.dataset.v;
+});
+free.addEventListener('input',()=>[...amounts.children].forEach(x=>x.classList.toggle('on',x.dataset.v===free.value)));
+document.getElementById('freeBtn').addEventListener('click',()=>{
+  const v=parseInt(free.value,10); if(!v||v<5){ free.focus(); return; }
+  support('Don libre',v,'');
+});
+document.getElementById('partnerBtn').href='https://wa.me/'+WHATSAPP+'?text='+encodeURIComponent('Bonjour la RSL, nous aimerions soutenir le Projet 1000 en tant que partenaire.\nEntreprise / club :\nContact :');
+</script>
+</body>
+</html>
