@@ -1,0 +1,17 @@
+{
+  "id": "/carte",
+  "name": "Carte membre RSL",
+  "short_name": "Carte RSL",
+  "description": "Ta carte membre Romandie Scooter League, avec ton QR pour les cours",
+  "start_url": "/carte",
+  "scope": "/carte",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#080808",
+  "theme_color": "#cc0000",
+  "lang": "fr",
+  "icons": [
+    { "src": "/images/app/rsl-carte-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "/images/app/rsl-carte-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
