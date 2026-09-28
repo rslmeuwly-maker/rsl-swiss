@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Scanner QR — RSL</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--red:#cc0000;--bg:#080808;--fg:#f0f0f0;--muted:#8a8a8a;--card:#111;--line:rgba(255,255,255,.08);--ok:#25d366}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:'Barlow Condensed',system-ui,sans-serif;min-height:100vh}
+header{background:#000;border-bottom:3px solid var(--red);padding:14px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+header h1{font-family:'Bebas Neue',Impact,sans-serif;font-size:26px;letter-spacing:.08em}
+header h1 span{color:var(--red)}
+header a{color:var(--muted);font-weight:700;font-size:12px;letter-spacing:.14em;text-transform:uppercase;text-decoration:none}
+.wrap{max-width:720px;margin:0 auto;padding:22px 14px 60px}
+.box{background:var(--card);border:1px solid var(--line);padding:18px;position:relative;margin-bottom:14px}
+.box:before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--red)}
+label{display:block;font-size:11px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin:12px 0 6px}
+label:first-child{margin-top:0}
+input,select{width:100%;background:#050505;color:#fff;border:1px solid rgba(255,255,255,.15);padding:12px;font-family:inherit;font-size:18px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;background:var(--red);color:#fff;border:0;padding:12px 16px;font-family:inherit;font-weight:900;font-size:14px;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;text-decoration:none}
+.btn.full{width:100%;margin-top:14px;padding:14px}
+.btn.ghost{background:transparent;border:1px solid rgba(255,255,255,.2);color:#ddd}
+.btn.green{background:var(--ok);color:#04210f}
+.msg{margin-top:10px;font-size:15px;color:#ff6b6b;min-height:18px}
+.hint{color:var(--muted);font-size:15px;line-height:1.4}
+.hide{display:none!important}
+
+#reader{width:100%;background:#000;border:1px solid var(--line);overflow:hidden}
+#reader video{width:100%!important;height:auto!important}
+.res{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;z-index:50}
+.res.ok{background:#0f7a36}.res.ko{background:#a30000}.res.warn{background:#b36b00}
+.res .icon{font-size:90px;line-height:1}
+.res .st{font-family:'Bebas Neue',Impact,sans-serif;font-size:64px;letter-spacing:.04em;line-height:1;margin-top:10px}
+.res .who{font-family:'Bebas Neue',Impact,sans-serif;font-size:44px;margin-top:14px}
+.res .det{font-size:22px;font-weight:700;margin-top:8px;opacity:.95}
+.res .btn{margin-top:26px;background:#fff;color:#000;padding:16px 26px;font-size:16px}
+.manual{display:flex;gap:6px;margin-top:6px}
+.manual input{text-transform:uppercase;letter-spacing:.15em}
+
+</style>
+</head>
+<body>
+<header>
+  <h1>SCANNER <span>QR</span></h1>
+  <a href="/qr-admin">Admin →</a>
+</header>
+<div class="wrap">
+  <div class="box" id="login">
+    <label for="code">Code prof ou admin</label>
+    <input type="password" id="code" autocomplete="current-password">
+    <button class="btn full" id="go">Entrer</button>
+    <div class="msg" id="loginMsg"></div>
+    <p class="hint" style="margin-top:10px">Le code reste enregistré sur ce téléphone.</p>
+  </div>
+
+  <div id="app" class="hide">
+    <div id="reader"></div>
+    <button class="btn full" id="startBtn">📷 Démarrer la caméra</button>
+    <label style="margin-top:18px">Ou tape le code</label>
+    <div class="manual"><input id="manual" maxlength="8" placeholder="ABCD2345"><button class="btn" id="manualGo">OK</button></div>
+    <div class="msg" id="msg"></div>
+    <p class="hint" style="margin-top:14px"><a href="#" id="logout" style="color:var(--muted)">Changer de code</a></p>
+  </div>
+</div>
+
+<div class="res hide" id="res">
+  <div class="icon" id="resIcon"></div>
+  <div class="st" id="resSt"></div>
+  <div class="who" id="resWho"></div>
+  <div class="det" id="resDet"></div>
+  <button class="btn" id="next">Scanner le suivant</button>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<script>
+const SB='https://jynxifufaauoxwzjapzq.supabase.co';
+const KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp5bnhpZnVmYWF1b3h3emphcHpxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEzODI2NzcsImV4cCI6MjA3Njk1ODY3N30.vFPGhGakPIM3Xg5rn8_BrAXl6oJMJOssO780C9nXmr4';
+async function rpc(fn,body){
+  const r=await fetch(SB+'/rest/v1/rpc/'+fn,{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+KEY,'Content-Type':'application/json'},body:JSON.stringify(body)});
+  const t=await r.text(); let d=null; try{d=JSON.parse(t)}catch(_){}
+  if(!r.ok) throw new Error((d&&d.message)||'Erreur réseau, réessaie');
+  return d;
+}
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fmtDate=d=>d?new Date(d+'T12:00:00').toLocaleDateString('fr-CH',{day:'numeric',month:'long',year:'numeric'}):'';
+const TYPE={cours:'1 cours',pack:'Pack cours',annuel:'Gratuit à l’année'};
+const BILLET='https://rsl-swiss.ch/billet?c=';
+
+let staff='', scanner=null, busy=false;
+
+function extractCode(txt){
+  txt=String(txt||'').trim();
+  try{ const u=new URL(txt); const c=u.searchParams.get('c'); if(c) return c.toUpperCase(); }catch(_){}
+  return txt.replace(/[^A-Za-z0-9]/g,'').toUpperCase();
+}
+function beep(ok){
+  try{ const a=new (window.AudioContext||window.webkitAudioContext)(); const o=a.createOscillator(); const g=a.createGain();
+    o.frequency.value=ok?880:220; o.connect(g); g.connect(a.destination); g.gain.value=.15; o.start(); setTimeout(()=>{o.stop();a.close()},ok?180:450); }catch(_){}
+  try{ navigator.vibrate&&navigator.vibrate(ok?120:[200,100,200]); }catch(_){}
+}
+function show(r){
+  const m={
+    valide:['ok','✅','VALIDE'],
+    deja_scanne:['warn','⚠️','DÉJÀ SCANNÉ'],
+    epuise:['ko','⛔','PLUS DE COURS'],
+    expire:['ko','⛔','EXPIRÉ'],
+    desactive:['ko','⛔','QR DÉSACTIVÉ'],
+    inconnu:['ko','❌','QR INCONNU']
+  }[r.status]||['ko','❌','ERREUR'];
+  let det='';
+  if(r.type==='annuel') det='Gratuit à l’année'+(r.valid_until?' · jusqu’au '+fmtDate(r.valid_until):'');
+  else if(r.type) det=r.remaining+' cours restant'+(r.remaining>1?'s':'')+(r.total>1?' sur '+r.total:'');
+  if(r.status==='deja_scanne' && r.last_ok) det='Déjà validé à '+new Date(r.last_ok).toLocaleTimeString('fr-CH',{hour:'2-digit',minute:'2-digit'})+(det?' · '+det:'');
+  $('res').className='res '+m[0]; $('resIcon').textContent=m[1]; $('resSt').textContent=m[2];
+  $('resWho').textContent=r.prenom||''; $('resDet').textContent=det;
+  beep(r.status==='valide');
+}
+async function check(raw){
+  if(busy) return;
+  const c=extractCode(raw); $('msg').textContent='';
+  if(c.length<4) return;
+  busy=true;
+  try{ if(scanner && scanner.isScanning) scanner.pause(true); }catch(_){}
+  try{ show(await rpc('rsl_ticket_scan',{p_staff:staff,p_code:c})); }
+  catch(err){ $('msg').textContent=err.message; busy=false; try{scanner&&scanner.resume()}catch(_){} }
+}
+$('next').onclick=()=>{ $('res').className='res hide'; busy=false; $('manual').value=''; try{ scanner&&scanner.resume(); }catch(_){} };
+$('manualGo').onclick=()=>check($('manual').value);
+$('manual').onkeydown=e=>{ if(e.key==='Enter') check($('manual').value); };
+
+async function startCam(){
+  $('msg').textContent='';
+  try{
+    if(!scanner) scanner=new Html5Qrcode('reader');
+    await scanner.start({facingMode:'environment'},{fps:10,qrbox:{width:240,height:240}},txt=>check(txt),()=>{});
+    $('startBtn').classList.add('hide');
+  }catch(err){ $('msg').textContent='Impossible d’ouvrir la caméra. Autorise la caméra pour ce site, ou tape le code.'; }
+}
+$('startBtn').onclick=startCam;
+
+async function enter(){
+  const c=$('code').value.trim(); $('loginMsg').textContent=''; if(!c) return;
+  try{
+    await rpc('rsl_ticket_login',{p_code:c});
+    staff=c; try{localStorage.setItem('rsl-qr-staff',c)}catch(_){}
+    $('login').classList.add('hide'); $('app').classList.remove('hide');
+    startCam();
+  }catch(err){ $('loginMsg').textContent=err.message; }
+}
+$('go').onclick=enter; $('code').onkeydown=e=>{ if(e.key==='Enter') enter(); };
+$('logout').onclick=e=>{ e.preventDefault(); try{localStorage.removeItem('rsl-qr-staff')}catch(_){} location.reload(); };
+try{ const c=localStorage.getItem('rsl-qr-staff'); if(c){ $('code').value=c; enter(); } }catch(_){}
+</script>
+</body>
+</html>

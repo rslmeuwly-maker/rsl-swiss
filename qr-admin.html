@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>QR cours — Admin RSL</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--red:#cc0000;--bg:#080808;--fg:#f0f0f0;--muted:#8a8a8a;--card:#111;--line:rgba(255,255,255,.08);--ok:#25d366}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:'Barlow Condensed',system-ui,sans-serif;min-height:100vh}
+header{background:#000;border-bottom:3px solid var(--red);padding:14px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+header h1{font-family:'Bebas Neue',Impact,sans-serif;font-size:26px;letter-spacing:.08em}
+header h1 span{color:var(--red)}
+header a{color:var(--muted);font-weight:700;font-size:12px;letter-spacing:.14em;text-transform:uppercase;text-decoration:none}
+.wrap{max-width:720px;margin:0 auto;padding:22px 14px 60px}
+.box{background:var(--card);border:1px solid var(--line);padding:18px;position:relative;margin-bottom:14px}
+.box:before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--red)}
+label{display:block;font-size:11px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin:12px 0 6px}
+label:first-child{margin-top:0}
+input,select{width:100%;background:#050505;color:#fff;border:1px solid rgba(255,255,255,.15);padding:12px;font-family:inherit;font-size:18px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;background:var(--red);color:#fff;border:0;padding:12px 16px;font-family:inherit;font-weight:900;font-size:14px;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;text-decoration:none}
+.btn.full{width:100%;margin-top:14px;padding:14px}
+.btn.ghost{background:transparent;border:1px solid rgba(255,255,255,.2);color:#ddd}
+.btn.green{background:var(--ok);color:#04210f}
+.msg{margin-top:10px;font-size:15px;color:#ff6b6b;min-height:18px}
+.hint{color:var(--muted);font-size:15px;line-height:1.4}
+.hide{display:none!important}
+
+.seg{display:grid;grid-template-columns:repeat(3,1fr);gap:4px}
+.seg button{background:#050505;color:var(--muted);border:1px solid rgba(255,255,255,.15);padding:12px 6px;font-family:inherit;font-weight:700;font-size:14px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer}
+.seg button.on{background:var(--red);border-color:var(--red);color:#fff}
+.result{text-align:center}
+.card-qr{display:inline-block;background:#fff;padding:14px;margin:12px auto}
+.card-qr img,.card-qr canvas{display:block}
+.big{font-family:'Bebas Neue',Impact,sans-serif;font-size:36px;letter-spacing:.04em}
+.code{font-family:monospace;font-size:20px;letter-spacing:.2em;color:#fff}
+.actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-top:12px}
+.list .item{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 0;border-bottom:1px solid var(--line)}
+.list .item:last-child{border-bottom:0}
+.item .n{font-weight:900;font-size:19px;text-transform:uppercase}
+.item .m{font-size:14px;color:var(--muted)}
+.item .r{font-family:'Bebas Neue',Impact,sans-serif;font-size:26px;text-align:right;white-space:nowrap}
+.item.off{opacity:.45}
+.item .b{display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end;margin-top:4px}
+.item .b button{font-family:inherit;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:6px 8px;background:#1b1b1b;color:#ddd;border:1px solid rgba(255,255,255,.14);cursor:pointer}
+.tabs{display:flex;gap:4px;margin-bottom:12px}
+.tabs button{flex:1;background:#050505;color:var(--muted);border:1px solid rgba(255,255,255,.15);padding:11px;font-family:inherit;font-weight:900;font-size:14px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer}
+.tabs button.on{background:#fff;color:#000}
+
+</style>
+</head>
+<body>
+<header>
+  <h1>QR <span>COURS</span></h1>
+  <a href="/scan">Scanner →</a>
+</header>
+<div class="wrap">
+  <div class="box" id="login">
+    <label for="code">Code admin</label>
+    <input type="password" id="code" autocomplete="current-password">
+    <button class="btn full" id="go">Entrer</button>
+    <div class="msg" id="loginMsg"></div>
+  </div>
+
+  <div id="app" class="hide">
+    <div class="tabs"><button class="on" data-t="new">Nouveau QR</button><button data-t="list">Liste</button></div>
+
+    <div id="tabNew">
+      <div class="box">
+        <label>Prénom (et nom)</label>
+        <input id="prenom" placeholder="ex. Nilo S.">
+        <label>Type</label>
+        <div class="seg" id="type">
+          <button data-v="cours" class="on">1 cours</button>
+          <button data-v="pack">15 cours</button>
+          <button data-v="annuel">Gratuit année</button>
+        </div>
+        <div id="packBox" class="hide">
+          <label>Nombre de cours</label>
+          <input id="total" type="number" min="1" value="15">
+        </div>
+        <div id="annuelBox" class="hide">
+          <label>Valable jusqu'au</label>
+          <input id="until" type="date">
+        </div>
+        <label>Note (facultatif)</label>
+        <input id="note" placeholder="ex. payé TWINT 20.09">
+        <button class="btn full" id="create">Créer le QR code</button>
+        <div class="msg" id="createMsg"></div>
+      </div>
+
+      <div class="box result hide" id="result">
+        <div class="big" id="rName"></div>
+        <div class="hint" id="rType"></div>
+        <div class="card-qr" id="rQr"></div>
+        <div class="code" id="rCode"></div>
+        <div class="actions">
+          <a class="btn green" id="rWa" target="_blank" rel="noopener">Envoyer sur WhatsApp</a>
+          <button class="btn ghost" id="rDl">Télécharger l'image</button>
+          <button class="btn ghost" id="rCopy">Copier le lien</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="tabList" class="hide">
+      <div class="box">
+        <input id="search" placeholder="Rechercher un prénom ou un code">
+        <div class="list" id="list" style="margin-top:8px"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+const SB='https://jynxifufaauoxwzjapzq.supabase.co';
+const KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp5bnhpZnVmYWF1b3h3emphcHpxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEzODI2NzcsImV4cCI6MjA3Njk1ODY3N30.vFPGhGakPIM3Xg5rn8_BrAXl6oJMJOssO780C9nXmr4';
+async function rpc(fn,body){
+  const r=await fetch(SB+'/rest/v1/rpc/'+fn,{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+KEY,'Content-Type':'application/json'},body:JSON.stringify(body)});
+  const t=await r.text(); let d=null; try{d=JSON.parse(t)}catch(_){}
+  if(!r.ok) throw new Error((d&&d.message)||'Erreur réseau, réessaie');
+  return d;
+}
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fmtDate=d=>d?new Date(d+'T12:00:00').toLocaleDateString('fr-CH',{day:'numeric',month:'long',year:'numeric'}):'';
+const TYPE={cours:'1 cours',pack:'Pack cours',annuel:'Gratuit à l’année'};
+const BILLET='https://rsl-swiss.ch/billet?c=';
+
+let admin='', type='cours', last=null, all=[];
+
+function billetUrl(c){ return BILLET+c; }
+function describe(t){
+  if(t.type==='annuel') return 'Gratuit à l’année'+(t.valid_until?' · jusqu’au '+fmtDate(t.valid_until):'');
+  if(t.type==='pack') return (t.total-t.used)+' cours restants sur '+t.total;
+  return t.used>=t.total?'Cours utilisé':'1 cours';
+}
+function waText(t){
+  return `Salut ${t.prenom} ! Voici ton QR code RSL (${describe(t)}).\nMontre-le au coach en arrivant au cours :\n${billetUrl(t.code)}`;
+}
+function qrCanvas(text,size){
+  const tmp=document.createElement('div');
+  new QRCode(tmp,{text,width:size,height:size,correctLevel:QRCode.CorrectLevel.M});
+  return tmp.querySelector('canvas');
+}
+function makeCard(t){
+  const q=qrCanvas(billetUrl(t.code),600);
+  const c=document.createElement('canvas'); c.width=800; c.height=1060;
+  const x=c.getContext('2d');
+  x.fillStyle='#080808'; x.fillRect(0,0,800,1060);
+  x.fillStyle='#cc0000'; x.fillRect(0,0,800,90); x.fillRect(0,1050,800,10);
+  x.fillStyle='#fff'; x.font="44px 'Bebas Neue', Impact, sans-serif"; x.textAlign='center';
+  x.fillText('RSL · ROMANDIE SCOOTER LEAGUE',400,62);
+  x.fillStyle='#fff'; x.fillRect(80,130,640,640); x.drawImage(q,100,150,600,600);
+  x.font="64px 'Bebas Neue', Impact, sans-serif"; x.fillText(t.prenom.toUpperCase(),400,860);
+  x.fillStyle='#cc0000'; x.font="700 32px 'Barlow Condensed', Arial, sans-serif"; x.fillText(describe(t).toUpperCase(),400,910);
+  x.fillStyle='#8a8a8a'; x.font="700 26px monospace"; x.fillText(t.code,400,965);
+  x.font="600 22px 'Barlow Condensed', Arial, sans-serif"; x.fillText('À montrer au coach en arrivant au cours',400,1010);
+  return c;
+}
+function showResult(t){
+  last=t;
+  $('rName').textContent=t.prenom; $('rType').textContent=describe(t); $('rCode').textContent=t.code;
+  $('rQr').innerHTML=''; new QRCode($('rQr'),{text:billetUrl(t.code),width:220,height:220,correctLevel:QRCode.CorrectLevel.M});
+  $('rWa').href='https://wa.me/?text='+encodeURIComponent(waText(t));
+  $('result').classList.remove('hide'); $('result').scrollIntoView({behavior:'smooth'});
+}
+$('rDl').onclick=()=>{ const c=makeCard(last); const a=document.createElement('a'); a.download='qr-rsl-'+last.prenom.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-')+'.png'; a.href=c.toDataURL('image/png'); a.click(); };
+$('rCopy').onclick=()=>{ try{navigator.clipboard.writeText(billetUrl(last.code))}catch(_){}; $('rCopy').textContent='Copié ✓'; setTimeout(()=>$('rCopy').textContent='Copier le lien',1500); };
+
+$('type').onclick=e=>{
+  const b=e.target.closest('button'); if(!b) return; type=b.dataset.v;
+  [...$('type').children].forEach(x=>x.classList.toggle('on',x===b));
+  $('packBox').classList.toggle('hide',type!=='pack');
+  $('annuelBox').classList.toggle('hide',type!=='annuel');
+};
+const d0=new Date(); d0.setFullYear(d0.getFullYear()+1); $('until').value=d0.toISOString().slice(0,10);
+
+$('create').onclick=async()=>{
+  $('createMsg').textContent='';
+  const prenom=$('prenom').value.trim(); if(!prenom){ $('createMsg').textContent='Mets un prénom.'; return; }
+  $('create').disabled=true;
+  try{
+    const t=await rpc('rsl_ticket_create',{p_admin:admin,p_prenom:prenom,p_type:type,p_total:type==='pack'?(+$('total').value||15):null,p_valid_until:type==='annuel'?$('until').value:null,p_note:$('note').value});
+    $('prenom').value=''; $('note').value='';
+    showResult(t);
+  }catch(err){ $('createMsg').textContent=err.message; }
+  $('create').disabled=false;
+};
+
+async function loadList(){ all=await rpc('rsl_ticket_list',{p_admin:admin}); renderList(); }
+function renderList(){
+  const q=$('search').value.trim().toLowerCase();
+  const rows=all.filter(t=>!q||t.prenom.toLowerCase().includes(q)||t.code.toLowerCase().includes(q));
+  $('list').innerHTML=rows.length?rows.map(t=>{
+    const r=t.type==='annuel'?'∞':(t.total-t.used)+'/'+t.total;
+    return `<div class="item${t.active?'':' off'}">
+      <div><div class="n">${esc(t.prenom)}</div><div class="m">${esc(TYPE[t.type])} · ${t.code}${t.note?' · '+esc(t.note):''}${t.active?'':' · DÉSACTIVÉ'}</div></div>
+      <div><div class="r">${r}</div><div class="b">
+        <button data-a="show" data-c="${t.code}">QR</button>
+        ${t.type==='pack'?`<button data-a="add" data-c="${t.code}">+ cours</button>`:''}
+        <button data-a="toggle" data-c="${t.code}">${t.active?'Désactiver':'Réactiver'}</button>
+      </div></div></div>`;
+  }).join(''):'<p class="hint">Aucun QR code.</p>';
+}
+$('search').oninput=renderList;
+$('list').onclick=async e=>{
+  const b=e.target.closest('button'); if(!b) return;
+  const t=all.find(x=>x.code===b.dataset.c); if(!t) return;
+  try{
+    if(b.dataset.a==='show'){ switchTab('new'); showResult(t); return; }
+    if(b.dataset.a==='add'){ const n=parseInt(prompt('Ajouter combien de cours à '+t.prenom+' ?','15'),10); if(!n) return; await rpc('rsl_ticket_update',{p_admin:admin,p_code:t.code,p_active:null,p_add:n}); }
+    if(b.dataset.a==='toggle'){ if(t.active && !confirm('Désactiver le QR de '+t.prenom+' ?')) return; await rpc('rsl_ticket_update',{p_admin:admin,p_code:t.code,p_active:!t.active,p_add:0}); }
+    loadList();
+  }catch(err){ alert(err.message); }
+};
+function switchTab(n){
+  document.querySelectorAll('.tabs button').forEach(x=>x.classList.toggle('on',x.dataset.t===n));
+  $('tabNew').classList.toggle('hide',n!=='new'); $('tabList').classList.toggle('hide',n!=='list');
+  if(n==='list') loadList().catch(err=>alert(err.message));
+}
+document.querySelector('.tabs').onclick=e=>{ const b=e.target.closest('button'); if(b) switchTab(b.dataset.t); };
+
+async function enter(){
+  const c=$('code').value.trim(); $('loginMsg').textContent=''; if(!c) return;
+  try{
+    const role=await rpc('rsl_ticket_login',{p_code:c});
+    if(role!=='admin') throw new Error('Ce code sert seulement à scanner. Il faut le code admin.');
+    admin=c; try{sessionStorage.setItem('rsl-qr-admin',c)}catch(_){}
+    $('login').classList.add('hide'); $('app').classList.remove('hide');
+  }catch(err){ $('loginMsg').textContent=err.message; }
+}
+$('go').onclick=enter; $('code').onkeydown=e=>{ if(e.key==='Enter') enter(); };
+try{ const c=sessionStorage.getItem('rsl-qr-admin'); if(c){ $('code').value=c; enter(); } }catch(_){}
+</script>
+</body>
+</html>

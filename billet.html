@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Mon QR cours — RSL</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--red:#cc0000;--bg:#080808;--fg:#f0f0f0;--muted:#8a8a8a;--card:#111;--line:rgba(255,255,255,.08);--ok:#25d366}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:'Barlow Condensed',system-ui,sans-serif;min-height:100vh}
+header{background:#000;border-bottom:3px solid var(--red);padding:14px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+header h1{font-family:'Bebas Neue',Impact,sans-serif;font-size:26px;letter-spacing:.08em}
+header h1 span{color:var(--red)}
+header a{color:var(--muted);font-weight:700;font-size:12px;letter-spacing:.14em;text-transform:uppercase;text-decoration:none}
+.wrap{max-width:720px;margin:0 auto;padding:22px 14px 60px}
+.box{background:var(--card);border:1px solid var(--line);padding:18px;position:relative;margin-bottom:14px}
+.box:before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--red)}
+label{display:block;font-size:11px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin:12px 0 6px}
+label:first-child{margin-top:0}
+input,select{width:100%;background:#050505;color:#fff;border:1px solid rgba(255,255,255,.15);padding:12px;font-family:inherit;font-size:18px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;background:var(--red);color:#fff;border:0;padding:12px 16px;font-family:inherit;font-weight:900;font-size:14px;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;text-decoration:none}
+.btn.full{width:100%;margin-top:14px;padding:14px}
+.btn.ghost{background:transparent;border:1px solid rgba(255,255,255,.2);color:#ddd}
+.btn.green{background:var(--ok);color:#04210f}
+.msg{margin-top:10px;font-size:15px;color:#ff6b6b;min-height:18px}
+.hint{color:var(--muted);font-size:15px;line-height:1.4}
+.hide{display:none!important}
+
+.ticket{max-width:420px;margin:10px auto;text-align:center;background:var(--card);border:1px solid var(--line);padding:24px 18px;position:relative}
+.ticket:before{content:"";position:absolute;left:0;right:0;top:0;height:4px;background:var(--red)}
+.qr{display:inline-block;background:#fff;padding:14px;margin:14px auto}
+.name{font-family:'Bebas Neue',Impact,sans-serif;font-size:48px;letter-spacing:.04em;line-height:1}
+.st{font-weight:900;font-size:20px;letter-spacing:.08em;text-transform:uppercase;color:var(--ok);margin-top:6px}
+.st.ko{color:#ff6b6b}
+.code{font-family:monospace;font-size:20px;letter-spacing:.22em;color:var(--muted)}
+
+</style>
+</head>
+<body>
+<header>
+  <h1>RSL <span>COURS</span></h1>
+  <a href="/cours">Les cours →</a>
+</header>
+<div class="wrap">
+  <div class="ticket" id="t"><p class="hint">Chargement…</p></div>
+  <p class="hint" style="text-align:center;margin-top:12px">Montre ce QR code au coach en arrivant au cours.<br>Garde cette page en favori ou fais une capture d’écran.</p>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+const SB='https://jynxifufaauoxwzjapzq.supabase.co';
+const KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp5bnhpZnVmYWF1b3h3emphcHpxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEzODI2NzcsImV4cCI6MjA3Njk1ODY3N30.vFPGhGakPIM3Xg5rn8_BrAXl6oJMJOssO780C9nXmr4';
+async function rpc(fn,body){
+  const r=await fetch(SB+'/rest/v1/rpc/'+fn,{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+KEY,'Content-Type':'application/json'},body:JSON.stringify(body)});
+  const t=await r.text(); let d=null; try{d=JSON.parse(t)}catch(_){}
+  if(!r.ok) throw new Error((d&&d.message)||'Erreur réseau, réessaie');
+  return d;
+}
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fmtDate=d=>d?new Date(d+'T12:00:00').toLocaleDateString('fr-CH',{day:'numeric',month:'long',year:'numeric'}):'';
+const TYPE={cours:'1 cours',pack:'Pack cours',annuel:'Gratuit à l’année'};
+const BILLET='https://rsl-swiss.ch/billet?c=';
+
+(async function(){
+  const c=(new URLSearchParams(location.search).get('c')||'').toUpperCase();
+  const box=$('t');
+  if(!c){ box.innerHTML='<p class="hint">Aucun QR code.</p>'; return; }
+  try{
+    const t=await rpc('rsl_ticket_view',{p_code:c});
+    if(!t||!t.found){ box.innerHTML='<p class="hint">Ce QR code n’existe pas.</p>'; return; }
+    let st='', ko=false;
+    if(!t.active){ st='QR désactivé'; ko=true; }
+    else if(t.type==='annuel'){ const exp=t.valid_until && new Date(t.valid_until+'T23:59:59')<new Date(); st=exp?'Expiré':'Gratuit à l’année'+(t.valid_until?' · jusqu’au '+fmtDate(t.valid_until):''); ko=!!exp; }
+    else if(t.remaining<=0){ st=t.type==='cours'?'Cours déjà utilisé':'Plus de cours'; ko=true; }
+    else st=t.type==='cours'?'1 cours':t.remaining+' cours restant'+(t.remaining>1?'s':'')+' sur '+t.total;
+    box.innerHTML=`<div class="name">${esc(t.prenom)}</div><div class="st${ko?' ko':''}">${esc(st)}</div><div class="qr" id="qr"></div><div class="code">${t.code}</div>`;
+    new QRCode($('qr'),{text:BILLET+t.code,width:240,height:240,correctLevel:QRCode.CorrectLevel.M});
+  }catch(err){ box.innerHTML='<p class="hint">Impossible de charger le QR. Réessaie.</p>'; }
+})();
+</script>
+</body>
+</html>
