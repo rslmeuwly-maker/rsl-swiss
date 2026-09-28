@@ -4,6 +4,15 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
+<link rel="manifest" href="/rsl-qr.webmanifest">
+<meta name="theme-color" content="#cc0000">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="RSL Scan">
+<link rel="apple-touch-icon" href="/images/app/rsl-qr-180.png">
+<link rel="icon" type="image/png" href="/images/app/rsl-qr-192.png">
+
 <title>QR cours — Admin RSL</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -51,6 +60,11 @@ input,select{width:100%;background:#050505;color:#fff;border:1px solid rgba(255,
 .tabs button{flex:1;background:#050505;color:var(--muted);border:1px solid rgba(255,255,255,.15);padding:11px;font-family:inherit;font-weight:900;font-size:14px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer}
 .tabs button.on{background:#fff;color:#000}
 
+
+.install{display:none;margin-bottom:14px;background:#111;border:1px solid rgba(204,0,0,.45);padding:14px;font-size:16px;line-height:1.4}
+.install b{color:#fff}
+.install .btn{margin-top:10px}
+@media all and (display-mode: standalone){.install{display:none!important}}
 </style>
 </head>
 <body>
@@ -59,6 +73,12 @@ input,select{width:100%;background:#050505;color:#fff;border:1px solid rgba(255,
   <a href="/scan">Scanner →</a>
 </header>
 <div class="wrap">
+  <div class="install" id="install">
+    📲 <b>Installe l'app sur ton téléphone</b><br>
+    <span id="instIos">Sur iPhone : touche <b>Partager</b> ⬆️ puis <b>« Sur l'écran d'accueil »</b>.</span>
+    <span id="instAnd" style="display:none">Clique sur le bouton pour l'ajouter à ton écran d'accueil.</span>
+    <div><button class="btn" id="instBtn" style="display:none">Installer RSL Scan</button> <button class="btn ghost" id="instClose">Plus tard</button></div>
+  </div>
   <div class="box" id="login">
     <label for="code">Code admin</label>
     <input type="password" id="code" autocomplete="current-password">
@@ -237,5 +257,26 @@ async function enter(){
 $('go').onclick=enter; $('code').onkeydown=e=>{ if(e.key==='Enter') enter(); };
 try{ const c=sessionStorage.getItem('rsl-qr-admin'); if(c){ $('code').value=c; enter(); } }catch(_){}
 </script>
+<script>
+(function(){
+  const box=document.getElementById('install'); if(!box) return;
+  const standalone=window.matchMedia('(display-mode: standalone)').matches||navigator.standalone;
+  let closed=false; try{closed=localStorage.getItem('rsl-install-closed')==='1'}catch(_){}
+  if(standalone||closed) return;
+  const ios=/iphone|ipad|ipod/i.test(navigator.userAgent);
+  let deferred=null;
+  if(ios){ box.style.display='block'; }
+  window.addEventListener('beforeinstallprompt',e=>{
+    e.preventDefault(); deferred=e;
+    document.getElementById('instIos').style.display='none';
+    document.getElementById('instAnd').style.display='inline';
+    document.getElementById('instBtn').style.display='inline-flex';
+    box.style.display='block';
+  });
+  document.getElementById('instBtn').onclick=async()=>{ if(!deferred) return; deferred.prompt(); await deferred.userChoice; deferred=null; box.style.display='none'; };
+  document.getElementById('instClose').onclick=()=>{ box.style.display='none'; try{localStorage.setItem('rsl-install-closed','1')}catch(_){} };
+})();
+</script>
+<script>if('serviceWorker' in navigator){navigator.serviceWorker.register('/rsl-qr-sw.js').catch(()=>{});}</script>
 </body>
 </html>
