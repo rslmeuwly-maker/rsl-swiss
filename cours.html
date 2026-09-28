@@ -187,6 +187,8 @@
       text-transform:uppercase;color:var(--red);border:1px solid rgba(200,0,0,.35);padding:4px 9px;
     }
     .badge.lieu{color:#fff;border-color:rgba(255,255,255,.12);background:rgba(255,255,255,.035)}
+    .badge.statut{color:#9a9a9a;border-color:rgba(255,255,255,.14);background:rgba(255,255,255,.03)}
+    .badge.statut.ok{color:#25d366;border-color:rgba(37,211,102,.45);background:rgba(37,211,102,.08)}
     .course-info{color:var(--muted);font-size:15px;line-height:1.55;flex:1}
     .wa-btn{
       display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:11px 14px;
@@ -205,6 +207,17 @@
     .empty-msg{grid-column:1/-1;color:var(--muted);padding:30px 0;font-size:16px}
 
     /* AUTRES FORMULES */
+    .coachs{display:grid;grid-template-columns:1fr;gap:3px;margin-bottom:56px}
+    .coach{display:grid;grid-template-columns:320px 1fr;background:#111;border:1px solid rgba(255,255,255,.08);position:relative;overflow:hidden}
+    .coach:before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--red);z-index:1}
+    .coach-photo{width:100%;height:100%;min-height:320px;object-fit:cover;object-position:center 35%;display:block;filter:grayscale(.15)}
+    .coach-body{padding:26px 28px;display:flex;flex-direction:column;justify-content:center}
+    .coach-tag{font-size:11px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--red);margin-bottom:6px}
+    .coach-name{font-family:'Bebas Neue',sans-serif;font-size:46px;letter-spacing:.04em;line-height:.95;color:#fff}
+    .coach-text{font-size:17px;line-height:1.55;color:rgba(240,240,240,.72);margin-top:12px;max-width:62ch}
+    .coach-facts{display:flex;flex-wrap:wrap;gap:6px;margin-top:16px}
+    .coach-facts span{font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:6px 10px;border:1px solid rgba(204,0,0,.45);color:#ff7373;background:rgba(204,0,0,.08)}
+    @media(max-width:700px){.coach{grid-template-columns:1fr}.coach-photo{height:320px;min-height:0;object-position:center 30%}.coach-body{padding:20px 18px}}
     .extras{margin-top:58px}
     .extra-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:3px}
     .extra-card{
@@ -351,6 +364,34 @@
       <div class="section-head">
         <div class="section-kicker">
           <div class="num">02</div>
+          <div class="section-title">NOS <span>COACHS</span></div>
+        </div>
+        <div class="section-sub">Des riders passionnés, qui connaissent le terrain et la compétition.</div>
+      </div>
+
+      <div class="coachs">
+        <article class="coach">
+          <img class="coach-photo" src="/images/coachs/djamal.jpg" alt="Djamal, coach RSL, en plein trick au skatepark" loading="lazy">
+          <div class="coach-body">
+            <div class="coach-tag">Coach RSL · Montreux</div>
+            <div class="coach-name">DJAMAL</div>
+            <p class="coach-text">Salut, moi c'est Djamal ! Je fais de la trottinette freestyle depuis 6 ans et je participe à des compétitions en Suisse et en France. Je donne des cours depuis plus d'un an avec la RSL, pour la Ville de Montreux et aussi en privé.</p>
+            <div class="coach-facts"><span>6 ans de ride</span><span>Compétitions CH & FR</span><span>Cours collectifs & privés</span></div>
+          </div>
+        </article>
+        <article class="coach">
+          <img class="coach-photo" src="/images/coachs/lucas.jpg" alt="Lucas, coach RSL, avec le t-shirt du championnat RSL 2026" loading="lazy" style="object-position:center 18%">
+          <div class="coach-body">
+            <div class="coach-tag">Coach RSL · Montreux</div>
+            <div class="coach-name">LUCAS</div>
+            <p class="coach-text">Présentation à venir.</p>
+          </div>
+        </article>
+      </div>
+
+      <div class="section-head">
+        <div class="section-kicker">
+          <div class="num">03</div>
           <div class="section-title">INSCRIPTIONS <span>AUX COURS</span></div>
         </div>
         <p class="section-sub">Tous les cours ont lieu à Montreux. Choisis ton samedi et réserve ta place.</p>
@@ -452,6 +493,13 @@
     let activeLieu="Montreux";
     const allCourses=buildCourses();
 
+    /* Dates confirmées (cochées dans /evenements/admin-cours) */
+    const CONFIRMES=new Set();
+    const isoDate=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    fetch('https://jynxifufaauoxwzjapzq.supabase.co/rest/v1/rsl_cours_confirmes?select=date_cours&confirme=eq.true',{
+      headers:{apikey:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp5bnhpZnVmYWF1b3h3emphcHpxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEzODI2NzcsImV4cCI6MjA3Njk1ODY3N30.vFPGhGakPIM3Xg5rn8_BrAXl6oJMJOssO780C9nXmr4'}
+    }).then(r=>r.ok?r.json():[]).then(rows=>{rows.forEach(r=>CONFIRMES.add(r.date_cours));renderCards();}).catch(()=>{});
+
     function renderCards(){
       const grid=document.getElementById('courseGrid');
       grid.innerHTML='';
@@ -478,6 +526,7 @@
           <div class="badges">
             <span class="badge">Trottinette freestyle</span>
             <span class="badge lieu">${lieu}</span>
+            <span class="badge statut${CONFIRMES.has(isoDate(date))?' ok':''}">${CONFIRMES.has(isoDate(date))?'✅ Confirmé':'⏳ Non confirmé'}</span>
           </div>
           <p class="course-info">Cours collectif RSL. Contacte-nous pour réserver ta place ou rejoins directement le groupe WhatsApp de ${lieu}.</p>
           <div class="wa-actions">
