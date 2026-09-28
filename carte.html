@@ -140,6 +140,13 @@ $('nav').onclick=e=>{
   if(b.id==='addCard'){ $('out').innerHTML=''; $('entry').style.display='block'; $('code').value=''; $('code').focus(); current=null; renderNav(); return; }
   show(b.dataset.c);
 };
+function coursesLeft(m){
+  if(m.unlimited) return 'Illimités ✓';
+  const parts=[];
+  if(m.free_left!=null) parts.push(m.free_left+' / 15 gratuits');
+  if(m.paid_left>0) parts.push(m.paid_left+' payé'+(m.paid_left>1?'s':''));
+  return parts.length?parts.join(' + '):'0 · à payer (20.–)';
+}
 const benefitsHtml=b=>Array.isArray(b)&&b.length?b.map(x=>`<li>${esc(x)}</li>`).join(''):'<li>Membre officiel RSL</li>';
 function dispDate(v){ if(!v) return '—'; const s=String(v); if(/^\d{4}-\d{2}-\d{2}$/.test(s)){const [y,m,d]=s.split('-');return `${d}.${m}.${y}`;} return s; }
 
@@ -162,6 +169,7 @@ async function show(code){
         <div class="rows">
           ${m.birth_date?`<div class="row"><span>Naissance</span><span>${esc(dispDate(m.birth_date))}</span></div>`:''}
           <div class="row"><span>Valable jusqu'au</span><span>${esc(dispDate(m.valid_until))}</span></div>
+          <div class="row"><span>Cours restants</span><span class="${m.unlimited||m.free_left>0||m.paid_left>0?'ok':'ko'}">${coursesLeft(m)}</span></div>
           ${(m.tier!=='premium')?`<div class="row"><span>Prochain cours</span><span class="${m.course_activated?'ok':''}">${m.course_activated?'Payé ✓ samedi '+dispDate(m.course_activated).slice(0,5):(m.tier==='progression'?'Inclus dans ton abo':'Pas encore payé')}</span></div>`:''}
           <div class="row"><span>Statut</span><span class="${ok?'ok':'ko'}">${!m.active?'Désactivée':exp?'Expirée':'Active ✓'}</span></div>
         </div>

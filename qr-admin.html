@@ -308,7 +308,7 @@ function renderMembers(){
     return `<div class="item${m.active&&!exp?'':' off'}">
       <div style="display:flex;gap:10px;align-items:center">
         ${m.photo_url?`<img src="${esc(m.photo_url)}" alt="" style="width:42px;height:50px;object-fit:cover">`:''}
-        <div><div class="n">${esc(m.full_name)}</div><div class="m">${esc(TIER[m.tier]||m.tier)} · ${esc(m.code)} · jusqu’au ${esc(m.valid_until||'—')}${exp?' · EXPIRÉE':''}${m.active?'':' · DÉSACTIVÉE'}</div></div>
+        <div><div class="n">${esc(m.full_name)}</div><div class="m">${esc(TIER[m.tier]||m.tier)} · <b style="color:#fff">${m.unlimited?'∞ cours':(m.free_left!=null?m.free_left+'/15 cours':'')+(m.paid_left?(m.free_left!=null?' + ':'')+m.paid_left+' payé':(m.free_left!=null?'':'0 cours'))}</b> · ${esc(m.code)} · jusqu’au ${esc(m.valid_until||'—')}${exp?' · EXPIRÉE':''}${m.active?'':' · DÉSACTIVÉE'}</div></div>
       </div>
       <div class="b">
         ${(m.tier==='premium')?'':`<button data-a="act" data-c="${esc(m.code)}" style="${m.course_activated?'background:#0f7a36;border-color:#0f7a36;color:#fff':''}">${m.course_activated?'✅ Payé sam. '+fmtShort(m.course_activated):'Activer samedi'}</button>`}
