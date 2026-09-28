@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Demande de carte membre — RSL</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--red:#cc0000;--bg:#080808;--fg:#f0f0f0;--muted:#8a8a8a;--card:#111;--line:rgba(255,255,255,.08);--ok:#25d366}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:'Barlow Condensed',system-ui,sans-serif;min-height:100vh}
+header{background:#000;border-bottom:3px solid var(--red);padding:14px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+header h1{font-family:'Bebas Neue',Impact,sans-serif;font-size:26px;letter-spacing:.08em}
+header h1 span{color:var(--red)}
+header a{color:var(--muted);font-weight:700;font-size:12px;letter-spacing:.14em;text-transform:uppercase;text-decoration:none}
+.wrap{max-width:720px;margin:0 auto;padding:22px 14px 60px}
+.box{background:var(--card);border:1px solid var(--line);padding:18px;position:relative;margin-bottom:14px}
+.box:before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--red)}
+label{display:block;font-size:11px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin:12px 0 6px}
+label:first-child{margin-top:0}
+input,select{width:100%;background:#050505;color:#fff;border:1px solid rgba(255,255,255,.15);padding:12px;font-family:inherit;font-size:18px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;background:var(--red);color:#fff;border:0;padding:12px 16px;font-family:inherit;font-weight:900;font-size:14px;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;text-decoration:none}
+.btn.full{width:100%;margin-top:14px;padding:14px}
+.btn.ghost{background:transparent;border:1px solid rgba(255,255,255,.2);color:#ddd}
+.btn.green{background:var(--ok);color:#04210f}
+.msg{margin-top:10px;font-size:15px;color:#ff6b6b;min-height:18px}
+.hint{color:var(--muted);font-size:15px;line-height:1.4}
+.hide{display:none!important}
+
+.intro{font-size:17px;line-height:1.5;color:#ddd;margin-bottom:14px}
+.plans{display:grid;gap:6px}
+.plan{display:flex;align-items:center;justify-content:space-between;gap:10px;background:#050505;border:1px solid rgba(255,255,255,.15);padding:12px 14px;cursor:pointer;font-size:17px}
+.plan b{font-family:'Bebas Neue',Impact,sans-serif;font-size:22px;letter-spacing:.05em;font-weight:400}
+.plan small{display:block;color:var(--muted);font-size:13px}
+.plan .p{font-weight:900;white-space:nowrap}
+.plan.on{border-color:#cc0000;background:rgba(204,0,0,.12)}
+.photo-row{display:flex;gap:12px;align-items:center}
+.photo-row img{width:84px;height:100px;object-fit:cover;background:#222;border:1px solid rgba(255,255,255,.15)}
+.check{display:flex;gap:10px;align-items:flex-start;margin-top:14px;font-size:15px;line-height:1.4;color:#ccc}
+.check input{width:auto;margin-top:3px}
+.done{text-align:center;padding:30px 18px}
+.done .big{font-family:'Bebas Neue',Impact,sans-serif;font-size:44px;line-height:1}
+
+</style>
+</head>
+<body>
+<header>
+  <h1>CARTE <span>MEMBRE</span></h1>
+  <a href="/membres">Les formules →</a>
+</header>
+<div class="wrap">
+  <div id="form">
+    <p class="intro">Remplis ta demande avec ta photo. On la vérifie, puis on t’envoie la facture par e-mail ou WhatsApp. Dès que c’est payé, ta carte est activée.</p>
+    <div class="box">
+      <label>Prénom et nom du rider</label><input id="name" autocomplete="name">
+      <label>Date de naissance</label><input id="birth" placeholder="jj.mm.aaaa" inputmode="numeric">
+      <label>Formule</label>
+      <div class="plans" id="plans">
+        <div class="plan on" data-t="starter"><div><b>STARTER</b><small>Cours à 20.– au lieu de 30.–, rabais partenaires</small></div><div class="p">50.– / an</div></div>
+        <div class="plan" data-t="rider"><div><b>RIDER</b><small>Priorité sessions & events, –15 %</small></div><div class="p">80.– / an</div></div>
+        <div class="plan" data-t="support"><div><b>SOUTIEN</b><small>Livret de tricks offert, –15 %</small></div><div class="p">149.– / an</div></div>
+        <div class="plan" data-t="progression"><div><b>PROGRESSION</b><small>15 cours inclus + t-shirt</small></div><div class="p">289.– / an</div></div>
+        <div class="plan" data-t="premium"><div><b>PREMIUM</b><small>Tous les cours gratuits</small></div><div class="p">490.– / an</div></div>
+      </div>
+      <label>Photo (visage bien visible)</label>
+      <div class="photo-row"><img id="prev" alt=""><input type="file" id="photo" accept="image/*"></div>
+      <label>E-mail</label><input id="email" type="email" autocomplete="email">
+      <label>Téléphone (WhatsApp)</label><input id="phone" type="tel" autocomplete="tel" placeholder="079 123 45 67">
+      <label>Remarque (facultatif)</label><input id="note" placeholder="ex. je suis le parent, 2e enfant…">
+      <label class="check"><input type="checkbox" id="ok"> J’accepte que la RSL utilise ces infos et cette photo pour ma carte membre. Si le rider a moins de 18 ans, je suis son parent ou représentant légal.</label>
+      <button class="btn full" id="send">Envoyer ma demande</button>
+      <div class="msg" id="msg"></div>
+    </div>
+  </div>
+  <div class="box done hide" id="done">
+    <div class="big">DEMANDE <span style="color:#cc0000">ENVOYÉE</span> ✓</div>
+    <p class="intro" style="margin-top:12px">Merci ! On vérifie ta demande et on t’envoie la facture. Dès que c’est payé, tu reçois le lien de ta carte.</p>
+    <a class="btn" href="/">Retour au site</a>
+  </div>
+</div>
+<script>
+const SB='https://jynxifufaauoxwzjapzq.supabase.co';
+const KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp5bnhpZnVmYWF1b3h3emphcHpxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEzODI2NzcsImV4cCI6MjA3Njk1ODY3N30.vFPGhGakPIM3Xg5rn8_BrAXl6oJMJOssO780C9nXmr4';
+async function rpc(fn,body){
+  const r=await fetch(SB+'/rest/v1/rpc/'+fn,{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+KEY,'Content-Type':'application/json'},body:JSON.stringify(body)});
+  const t=await r.text(); let d=null; try{d=JSON.parse(t)}catch(_){}
+  if(!r.ok) throw new Error((d&&d.message)||'Erreur réseau, réessaie');
+  return d;
+}
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fmtDate=d=>d?new Date(d+'T12:00:00').toLocaleDateString('fr-CH',{day:'numeric',month:'long',year:'numeric'}):'';
+const TYPE={cours:'1 cours',pack:'Pack cours',annuel:'Gratuit à l’année'};
+const BILLET='https://rsl-swiss.ch/billet?c=';
+
+let tier='starter', photoUrl='';
+$('plans').onclick=e=>{ const p=e.target.closest('.plan'); if(!p) return; tier=p.dataset.t; [...$('plans').children].forEach(x=>x.classList.toggle('on',x===p)); };
+async function upload(file){
+  const img=await new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>{ const i=new Image(); i.onload=()=>res(i); i.onerror=rej; i.src=r.result; }; r.readAsDataURL(file); });
+  const max=700,k=Math.min(1,max/Math.max(img.width,img.height));
+  const c=document.createElement('canvas'); c.width=Math.round(img.width*k); c.height=Math.round(img.height*k);
+  c.getContext('2d').drawImage(img,0,0,c.width,c.height);
+  const blob=await new Promise(r=>c.toBlob(r,'image/jpeg',.85));
+  const path='requests/req-'+Date.now()+'-'+Math.random().toString(36).slice(2,8)+'.jpg';
+  const r=await fetch(SB+'/storage/v1/object/member-cards/'+path,{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+KEY,'Content-Type':'image/jpeg'},body:blob});
+  if(!r.ok) throw new Error('Envoi de la photo impossible, réessaie.');
+  return SB+'/storage/v1/object/public/member-cards/'+path;
+}
+$('photo').onchange=async()=>{
+  const f=$('photo').files[0]; if(!f) return;
+  $('msg').textContent='Envoi de la photo…';
+  try{ photoUrl=await upload(f); $('prev').src=photoUrl; $('msg').textContent=''; }catch(err){ $('msg').textContent=err.message; }
+};
+$('send').onclick=async()=>{
+  $('msg').textContent='';
+  if($('name').value.trim().length<3) return $('msg').textContent='Mets le prénom et le nom.';
+  if(!photoUrl) return $('msg').textContent='Ajoute une photo.';
+  if(!$('email').value.trim() && !$('phone').value.trim()) return $('msg').textContent='Mets un e-mail ou un numéro WhatsApp.';
+  if(!$('ok').checked) return $('msg').textContent='Coche la case d’accord.';
+  $('send').disabled=true;
+  try{
+    await rpc('rsl_member_request_submit',{p_full_name:$('name').value,p_birth:$('birth').value.trim(),p_tier:tier,p_email:$('email').value,p_phone:$('phone').value,p_photo:photoUrl,p_note:$('note').value});
+    $('form').classList.add('hide'); $('done').classList.remove('hide'); window.scrollTo(0,0);
+  }catch(err){ $('msg').textContent=err.message; $('send').disabled=false; }
+};
+</script>
+</body>
+</html>
