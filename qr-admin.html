@@ -142,7 +142,7 @@ input,select{width:100%;background:#050505;color:#fff;border:1px solid rgba(255,
           <option value="premium">Premium — cours gratuits</option>
         </select>
         <label>Statut affiché (facultatif)</label><input id="mRole" placeholder="ex. Coach, JF Team, Président">
-        <label>Valable jusqu'au</label><input id="mValid" value="31.12.2027">
+        <label>Valable jusqu'au</label><input id="mValid" value="31.12.2026">
         <label>Photo</label>
         <div style="display:flex;gap:10px;align-items:center">
           <img id="mPhotoPrev" alt="" style="width:64px;height:76px;object-fit:cover;background:#222;border:1px solid rgba(255,255,255,.15)">
@@ -312,7 +312,7 @@ function openForm(m){
   $('mFormTitle').textContent=m?'Modifier la carte':'Nouvelle carte';
   $('mName').value=m?m.full_name:''; $('mBirth').value=m?(m.birth_date||''):'';
   $('mTier').value=m?(m.tier==='soutien'?'support':m.tier):'starter';
-  $('mRole').value=m?(m.role||''):''; $('mValid').value=m?(m.valid_until||''):'31.12.2027';
+  $('mRole').value=m?(m.role||''):''; $('mValid').value=m?(m.valid_until||''):'31.12.2026';
   $('mBenef').value=(m&&Array.isArray(m.benefits)&&m.benefits.length?m.benefits:BENEF[$('mTier').value]).join('\n');
   $('mActive').checked=m?!!m.active:true; $('mPhoto').value=''; $('mPhotoPrev').src=photoUrl||''; $('mMsg').textContent='';
   $('mForm').classList.remove('hide'); $('mForm').scrollIntoView({behavior:'smooth'});
