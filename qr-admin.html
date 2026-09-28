@@ -156,6 +156,10 @@ input,select{width:100%;background:#050505;color:#fff;border:1px solid rgba(255,
         <div class="msg" id="mMsg"></div>
       </div>
 
+      <div class="box" id="weekBox">
+        <div class="big" style="font-size:24px">COURS DU <span id="satLabel"></span></div>
+        <p class="hint" id="weekInfo" style="margin-top:4px"></p>
+      </div>
       <div class="box">
         <input id="searchM" placeholder="Rechercher un membre">
         <div class="list" id="listM" style="margin-top:8px"></div>
@@ -286,7 +290,16 @@ const BENEF={
 };
 const CARTE='https://rsl-swiss.ch/carte?c=';
 const carteUrl=c=>CARTE+encodeURIComponent(c);
-async function loadMembers(){ members=await rpc('rsl_member_list',{p_admin:admin}); renderMembers(); }
+function nextSat(){ const d=new Date(); d.setHours(12,0,0,0); d.setDate(d.getDate()+((6-d.getDay()+7)%7)); return d; }
+const isoD=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+const fmtShort=v=>{ const [y,m,d]=String(v).split('-'); return `${d}.${m}`; };
+async function loadMembers(){
+  members=await rpc('rsl_member_list',{p_admin:admin});
+  const sat=nextSat(); $('satLabel').textContent='SAMEDI '+sat.getDate()+'.'+String(sat.getMonth()+1).padStart(2,'0');
+  const paid=members.filter(m=>m.course_activated).length;
+  $('weekInfo').textContent=paid+' membre'+(paid>1?'s':'')+' activé'+(paid>1?'s':'')+' (payé). Clique « Activer samedi » quand quelqu’un a payé son cours. Premium et Progression n’en ont pas besoin.';
+  renderMembers();
+}
 function renderMembers(){
   const q=$('searchM').value.trim().toLowerCase();
   const rows=members.filter(m=>!q||(m.full_name||'').toLowerCase().includes(q)||(m.code||'').toLowerCase().includes(q));
@@ -298,6 +311,7 @@ function renderMembers(){
         <div><div class="n">${esc(m.full_name)}</div><div class="m">${esc(TIER[m.tier]||m.tier)} · ${esc(m.code)} · jusqu’au ${esc(m.valid_until||'—')}${exp?' · EXPIRÉE':''}${m.active?'':' · DÉSACTIVÉE'}</div></div>
       </div>
       <div class="b">
+        ${(m.tier==='premium')?'':`<button data-a="act" data-c="${esc(m.code)}" style="${m.course_activated?'background:#0f7a36;border-color:#0f7a36;color:#fff':''}">${m.course_activated?'✅ Payé sam. '+fmtShort(m.course_activated):'Activer samedi'}</button>`}
         <button data-a="qr" data-c="${esc(m.code)}">QR / Envoyer</button>
         <button data-a="edit" data-c="${esc(m.code)}">Modifier</button>
         <button data-a="renew" data-c="${esc(m.code)}">Renouveler 2027</button>
@@ -365,6 +379,11 @@ $('listM').onclick=async e=>{
   const m=members.find(x=>x.code===b.dataset.c); if(!m) return;
   try{
     if(b.dataset.a==='qr') return shareMember(m);
+    if(b.dataset.a==='act'){
+      const on=!m.course_activated;
+      await rpc('rsl_member_activate',{p_admin:admin,p_code:m.code,p_date:on?isoD(nextSat()):m.course_activated,p_on:on});
+      return loadMembers();
+    }
     if(b.dataset.a==='edit') return openForm(m);
     if(b.dataset.a==='renew'){
       if(!confirm(`Renouveler la carte de ${m.full_name} jusqu’au 31.12.2027 ?`)) return;

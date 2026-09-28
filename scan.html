@@ -42,7 +42,7 @@ input,select{width:100%;background:#050505;color:#fff;border:1px solid rgba(255,
 #reader{width:100%;background:#000;border:1px solid var(--line);overflow:hidden}
 #reader video{width:100%!important;height:auto!important}
 .res{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;z-index:50}
-.res.ok{background:#0f7a36}.res.ko{background:#a30000}.res.warn{background:#b36b00}
+.res.ok{background:#0f7a36}.res.info{background:#1d4ed8}.res.ko{background:#a30000}.res.warn{background:#b36b00}
 .res .icon{font-size:90px;line-height:1}
 .res .st{font-family:'Bebas Neue',Impact,sans-serif;font-size:64px;letter-spacing:.04em;line-height:1;margin-top:10px}
 .res .who{font-family:'Bebas Neue',Impact,sans-serif;font-size:44px;margin-top:14px}
@@ -82,7 +82,7 @@ input,select{width:100%;background:#050505;color:#fff;border:1px solid rgba(255,
     <div id="reader"></div>
     <button class="btn full" id="startBtn">📷 Démarrer la caméra</button>
     <label style="margin-top:18px">Ou tape le code</label>
-    <div class="manual"><input id="manual" maxlength="8" placeholder="ABCD2345"><button class="btn" id="manualGo">OK</button></div>
+    <div class="manual"><input id="manual" maxlength="40" placeholder="ABCD2345 ou RSL-…"><button class="btn" id="manualGo">OK</button></div>
     <div class="msg" id="msg"></div>
     <p class="hint" style="margin-top:14px"><a href="#" id="logout" style="color:var(--muted)">Changer de code</a></p>
   </div>
@@ -116,9 +116,10 @@ let staff='', scanner=null, busy=false;
 
 function extractCode(txt){
   txt=String(txt||'').trim();
-  try{ const u=new URL(txt); const c=u.searchParams.get('c'); if(c) return c.toUpperCase(); }catch(_){}
-  return txt.replace(/[^A-Za-z0-9]/g,'').toUpperCase();
+  try{ const u=new URL(txt); const c=u.searchParams.get('c'); if(c) return c.trim(); }catch(_){}
+  return txt;
 }
+const TIER={starter:'Starter',rider:'Rider',support:'Soutien',progression:'Progression',premium:'Premium'};
 function beep(ok){
   try{ const a=new (window.AudioContext||window.webkitAudioContext)(); const o=a.createOscillator(); const g=a.createGain();
     o.frequency.value=ok?880:220; o.connect(g); g.connect(a.destination); g.gain.value=.15; o.start(); setTimeout(()=>{o.stop();a.close()},ok?180:450); }catch(_){}
@@ -131,10 +132,19 @@ function show(r){
     epuise:['ko','⛔','PLUS DE COURS'],
     expire:['ko','⛔','EXPIRÉ'],
     desactive:['ko','⛔','QR DÉSACTIVÉ'],
-    inconnu:['ko','❌','QR INCONNU']
+    inconnu:['ko','❌','QR INCONNU'],
+    membre_payant:['info','💳','MEMBRE'],
+    non_active:['ko','⛔','PAS PAYÉ']
   }[r.status]||['ko','❌','ERREUR'];
   let det='';
-  if(r.type==='annuel') det='Gratuit à l’année'+(r.valid_until?' · jusqu’au '+fmtDate(r.valid_until):'');
+  if(r.type==='membre'){
+    const t='Membre '+(TIER[(r.tier||'').toLowerCase()]||r.tier||'');
+    if(r.status==='non_active') det=t+' · cours pas activé · '+(r.course_price??20)+'.– à encaisser';
+    else if(r.status==='valide' && r.paid) det=t+' · cours payé ✓';
+    else if(r.status==='valide' && r.tier==='progression') det=t+' · '+r.remaining+' cours gratuits restants';
+    else det=r.status==='membre_payant'?t+' · cours à '+(r.course_price??20)+'.– au lieu de 30.–':t+(r.status==='valide'?' · cours gratuit':'');
+  }
+  else if(r.type==='annuel') det='Gratuit à l’année'+(r.valid_until?' · jusqu’au '+fmtDate(r.valid_until):'');
   else if(r.type) det=r.remaining+' cours restant'+(r.remaining>1?'s':'')+(r.total>1?' sur '+r.total:'');
   if(r.status==='deja_scanne' && r.last_ok) det='Déjà validé à '+new Date(r.last_ok).toLocaleTimeString('fr-CH',{hour:'2-digit',minute:'2-digit'})+(det?' · '+det:'');
   $('res').className='res '+m[0]; $('resIcon').textContent=m[1]; $('resSt').textContent=m[2];
@@ -144,7 +154,7 @@ function show(r){
 async function check(raw){
   if(busy) return;
   const c=extractCode(raw); $('msg').textContent='';
-  if(c.length<4) return;
+  if(c.length<3) return;
   busy=true;
   try{ if(scanner && scanner.isScanning) scanner.pause(true); }catch(_){}
   try{ show(await rpc('rsl_ticket_scan',{p_staff:staff,p_code:c})); }

@@ -162,6 +162,7 @@ async function show(code){
         <div class="rows">
           ${m.birth_date?`<div class="row"><span>Naissance</span><span>${esc(dispDate(m.birth_date))}</span></div>`:''}
           <div class="row"><span>Valable jusqu'au</span><span>${esc(dispDate(m.valid_until))}</span></div>
+          ${(m.tier!=='premium')?`<div class="row"><span>Prochain cours</span><span class="${m.course_activated?'ok':''}">${m.course_activated?'Payé ✓ samedi '+dispDate(m.course_activated).slice(0,5):(m.tier==='progression'?'Inclus dans ton abo':'Pas encore payé')}</span></div>`:''}
           <div class="row"><span>Statut</span><span class="${ok?'ok':'ko'}">${!m.active?'Désactivée':exp?'Expirée':'Active ✓'}</span></div>
         </div>
         <div class="benef"><h4>Avantages</h4><ul>${benefitsHtml(m.benefits)}</ul></div>
