@@ -87,7 +87,7 @@ input,select{width:100%;background:#050505;color:#fff;border:1px solid rgba(255,
   </div>
 
   <div id="app" class="hide">
-    <div class="tabs"><button class="on" data-t="new">Nouveau QR</button><button data-t="list">Liste</button></div>
+    <div class="tabs"><button class="on" data-t="new">Nouveau QR</button><button data-t="list">Liste</button><button data-t="mem">Membres</button></div>
 
     <div id="tabNew">
       <div class="box">
@@ -126,6 +126,42 @@ input,select{width:100%;background:#050505;color:#fff;border:1px solid rgba(255,
       </div>
     </div>
 
+    <div id="tabMem" class="hide">
+      <button class="btn full" id="mNewBtn" style="margin:0 0 12px">+ Nouvelle carte membre</button>
+
+      <div class="box hide" id="mForm">
+        <div class="big" id="mFormTitle" style="font-size:28px">Nouvelle carte</div>
+        <label>Nom et prénom</label><input id="mName">
+        <label>Date de naissance</label><input id="mBirth" placeholder="jj.mm.aaaa">
+        <label>Formule</label>
+        <select id="mTier">
+          <option value="starter">Starter — 50 CHF/an</option>
+          <option value="rider">Rider — 80 CHF/an</option>
+          <option value="support">Soutien — 149 CHF/an</option>
+          <option value="progression">Progression — 15 cours inclus</option>
+          <option value="premium">Premium — cours gratuits</option>
+        </select>
+        <label>Statut affiché (facultatif)</label><input id="mRole" placeholder="ex. Coach, JF Team, Président">
+        <label>Valable jusqu'au</label><input id="mValid" value="31.12.2027">
+        <label>Photo</label>
+        <div style="display:flex;gap:10px;align-items:center">
+          <img id="mPhotoPrev" alt="" style="width:64px;height:76px;object-fit:cover;background:#222;border:1px solid rgba(255,255,255,.15)">
+          <input type="file" id="mPhoto" accept="image/*" style="font-size:14px">
+        </div>
+        <label>Avantages (1 par ligne)</label>
+        <textarea id="mBenef" rows="6" style="width:100%;background:#050505;color:#fff;border:1px solid rgba(255,255,255,.15);padding:10px;font-family:inherit;font-size:16px"></textarea>
+        <label style="display:flex;gap:8px;align-items:center;margin-top:12px;letter-spacing:.1em"><input type="checkbox" id="mActive" checked style="width:auto"> Carte active</label>
+        <button class="btn full" id="mSave">Enregistrer la carte</button>
+        <button class="btn ghost full" id="mCancel" style="margin-top:6px">Annuler</button>
+        <div class="msg" id="mMsg"></div>
+      </div>
+
+      <div class="box">
+        <input id="searchM" placeholder="Rechercher un membre">
+        <div class="list" id="listM" style="margin-top:8px"></div>
+      </div>
+    </div>
+
     <div id="tabList" class="hide">
       <div class="box">
         <input id="search" placeholder="Rechercher un prénom ou un code">
@@ -153,8 +189,10 @@ const BILLET='https://rsl-swiss.ch/billet?c=';
 
 let admin='', type='cours', last=null, all=[];
 
-function billetUrl(c){ return BILLET+c; }
+function billetUrl(c){ return (last&&last._carte&&last.code===c)?'https://rsl-swiss.ch/carte?c='+encodeURIComponent(c):BILLET+encodeURIComponent(c); }
+const TIER={starter:'Starter',rider:'Rider',support:'Soutien',progression:'Progression',premium:'Premium'};
 function describe(t){
+  if(t.type==='membre') return 'Carte membre '+(TIER[(t.tier||'').toLowerCase()]||t.tier||'')+(t.valid_until?' · jusqu’au '+fmtDate(t.valid_until):'');
   if(t.type==='annuel') return 'Gratuit à l’année'+(t.valid_until?' · jusqu’au '+fmtDate(t.valid_until):'');
   if(t.type==='pack') return (t.total-t.used)+' cours restants sur '+t.total;
   return t.used>=t.total?'Cours utilisé':'1 cours';
@@ -238,10 +276,112 @@ $('list').onclick=async e=>{
     loadList();
   }catch(err){ alert(err.message); }
 };
+let members=[], editCode=null, photoUrl='';
+const BENEF={
+  starter:['Membre officiel RSL','Cours RSL à 20 CHF au lieu de 30 CHF','–10 % sur le livret de tricks','–10 % dans les boutiques partenaires','Entrée Assir Skatepark : 8 CHF'],
+  rider:['Accès prioritaire à certaines sessions & events','Cours RSL à 20 CHF au lieu de 30 CHF','–15 % sur le livret de tricks','–15 % dans les boutiques partenaires','Entrée Assir Skatepark : 8 CHF'],
+  support:['Livret de tricks offert','Cours RSL à 20 CHF au lieu de 30 CHF','–15 % dans les boutiques partenaires','Entrée Assir Skatepark : 8 CHF'],
+  progression:['15 cours inclus','Ensuite : cours à 20 CHF','–15 % matériel & partenaires','T-shirt RSL offert','Entrée Assir Skatepark : 8 CHF'],
+  premium:['Tous les cours gratuits','–50 % sur les events','Suivi avancé','T-shirt + sweat offerts','Entrée Assir Skatepark : 8 CHF']
+};
+const CARTE='https://rsl-swiss.ch/carte?c=';
+const carteUrl=c=>CARTE+encodeURIComponent(c);
+async function loadMembers(){ members=await rpc('rsl_member_list',{p_admin:admin}); renderMembers(); }
+function renderMembers(){
+  const q=$('searchM').value.trim().toLowerCase();
+  const rows=members.filter(m=>!q||(m.full_name||'').toLowerCase().includes(q)||(m.code||'').toLowerCase().includes(q));
+  $('listM').innerHTML=rows.length?rows.map(m=>{
+    const exp=m.valid_date&&new Date(m.valid_date+'T23:59:59')<new Date();
+    return `<div class="item${m.active&&!exp?'':' off'}">
+      <div style="display:flex;gap:10px;align-items:center">
+        ${m.photo_url?`<img src="${esc(m.photo_url)}" alt="" style="width:42px;height:50px;object-fit:cover">`:''}
+        <div><div class="n">${esc(m.full_name)}</div><div class="m">${esc(TIER[m.tier]||m.tier)} · ${esc(m.code)} · jusqu’au ${esc(m.valid_until||'—')}${exp?' · EXPIRÉE':''}${m.active?'':' · DÉSACTIVÉE'}</div></div>
+      </div>
+      <div class="b">
+        <button data-a="qr" data-c="${esc(m.code)}">QR / Envoyer</button>
+        <button data-a="edit" data-c="${esc(m.code)}">Modifier</button>
+        <button data-a="renew" data-c="${esc(m.code)}">Renouveler 2027</button>
+        <button data-a="code" data-c="${esc(m.code)}">Nouveau code</button>
+      </div></div>`;
+  }).join(''):'<p class="hint">Aucun membre.</p>';
+}
+$('searchM').oninput=renderMembers;
+
+function openForm(m){
+  editCode=m?m.code:null; photoUrl=m?(m.photo_url||''):'';
+  $('mFormTitle').textContent=m?'Modifier la carte':'Nouvelle carte';
+  $('mName').value=m?m.full_name:''; $('mBirth').value=m?(m.birth_date||''):'';
+  $('mTier').value=m?(m.tier==='soutien'?'support':m.tier):'starter';
+  $('mRole').value=m?(m.role||''):''; $('mValid').value=m?(m.valid_until||''):'31.12.2027';
+  $('mBenef').value=(m&&Array.isArray(m.benefits)&&m.benefits.length?m.benefits:BENEF[$('mTier').value]).join('\n');
+  $('mActive').checked=m?!!m.active:true; $('mPhoto').value=''; $('mPhotoPrev').src=photoUrl||''; $('mMsg').textContent='';
+  $('mForm').classList.remove('hide'); $('mForm').scrollIntoView({behavior:'smooth'});
+}
+$('mNewBtn').onclick=()=>openForm(null);
+$('mCancel').onclick=()=>$('mForm').classList.add('hide');
+$('mTier').onchange=()=>{ if(!editCode) $('mBenef').value=BENEF[$('mTier').value].join('\n'); };
+
+async function uploadPhoto(file){
+  const img=await new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>{ const i=new Image(); i.onload=()=>res(i); i.onerror=rej; i.src=r.result; }; r.readAsDataURL(file); });
+  const max=700,k=Math.min(1,max/Math.max(img.width,img.height));
+  const c=document.createElement('canvas'); c.width=Math.round(img.width*k); c.height=Math.round(img.height*k);
+  c.getContext('2d').drawImage(img,0,0,c.width,c.height);
+  const blob=await new Promise(r=>c.toBlob(r,'image/jpeg',.85));
+  const path='cards/member-'+Date.now()+'-'+Math.random().toString(36).slice(2,8)+'.jpg';
+  const r=await fetch(SB+'/storage/v1/object/member-cards/'+path,{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+KEY,'Content-Type':'image/jpeg'},body:blob});
+  if(!r.ok) throw new Error('Envoi de la photo impossible');
+  return SB+'/storage/v1/object/public/member-cards/'+path;
+}
+$('mPhoto').onchange=async()=>{
+  const f=$('mPhoto').files[0]; if(!f) return;
+  $('mMsg').textContent='Envoi de la photo…';
+  try{ photoUrl=await uploadPhoto(f); $('mPhotoPrev').src=photoUrl; $('mMsg').textContent=''; }
+  catch(err){ $('mMsg').textContent=err.message; }
+};
+$('mSave').onclick=async()=>{
+  $('mMsg').textContent='';
+  if(!$('mName').value.trim()){ $('mMsg').textContent='Mets un nom.'; return; }
+  $('mSave').disabled=true;
+  try{
+    const m=await rpc('rsl_member_save',{p_admin:admin,p_code:editCode,p_full_name:$('mName').value,p_birth:$('mBirth').value.trim(),
+      p_tier:$('mTier').value,p_role:$('mRole').value.trim(),p_valid:$('mValid').value.trim(),p_photo:photoUrl,
+      p_benefits:$('mBenef').value.split('\n').map(x=>x.trim()).filter(Boolean),p_active:$('mActive').checked});
+    $('mForm').classList.add('hide');
+    await loadMembers();
+    shareMember(m);
+  }catch(err){ $('mMsg').textContent=err.message; }
+  $('mSave').disabled=false;
+};
+function shareMember(m){
+  switchTab('new');
+  last={code:m.code,prenom:m.full_name,type:'membre',tier:m.tier,valid_until:m.valid_date,_carte:true};
+  $('rName').textContent=m.full_name; $('rType').textContent='Carte '+(TIER[m.tier]||m.tier)+' · jusqu’au '+(m.valid_until||'—'); $('rCode').textContent=m.code;
+  $('rQr').innerHTML=''; new QRCode($('rQr'),{text:carteUrl(m.code),width:220,height:220,correctLevel:QRCode.CorrectLevel.M});
+  $('rWa').href='https://wa.me/?text='+encodeURIComponent(`Salut ${m.full_name} ! Voici ta carte membre RSL ${TIER[m.tier]||''} (valable jusqu’au ${m.valid_until}).\nOuvre-la et ajoute-la à ton écran d’accueil :\n${carteUrl(m.code)}\nMontre le QR au coach en arrivant au cours.`);
+  $('result').classList.remove('hide'); $('result').scrollIntoView({behavior:'smooth'});
+}
+$('listM').onclick=async e=>{
+  const b=e.target.closest('button'); if(!b) return;
+  const m=members.find(x=>x.code===b.dataset.c); if(!m) return;
+  try{
+    if(b.dataset.a==='qr') return shareMember(m);
+    if(b.dataset.a==='edit') return openForm(m);
+    if(b.dataset.a==='renew'){
+      if(!confirm(`Renouveler la carte de ${m.full_name} jusqu’au 31.12.2027 ?`)) return;
+      await rpc('rsl_member_save',{p_admin:admin,p_code:m.code,p_full_name:m.full_name,p_birth:m.birth_date||'',p_tier:m.tier,p_role:m.role||'',p_valid:'31.12.2027',p_photo:m.photo_url||'',p_benefits:m.benefits||[],p_active:true});
+    }
+    if(b.dataset.a==='code'){
+      if(!confirm(`Donner un nouveau code secret à ${m.full_name} ? L’ancien code ne marchera plus.`)) return;
+      const n=await rpc('rsl_member_new_code',{p_admin:admin,p_code:m.code}); await loadMembers(); return shareMember(n);
+    }
+    loadMembers();
+  }catch(err){ alert(err.message); }
+};
 function switchTab(n){
   document.querySelectorAll('.tabs button').forEach(x=>x.classList.toggle('on',x.dataset.t===n));
-  $('tabNew').classList.toggle('hide',n!=='new'); $('tabList').classList.toggle('hide',n!=='list');
+  $('tabNew').classList.toggle('hide',n!=='new'); $('tabList').classList.toggle('hide',n!=='list'); $('tabMem').classList.toggle('hide',n!=='mem');
   if(n==='list') loadList().catch(err=>alert(err.message));
+  if(n==='mem') loadMembers().catch(err=>alert(err.message));
 }
 document.querySelector('.tabs').onclick=e=>{ const b=e.target.closest('button'); if(b) switchTab(b.dataset.t); };
 

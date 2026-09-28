@@ -66,19 +66,26 @@ const TYPE={cours:'1 cours',pack:'Pack cours',annuel:'Gratuit à l’année'};
 const BILLET='https://rsl-swiss.ch/billet?c=';
 
 (async function(){
-  const c=(new URLSearchParams(location.search).get('c')||'').toUpperCase();
+  const c=(new URLSearchParams(location.search).get('c')||'').trim();
   const box=$('t');
   if(!c){ box.innerHTML='<p class="hint">Aucun QR code.</p>'; return; }
   try{
     const t=await rpc('rsl_ticket_view',{p_code:c});
     if(!t||!t.found){ box.innerHTML='<p class="hint">Ce QR code n’existe pas.</p>'; return; }
+    if(t.kind==='membre'){ location.replace('/carte?c='+encodeURIComponent(t.code)); return; }
     let st='', ko=false;
-    if(!t.active){ st='QR désactivé'; ko=true; }
+    const TIER={starter:'Starter',rider:'Rider',support:'Soutien',progression:'Progression',premium:'Premium'};
+    if(t.kind==='membre'){
+      const exp=t.valid_until && new Date(t.valid_until+'T23:59:59')<new Date();
+      st=!t.active?'Carte désactivée':exp?'Carte expirée':'Membre '+(TIER[(t.tier||'').toLowerCase()]||t.tier||'')+(t.valid_until?' · jusqu’au '+fmtDate(t.valid_until):'');
+      ko=!t.active||!!exp;
+    }
+    else if(!t.active){ st='QR désactivé'; ko=true; }
     else if(t.type==='annuel'){ const exp=t.valid_until && new Date(t.valid_until+'T23:59:59')<new Date(); st=exp?'Expiré':'Gratuit à l’année'+(t.valid_until?' · jusqu’au '+fmtDate(t.valid_until):''); ko=!!exp; }
     else if(t.remaining<=0){ st=t.type==='cours'?'Cours déjà utilisé':'Plus de cours'; ko=true; }
     else st=t.type==='cours'?'1 cours':t.remaining+' cours restant'+(t.remaining>1?'s':'')+' sur '+t.total;
     box.innerHTML=`<div class="name">${esc(t.prenom)}</div><div class="st${ko?' ko':''}">${esc(st)}</div><div class="qr" id="qr"></div><div class="code">${t.code}</div>`;
-    new QRCode($('qr'),{text:BILLET+t.code,width:240,height:240,correctLevel:QRCode.CorrectLevel.M});
+    new QRCode($('qr'),{text:BILLET+encodeURIComponent(t.code),width:240,height:240,correctLevel:QRCode.CorrectLevel.M});
   }catch(err){ box.innerHTML='<p class="hint">Impossible de charger le QR. Réessaie.</p>'; }
 })();
 </script>

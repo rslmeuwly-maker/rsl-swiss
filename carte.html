@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#cc0000">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Carte RSL">
+<link rel="apple-touch-icon" href="/images/logo_rsl.png">
+<title>Carte membre — RSL</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--red:#cc0000;--bg:#080808;--fg:#f0f0f0;--muted:#8a8a8a;--card:#111;--line:rgba(255,255,255,.08);--ok:#25d366}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:'Barlow Condensed',system-ui,sans-serif;min-height:100vh}
+header{background:#000;border-bottom:3px solid var(--red);padding:14px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+header h1{font-family:'Bebas Neue',Impact,sans-serif;font-size:26px;letter-spacing:.08em}
+header h1 span{color:var(--red)}
+header a{color:var(--muted);font-weight:700;font-size:12px;letter-spacing:.14em;text-transform:uppercase;text-decoration:none}
+.wrap{max-width:720px;margin:0 auto;padding:22px 14px 60px}
+.box{background:var(--card);border:1px solid var(--line);padding:18px;position:relative;margin-bottom:14px}
+.box:before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--red)}
+label{display:block;font-size:11px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin:12px 0 6px}
+label:first-child{margin-top:0}
+input,select{width:100%;background:#050505;color:#fff;border:1px solid rgba(255,255,255,.15);padding:12px;font-family:inherit;font-size:18px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;background:var(--red);color:#fff;border:0;padding:12px 16px;font-family:inherit;font-weight:900;font-size:14px;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;text-decoration:none}
+.btn.full{width:100%;margin-top:14px;padding:14px}
+.btn.ghost{background:transparent;border:1px solid rgba(255,255,255,.2);color:#ddd}
+.btn.green{background:var(--ok);color:#04210f}
+.msg{margin-top:10px;font-size:15px;color:#ff6b6b;min-height:18px}
+.hint{color:var(--muted);font-size:15px;line-height:1.4}
+.hide{display:none!important}
+
+.entry{max-width:440px;margin:0 auto}
+.card{position:relative;max-width:440px;margin:6px auto 0;background:linear-gradient(150deg,#161616 0%,#0c0c0c 60%,#140404 100%);border:1px solid rgba(255,255,255,.1);border-radius:22px;overflow:hidden;box-shadow:0 30px 60px rgba(0,0,0,.55),0 0 0 1px rgba(204,0,0,.15);--tc:#cc0000}
+.card:before{content:"";position:absolute;inset:-40%;background:linear-gradient(115deg,transparent 35%,rgba(255,255,255,.10) 42%,rgba(204,0,0,.12) 47%,transparent 55%);animation:holo 7s linear infinite;pointer-events:none}
+@keyframes holo{0%,100%{transform:translateX(-18%) rotate(8deg)}50%{transform:translateX(18%) rotate(8deg)}}
+.card .band{background:#cc0000;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;position:relative}
+.card .band .l{font-family:'Bebas Neue',Impact,sans-serif;font-size:24px;letter-spacing:.08em;line-height:1;color:#fff}
+.card .band .l small{display:block;font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:.2em;opacity:.85}
+.card .band img{height:42px;width:auto;background:#fff;border-radius:8px;padding:3px}
+.card .body{position:relative;padding:18px}
+.top{display:flex;gap:16px;align-items:center}
+.photo{width:108px;height:128px;object-fit:cover;border-radius:14px;border:2px solid var(--tc);background:#222;flex:0 0 108px;box-shadow:0 0 22px color-mix(in srgb,var(--tc) 35%,transparent)}
+.who .tier{display:inline-block;font-weight:900;font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:#000;background:var(--tc);padding:4px 10px;border-radius:999px}
+.who .name{font-family:'Bebas Neue',Impact,sans-serif;font-size:36px;line-height:.95;letter-spacing:.03em;margin-top:8px;color:#fff;word-break:break-word}
+.who .role{font-size:15px;font-weight:700;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-top:4px}
+.rows{margin-top:16px;border-top:1px solid rgba(255,255,255,.08)}
+.row{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.06);font-size:16px}
+.row span:first-child{color:var(--muted);font-weight:700;letter-spacing:.08em;text-transform:uppercase;font-size:13px}
+.row span:last-child{font-weight:900;color:#fff}
+.row .ok{color:#25d366!important}.row .ko{color:#ff6b6b!important}
+.benef{margin-top:14px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:12px 14px}
+.benef h4{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.benef li{list-style:none;padding:4px 0 4px 16px;position:relative;font-size:15px;line-height:1.35}
+.benef li:before{content:"";position:absolute;left:0;top:11px;width:8px;height:2px;background:var(--tc)}
+.qrzone{margin-top:16px;display:flex;align-items:center;gap:14px;background:#fff;border-radius:14px;padding:12px;color:#111}
+.qrzone .t{font-weight:900;font-size:15px;line-height:1.3}
+.qrzone .c{font-family:monospace;font-size:14px;color:#555;margin-top:4px;letter-spacing:.08em}
+#qr canvas,#qr img{display:block;width:110px!important;height:110px!important}
+.foot{text-align:center;font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);padding:12px 0 16px}
+@media all and (display-mode: standalone){header{display:none}}
+
+</style>
+</head>
+<body>
+<header>
+  <h1>CARTE <span>MEMBRE</span></h1>
+  <a href="/membres">Devenir membre →</a>
+</header>
+<div class="wrap">
+  <div class="box entry" id="entry">
+    <label for="code">Ton code membre</label>
+    <input id="code" placeholder="RSL-…" autocapitalize="characters">
+    <button class="btn full" id="go">Afficher ma carte</button>
+    <div class="msg" id="msg"></div>
+  </div>
+  <div id="out"></div>
+  <p class="hint" id="tip" style="text-align:center;margin-top:14px;display:none">Astuce : ajoute cette page à ton écran d'accueil pour avoir ta carte toujours sur toi.</p>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+const SB='https://jynxifufaauoxwzjapzq.supabase.co';
+const KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp5bnhpZnVmYWF1b3h3emphcHpxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEzODI2NzcsImV4cCI6MjA3Njk1ODY3N30.vFPGhGakPIM3Xg5rn8_BrAXl6oJMJOssO780C9nXmr4';
+async function rpc(fn,body){
+  const r=await fetch(SB+'/rest/v1/rpc/'+fn,{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+KEY,'Content-Type':'application/json'},body:JSON.stringify(body)});
+  const t=await r.text(); let d=null; try{d=JSON.parse(t)}catch(_){}
+  if(!r.ok) throw new Error((d&&d.message)||'Erreur réseau, réessaie');
+  return d;
+}
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fmtDate=d=>d?new Date(d+'T12:00:00').toLocaleDateString('fr-CH',{day:'numeric',month:'long',year:'numeric'}):'';
+const TYPE={cours:'1 cours',pack:'Pack cours',annuel:'Gratuit à l’année'};
+const BILLET='https://rsl-swiss.ch/billet?c=';
+const TIERS={
+  starter:{label:'Starter',color:'#c8d2e0'},
+  rider:{label:'Rider',color:'#57cbff'},
+  support:{label:'Soutien',color:'#52f0b5'},
+  soutien:{label:'Soutien',color:'#52f0b5'},
+  progression:{label:'Progression',color:'#8dff33'},
+  premium:{label:'Premium',color:'#ffd65a'}
+};
+const tierOf=t=>TIERS[(t||'').toLowerCase()]||{label:t||'Membre',color:'#cc0000'};
+const CARTE='https://rsl-swiss.ch/carte?c=';
+
+const AVATAR="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 120%27%3E%3Crect width=%27100%27 height=%27120%27 fill=%27%23222%27/%3E%3Ccircle cx=%2750%27 cy=%2745%27 r=%2722%27 fill=%27%23555%27/%3E%3Crect x=%2718%27 y=%2774%27 width=%2764%27 height=%2746%27 rx=%2730%27 fill=%27%23555%27/%3E%3C/svg%3E";
+const benefitsHtml=b=>Array.isArray(b)&&b.length?b.map(x=>`<li>${esc(x)}</li>`).join(''):'<li>Membre officiel RSL</li>';
+function dispDate(v){ if(!v) return '—'; const s=String(v); if(/^\d{4}-\d{2}-\d{2}$/.test(s)){const [y,m,d]=s.split('-');return `${d}.${m}.${y}`;} return s; }
+
+async function show(code){
+  $('msg').textContent='';
+  try{
+    const m=await rpc('rsl_member_card',{p_code:code});
+    if(!m||!m.found){ $('msg').textContent='Aucune carte avec ce code.'; return; }
+    const t=tierOf(m.tier);
+    const exp=m.valid_date && new Date(m.valid_date+'T23:59:59')<new Date();
+    const ok=m.active && !exp;
+    $('entry').style.display='none'; $('tip').style.display='block';
+    $('out').innerHTML=`<div class="card" style="--tc:${t.color}">
+      <div class="band"><div class="l">RSL MEMBER PASS<small>Romandie Scooter League</small></div><img src="/images/logo_rsl.png" alt="RSL"></div>
+      <div class="body">
+        <div class="top">
+          <img class="photo" src="${esc(m.photo_url||AVATAR)}" alt="" onerror="this.onerror=null;this.src=AVATAR">
+          <div class="who"><span class="tier">${esc(t.label)}</span><div class="name">${esc(m.full_name)}</div>${m.role?`<div class="role">${esc(m.role)}</div>`:''}</div>
+        </div>
+        <div class="rows">
+          ${m.birth_date?`<div class="row"><span>Naissance</span><span>${esc(dispDate(m.birth_date))}</span></div>`:''}
+          <div class="row"><span>Valable jusqu'au</span><span>${esc(dispDate(m.valid_until))}</span></div>
+          <div class="row"><span>Statut</span><span class="${ok?'ok':'ko'}">${!m.active?'Désactivée':exp?'Expirée':'Active ✓'}</span></div>
+        </div>
+        <div class="benef"><h4>Avantages</h4><ul>${benefitsHtml(m.benefits)}</ul></div>
+        <div class="qrzone"><div id="qr"></div><div><div class="t">À montrer au coach en arrivant au cours</div><div class="c">${esc(m.code)}</div></div></div>
+      </div>
+      <div class="foot">Carte officielle RSL · ${m.valid_date?m.valid_date.slice(0,4):new Date().getFullYear()}</div>
+    </div>`;
+    new QRCode($('qr'),{text:CARTE+encodeURIComponent(m.code),width:220,height:220,correctLevel:QRCode.CorrectLevel.M});
+    try{ localStorage.setItem('rsl-carte-code',m.code); }catch(_){}
+    if(new URLSearchParams(location.search).get('c')!==m.code) history.replaceState(null,'','/carte?c='+encodeURIComponent(m.code));
+  }catch(err){ $('msg').textContent=err.message; }
+}
+$('go').onclick=()=>{ const c=$('code').value.trim(); if(c) show(c); };
+$('code').onkeydown=e=>{ if(e.key==='Enter') $('go').click(); };
+(function(){
+  let c=new URLSearchParams(location.search).get('c');
+  if(!c){ try{ c=localStorage.getItem('rsl-carte-code'); }catch(_){} }
+  if(c) show(c.trim());
+})();
+</script>
+</body>
+</html>
