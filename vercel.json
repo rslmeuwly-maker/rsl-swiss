@@ -2,44 +2,261 @@
   "cleanUrls": true,
   "trailingSlash": false,
   "rewrites": [
-    { "source": "/cours",           "destination": "/cours.html" },
-    { "source": "/formation",       "destination": "/formation.html" },
-    { "source": "/contact",         "destination": "/contact.html" },
-    { "source": "/comite",          "destination": "/comite.html" },
-    { "source": "/disciplines",     "destination": "/disciplines.html" },
-    { "source": "/evenements",      "destination": "/evenements.html" },
-    { "source": "/ou_rider",        "destination": "/ou_rider.html" },
-    { "source": "/vision",          "destination": "/vision.html" },
-    { "source": "/shop-rsl",        "destination": "/shop-rsl.html" },
-    { "source": "/membres",         "destination": "/membres.html" },
-    { "source": "/access",          "destination": "/access.html" },
-    { "source": "/coach",           "destination": "/coach.html" },
-    { "source": "/conditions",      "destination": "/conditions.html" },
-    { "source": "/montreuxtv",      "destination": "/montreuxtv.html" },
-    { "source": "/game",            "destination": "/game.html" },
-    { "source": "/resultats",       "destination": "/resultats.html" },
-    { "source": "/sponsors",        "destination": "/sponsors.html" },
-    { "source": "/devenirsponsors", "destination": "/devenirsponsors.html" },
-    { "source": "/admin-rsl",       "destination": "/admin-rsl.html" },
-    { "source": "/admin_spots",     "destination": "/admin_spots.html" },
-    { "source": "/ajouter",         "destination": "/ajouter.html" },
-    { "source": "/spot",            "destination": "/spot.html" },
-    { "source": "/access_photos",   "destination": "/access_photos.html" },
-    { "source": "/photos",          "destination": "/photos.html" },
-    { "source": "/feed",            "destination": "/feed.html" },
-    { "source": "/inscriptions",    "destination": "/inscriptions.html" },
-    { "source": "/membre",          "destination": "/membre.html" },
-    { "source": "/membre_portail",  "destination": "/membre_portail.html" },
-    { "source": "/compte-a-rebours","destination": "/compte-a-rebours.html" },
-    { "source": "/merci",           "destination": "/merci.html" },
-    { "source": "/success",         "destination": "/success.html" },
-    { "source": "/reset",           "destination": "/reset.html" },
-    { "source": "/reglement",       "destination": "/reglement.html" },
-    { "source": "/panier",          "destination": "/panier/panier.html" }
+    {
+      "source": "/cours",
+      "destination": "/cours.html"
+    },
+    {
+      "source": "/formation",
+      "destination": "/formation.html"
+    },
+    {
+      "source": "/contact",
+      "destination": "/contact.html"
+    },
+    {
+      "source": "/comite",
+      "destination": "/comite.html"
+    },
+    {
+      "source": "/disciplines",
+      "destination": "/disciplines.html"
+    },
+    {
+      "source": "/evenements",
+      "destination": "/evenements.html"
+    },
+    {
+      "source": "/ou_rider",
+      "destination": "/ou_rider.html"
+    },
+    {
+      "source": "/vision",
+      "destination": "/vision.html"
+    },
+    {
+      "source": "/shop-rsl",
+      "destination": "/shop-rsl.html"
+    },
+    {
+      "source": "/membres",
+      "destination": "/membres.html"
+    },
+    {
+      "source": "/conditions",
+      "destination": "/conditions.html"
+    },
+    {
+      "source": "/montreuxtv",
+      "destination": "/montreuxtv.html"
+    },
+    {
+      "source": "/game",
+      "destination": "/game.html"
+    },
+    {
+      "source": "/sponsors",
+      "destination": "/sponsors.html"
+    },
+    {
+      "source": "/devenirsponsors",
+      "destination": "/devenirsponsors.html"
+    },
+    {
+      "source": "/admin-rsl",
+      "destination": "/admin-rsl.html"
+    },
+    {
+      "source": "/admin_spots",
+      "destination": "/admin_spots.html"
+    },
+    {
+      "source": "/ajouter",
+      "destination": "/ajouter.html"
+    },
+    {
+      "source": "/spot",
+      "destination": "/spot.html"
+    },
+    {
+      "source": "/compte-a-rebours",
+      "destination": "/compte-a-rebours.html"
+    },
+    {
+      "source": "/reglement",
+      "destination": "/reglement.html"
+    }
   ],
   "redirects": [
-    { "source": "/compte", "destination": "/", "permanent": false },
-    { "source": "/compte.html", "destination": "/", "permanent": false },
-    { "source": "/panier/compte.html", "destination": "/", "permanent": false }
+    {
+      "source": "/compte",
+      "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/compte.html",
+      "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/panier/compte.html",
+      "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/access",
+      "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/access.html",
+      "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/login",
+      "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/login.html",
+      "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/auth",
+      "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/auth.html",
+      "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/coach",
+      "destination": "/cours",
+      "permanent": false
+    },
+    {
+      "source": "/coach.html",
+      "destination": "/cours",
+      "permanent": false
+    },
+    {
+      "source": "/photos",
+      "destination": "/evenements",
+      "permanent": false
+    },
+    {
+      "source": "/photos.html",
+      "destination": "/evenements",
+      "permanent": false
+    },
+    {
+      "source": "/access_photos",
+      "destination": "/evenements",
+      "permanent": false
+    },
+    {
+      "source": "/access_photos.html",
+      "destination": "/evenements",
+      "permanent": false
+    },
+    {
+      "source": "/panier",
+      "destination": "/cours",
+      "permanent": false
+    },
+    {
+      "source": "/panier.html",
+      "destination": "/cours",
+      "permanent": false
+    },
+    {
+      "source": "/panier/panier.html",
+      "destination": "/cours",
+      "permanent": false
+    },
+    {
+      "source": "/membre",
+      "destination": "/membres",
+      "permanent": false
+    },
+    {
+      "source": "/membre.html",
+      "destination": "/membres",
+      "permanent": false
+    },
+    {
+      "source": "/membre_portail",
+      "destination": "/membres",
+      "permanent": false
+    },
+    {
+      "source": "/membre_portail.html",
+      "destination": "/membres",
+      "permanent": false
+    },
+    {
+      "source": "/membre_dash",
+      "destination": "/membres",
+      "permanent": false
+    },
+    {
+      "source": "/membre_dash.html",
+      "destination": "/membres",
+      "permanent": false
+    },
+    {
+      "source": "/merci",
+      "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/merci.html",
+      "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/resultats",
+      "destination": "/evenements",
+      "permanent": false
+    },
+    {
+      "source": "/resultats.html",
+      "destination": "/evenements",
+      "permanent": false
+    },
+    {
+      "source": "/reset",
+      "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/reset.html",
+      "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/inscriptions",
+      "destination": "/evenements",
+      "permanent": false
+    },
+    {
+      "source": "/inscriptions.html",
+      "destination": "/evenements",
+      "permanent": false
+    },
+    {
+      "source": "/cours_success",
+      "destination": "/cours",
+      "permanent": false
+    },
+    {
+      "source": "/cours_success.html",
+      "destination": "/cours",
+      "permanent": false
+    }
   ]
 }
