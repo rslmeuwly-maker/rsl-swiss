@@ -256,7 +256,25 @@
       0%,100%{opacity:.55;transform:translate(-50%,-50%) scale(.92)}
       50%{opacity:1;transform:translate(-50%,-50%) scale(1.08)}
     }
-  </style>
+  
+    .how{display:grid;grid-template-columns:repeat(3,1fr);gap:3px;margin:0 0 18px}
+    .how div{background:#111;border:1px solid rgba(255,255,255,.08);border-top:3px solid var(--red);padding:14px 16px;display:flex;align-items:center;gap:12px}
+    .how b{font-family:'Bebas Neue';font-size:34px;line-height:1;color:var(--red)}
+    .how span{font-weight:700;font-size:15px;letter-spacing:.06em;text-transform:uppercase;color:#fff}
+    #cours,#coachs,#formules{scroll-margin-top:80px}
+    #courseGrid.short > *:nth-child(n+5){display:none}
+    .more-dates{display:flex;justify-content:center;margin:14px 0 0}
+    .more-dates[hidden]{display:none}
+    @media(max-width:700px){
+      .how{grid-template-columns:1fr}
+      .coach{flex-direction:row}
+      .coach-photo{width:120px;min-width:120px;aspect-ratio:auto;height:auto;min-height:160px;align-self:stretch}
+      .coach-body{padding:14px 14px}
+      .coach-name{font-size:30px}
+      .coach-text{font-size:15px}
+      .coach-facts span{font-size:11px}
+    }
+</style>
 </head>
 <body>
 
@@ -317,17 +335,65 @@
       <p class="hero-sub">Cours à Montreux tous les samedis. Choisis ta date et inscris-toi directement via WhatsApp.</p>
       <div class="hero-actions">
         <a class="btn red" href="#cours">Voir les cours</a>
-        <a class="btn ghost" href="/membres">Devenir membre RSL</a>
+        <a class="btn ghost" href="#coachs">Nos coachs</a>
+        <a class="btn ghost" href="#formules">Cours privé · 60 CHF</a>
       </div>
     </div>
   </header>
 
   <main>
     <section class="wrap" id="cours">
-      <div class="extras" style="margin-top:0;margin-bottom:56px">
+      <div class="section-head">
+        <div class="section-kicker">
+          <div class="num">01</div>
+          <div class="section-title">INSCRIPTIONS <span>AUX COURS</span></div>
+        </div>
+        <p class="section-sub">Tous les cours ont lieu à Montreux. Choisis ton samedi et réserve ta place.</p>
+      </div>
+
+
+      <div class="how" aria-label="Comment s'inscrire">
+        <div><b>1</b><span>Choisis ton samedi</span></div>
+        <div><b>2</b><span>Réserve sur WhatsApp</span></div>
+        <div><b>3</b><span>Viens rider à Montreux</span></div>
+      </div>
+
+      <div class="grid short" id="courseGrid"></div>
+      <div class="more-dates" hidden><button class="btn ghost" type="button" id="moreDates">Voir plus de dates</button></div>
+
+
+      <div class="section-head" id="coachs" style="margin-top:72px">
+        <div class="section-kicker">
+          <div class="num">02</div>
+          <div class="section-title">NOS <span>COACHS</span></div>
+        </div>
+        <div class="section-sub">Des riders passionnés, qui connaissent le terrain et la compétition.</div>
+      </div>
+
+      <div class="coachs">
+        <article class="coach">
+          <img class="coach-photo" src="/images/coachs/djamal.jpg" alt="Djamal, coach RSL, en plein trick au skatepark" loading="lazy">
+          <div class="coach-body">
+            <div class="coach-tag">Coach RSL · Montreux</div>
+            <div class="coach-name">DJAMAL</div>
+            <p class="coach-text">Salut, moi c'est Djamal ! Je fais de la trottinette freestyle depuis 6 ans et je participe à des compétitions en Suisse et en France. Je donne des cours depuis plus d'un an avec la RSL, pour la Ville de Montreux et aussi en privé.</p>
+            <div class="coach-facts"><span>6 ans de ride</span><span>Compétitions CH & FR</span><span>Cours collectifs & privés</span></div>
+          </div>
+        </article>
+        <article class="coach">
+          <img class="coach-photo" src="/images/coachs/lucas.jpg" alt="Lucas, coach RSL, avec le t-shirt du championnat RSL 2026" loading="lazy" style="object-position:center 18%">
+          <div class="coach-body">
+            <div class="coach-tag">Coach RSL · Montreux</div>
+            <div class="coach-name">LUCAS</div>
+            <p class="coach-text">Présentation à venir.</p>
+          </div>
+        </article>
+      </div>
+
+      <div class="extras" id="formules" style="margin-top:72px;margin-bottom:24px">
         <div class="section-head">
           <div class="section-kicker">
-            <div class="num">01</div>
+            <div class="num">03</div>
             <div class="section-title">AUTRES <span>FORMULES</span></div>
           </div>
           <p class="section-sub">Cours privé, autre ville ou intervention scolaire : on trouve une solution.</p>
@@ -357,43 +423,7 @@
           </article>
         </div>
       </div>
-      <div class="section-head">
-        <div class="section-kicker">
-          <div class="num">02</div>
-          <div class="section-title">NOS <span>COACHS</span></div>
-        </div>
-        <div class="section-sub">Des riders passionnés, qui connaissent le terrain et la compétition.</div>
-      </div>
 
-      <div class="coachs">
-        <article class="coach">
-          <img class="coach-photo" src="/images/coachs/djamal.jpg" alt="Djamal, coach RSL, en plein trick au skatepark" loading="lazy">
-          <div class="coach-body">
-            <div class="coach-tag">Coach RSL · Montreux</div>
-            <div class="coach-name">DJAMAL</div>
-            <p class="coach-text">Salut, moi c'est Djamal ! Je fais de la trottinette freestyle depuis 6 ans et je participe à des compétitions en Suisse et en France. Je donne des cours depuis plus d'un an avec la RSL, pour la Ville de Montreux et aussi en privé.</p>
-            <div class="coach-facts"><span>6 ans de ride</span><span>Compétitions CH & FR</span><span>Cours collectifs & privés</span></div>
-          </div>
-        </article>
-        <article class="coach">
-          <img class="coach-photo" src="/images/coachs/lucas.jpg" alt="Lucas, coach RSL, avec le t-shirt du championnat RSL 2026" loading="lazy" style="object-position:center 18%">
-          <div class="coach-body">
-            <div class="coach-tag">Coach RSL · Montreux</div>
-            <div class="coach-name">LUCAS</div>
-            <p class="coach-text">Présentation à venir.</p>
-          </div>
-        </article>
-      </div>
-
-      <div class="section-head">
-        <div class="section-kicker">
-          <div class="num">03</div>
-          <div class="section-title">INSCRIPTIONS <span>AUX COURS</span></div>
-        </div>
-        <p class="section-sub">Tous les cours ont lieu à Montreux. Choisis ton samedi et réserve ta place.</p>
-      </div>
-
-      <div class="grid" id="courseGrid"></div>
 
     </section>
   </main>
@@ -549,6 +579,15 @@
 
     renderCards();
   </script>
+<script>
+(function(){
+  const g=document.getElementById('courseGrid'),box=document.querySelector('.more-dates'),b=document.getElementById('moreDates');
+  if(!g||!box)return;
+  const upd=()=>{box.hidden=!g.classList.contains('short')||g.children.length<=4;};
+  new MutationObserver(upd).observe(g,{childList:true});upd();
+  b.addEventListener('click',()=>{g.classList.remove('short');upd();});
+})();
+</script>
 <script src="/js/lang.js" defer></script>
 </body>
 </html>
