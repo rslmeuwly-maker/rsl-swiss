@@ -1,35 +1,248 @@
-<!doctype html><html lang="fr"><head>
-<meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Page introuvable — RSL</title>
-<link rel="stylesheet" href="css/style.css"/>
-<link rel="stylesheet" href="css/common.css"/>
-</head><body>
-<header class="hero"><div class="container hero-inner">
-<h1>Page introuvable</h1>
-<p class="muted">Cette page n’existe pas.</p>
-<p><a class="btn" href="/">Retour à l’accueil</a></p>
-</div></header>
+<meta name="description" content="Cette page n’existe pas.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --red:#cc0000;
+  --red2:#e51010;
+  --bg:#080808;
+  --fg:#f0f0f0;
+  --muted:#777;
+  --card:#111;
+  --line:rgba(255,255,255,.075);
+}
+*,*:before,*:after{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{min-height:100vh;background:var(--bg);color:var(--fg);font-family:'Barlow Condensed',system-ui,sans-serif;overflow-x:hidden}
+a{color:inherit;text-decoration:none}
+b,strong{color:#fff}
+#bg{position:fixed;inset:0;width:100%;height:100%;object-fit:cover;z-index:-3;filter:brightness(.17) saturate(.2) contrast(1.25);background:#000}
+.vig{position:fixed;inset:0;z-index:-2;pointer-events:none;background:radial-gradient(ellipse 60% 55% at 50% 15%,transparent 0%,rgba(0,0,0,.56) 55%,rgba(0,0,0,.98) 100%),linear-gradient(180deg,rgba(0,0,0,.18),#080808 72%)}
+.grain{position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:.33;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.055'/%3E%3C/svg%3E")}
 
-<!-- HelpBot (RSL) -->
-<link rel="stylesheet" href="css/helpbot.css">
-<div id="hb-root">
-  <button class="hb-launcher" id="hbOpen" aria-label="Ouvrir l’aide">💬</button>
-  <div class="hb-panel" id="hbPanel" role="dialog" aria-modal="true" aria-labelledby="hbTitle">
-    <div class="hb-head">
-      <div class="title" id="hbTitle">Aide — RSL</div>
-      <div class="actions">
-        <button class="hb-icon-btn" id="hbMin" title="Réduire">▁</button>
-        <button class="hb-icon-btn" id="hbClose" title="Fermer">✕</button>
-      </div>
-    </div>
-    <div class="hb-body" id="hbBody"></div>
-    <div class="hb-foot">
-      <input id="hbInput" class="hb-input" type="text" placeholder="Pose ta question… (ex: prix des cours, remboursement)">
-      <button id="hbSend" class="hb-send">Envoyer</button>
-    </div>
+/* NAV */
+.sitenav{position:sticky;top:0;z-index:500;background:#000;border-bottom:3px solid var(--red);padding:0 28px;display:flex;align-items:center;justify-content:space-between;height:54px}
+.sitenav-brand{display:flex;align-items:center}
+.sitenav-tab{background:var(--red);height:54px;width:58px;display:flex;align-items:center;justify-content:center;margin-left:-28px;margin-right:16px}
+.sitenav-tab img{height:34px}
+.sitenav-name{font-family:'Bebas Neue';font-size:18px;letter-spacing:.1em;line-height:1}
+.sitenav-name small{display:block;font-family:'Barlow Condensed';font-size:9px;font-weight:700;letter-spacing:.22em;color:var(--red)}
+.sitenav-links{display:flex;align-items:center;list-style:none;height:54px}
+.sitenav-links li{height:100%}
+.sitenav-links a{display:flex;align-items:center;height:100%;padding:0 14px;font-weight:700;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:rgba(240,240,240,.5);border-bottom:3px solid transparent;margin-bottom:-3px}
+.sitenav-links a:hover,.sitenav-links a[aria-current=page]{color:#fff;border-bottom-color:var(--red)}
+.sitenav-right{display:flex;align-items:center;gap:8px}
+.snbtn{padding:7px 14px;font-weight:700;font-size:11px;letter-spacing:.14em;text-transform:uppercase;border:1px solid rgba(255,255,255,.14);background:transparent;color:rgba(240,240,240,.6)}
+.snbtn.red{background:var(--red);border-color:var(--red);color:#fff;box-shadow:0 0 16px rgba(200,0,0,.45)}
+#menuBtn{display:none;background:transparent;border:1px solid rgba(255,255,255,.15);color:#fff;padding:6px 10px;font-size:18px}
+.mobile-sheet{position:fixed;inset:0;display:none;z-index:600}
+.mobile-sheet.open{display:block}
+.mobile-dim{position:absolute;inset:0;background:rgba(0,0,0,.65)}
+.mobile-panel{position:absolute;top:0;right:0;height:100%;width:80vw;max-width:320px;background:#0f0f0f;border-left:3px solid var(--red);padding:20px 18px;display:flex;flex-direction:column;overflow-y:auto}
+.mobile-panel .mp-title{font-family:'Bebas Neue';font-size:20px;letter-spacing:.1em;margin-bottom:12px;border-bottom:1px solid rgba(255,255,255,.08);padding-bottom:10px}
+.mobile-panel .mp-title span,.mobile-panel .mp-red{color:var(--red)}
+.mobile-panel a{color:rgba(240,240,240,.6);font-weight:700;font-size:15px;letter-spacing:.1em;text-transform:uppercase;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.05)}
+.mp-close{position:absolute;top:14px;right:14px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);color:#fff;width:32px;height:32px}
+
+/* HERO */
+.page-hero{position:relative;min-height:440px;display:flex;align-items:center;justify-content:center;padding:78px 20px 66px;overflow:hidden;border-bottom:1px solid rgba(200,0,0,.18)}
+.page-hero:before{content:"";position:absolute;left:50%;top:48%;transform:translate(-50%,-50%);width:min(620px,92vw);height:min(620px,92vw);border-radius:50%;background:radial-gradient(circle,rgba(200,0,0,.34),rgba(200,0,0,.08) 46%,transparent 70%);animation:breathe 3.8s ease-in-out infinite}
+.page-hero:after{content:"RSL";position:absolute;left:50%;top:52%;transform:translate(-50%,-50%);font-family:'Bebas Neue';font-size:min(38vw,440px);color:rgba(255,255,255,.018);pointer-events:none}
+.hero-inner{position:relative;z-index:1;text-align:center;max-width:900px}
+.fed{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:16px}
+.fed-bar{width:28px;height:1px;background:rgba(255,255,255,.12)}
+.fed-dot{width:5px;height:5px;border-radius:50%;background:var(--red);box-shadow:0 0 8px var(--red)}
+.fed-txt{font-size:9px;font-weight:700;letter-spacing:.24em;text-transform:uppercase;color:rgba(255,255,255,.4)}
+h1{font-family:'Bebas Neue';font-size:clamp(58px,10vw,112px);line-height:.84;letter-spacing:.03em;text-shadow:0 0 34px rgba(200,0,0,.48)}
+h1 span,.section-title span,.ft-brand span{color:var(--red)}
+.redsep{width:36px;height:3px;background:var(--red);box-shadow:0 0 12px rgba(200,0,0,.9);margin:22px auto 18px}
+.hero-sub{max-width:700px;margin:auto;color:rgba(240,240,240,.68);font-size:19px;line-height:1.5}
+
+/* CONTENU */
+.wrap{max-width:1240px;margin:0 auto;padding:60px 28px 80px}
+.section-head{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;flex-wrap:wrap;border-bottom:2px solid rgba(255,255,255,.06);padding-bottom:16px;margin-bottom:28px}
+.section-num{font-family:'Bebas Neue';font-size:56px;color:rgba(200,0,0,.2);line-height:1;margin-right:12px}
+.section-title{font-family:'Bebas Neue';font-size:clamp(30px,4vw,48px);letter-spacing:.04em;line-height:1}
+.section-sub{max-width:360px;font-size:14px;color:var(--muted);line-height:1.6;text-align:right}
+
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:3px;margin-bottom:64px}
+.step{background:var(--card);border:1px solid var(--line);padding:22px 20px;position:relative}
+.step:before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--red)}
+.step-n{font-family:'Bebas Neue';font-size:34px;color:var(--red);line-height:1}
+.step h4{font-weight:900;font-size:18px;text-transform:uppercase;letter-spacing:.04em;margin:6px 0}
+.step p{color:rgba(240,240,240,.6);font-size:15px;line-height:1.5}
+
+.plans{display:grid;grid-template-columns:repeat(5,1fr);gap:3px;align-items:stretch}
+.plan{background:var(--card);border:1px solid var(--line);padding:24px 18px 20px;display:flex;flex-direction:column;position:relative;overflow:hidden;transition:border-color .2s,transform .2s}
+.plan:hover{border-color:rgba(200,0,0,.45);transform:translateY(-3px)}
+.plan.hl{background:linear-gradient(160deg,rgba(200,0,0,.16),#111 60%);border-color:rgba(200,0,0,.5)}
+.ribbon{position:absolute;top:14px;right:-34px;transform:rotate(35deg);background:var(--red);color:#fff;font-size:10px;font-weight:900;letter-spacing:.16em;text-transform:uppercase;padding:4px 36px}
+.plan-no{font-family:'Bebas Neue';font-size:15px;letter-spacing:.2em;color:var(--red)}
+.plan h3{font-family:'Bebas Neue';font-size:clamp(26px,2.4vw,34px);overflow-wrap:anywhere;letter-spacing:.04em;line-height:1;margin:4px 0 10px}
+.price{font-family:'Bebas Neue';font-size:40px;line-height:1;color:#fff}
+.price small{display:block;font-family:'Barlow Condensed';font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-top:4px}
+.plan-desc{color:rgba(240,240,240,.62);font-size:15px;line-height:1.45;margin:14px 0 10px}
+.plan ul{list-style:none;margin-bottom:14px}
+.plan li{font-size:15px;line-height:1.35;color:rgba(240,240,240,.85);padding:6px 0 6px 18px;position:relative;border-bottom:1px solid rgba(255,255,255,.04)}
+.plan li:before{content:"";position:absolute;left:0;top:13px;width:8px;height:2px;background:var(--red)}
+.plan-tag{font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:auto 0 12px}
+.plan-btns{display:flex;flex-direction:column;gap:6px}
+.wa-btn{display:flex;align-items:center;justify-content:center;gap:8px;padding:11px 10px;background:#25d366;color:#04210f;font-weight:900;font-size:13px;letter-spacing:.1em;text-transform:uppercase;transition:.15s}
+.wa-btn:hover{filter:brightness(1.08);transform:translateY(-1px)}
+.wa-btn svg{width:18px;height:18px;flex:0 0 18px}
+.plan.hl .wa-btn{box-shadow:0 0 22px rgba(37,211,102,.35)}
+
+.help{margin-top:56px;background:#111;border:1px solid rgba(200,0,0,.2);padding:34px 30px;display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap;position:relative}
+.help:before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--red);box-shadow:0 0 20px rgba(200,0,0,.8)}
+.help h3{font-family:'Bebas Neue';font-size:32px;letter-spacing:.05em;line-height:1}
+.help p{color:rgba(240,240,240,.6);font-size:16px;margin-top:6px}
+.help .wa-btn{padding:13px 22px}
+
+footer{background:#000;border-top:3px solid var(--red);padding:28px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.ft-brand{font-family:'Bebas Neue';font-size:18px;letter-spacing:.1em}
+.ft-copy{font-size:11px;color:var(--muted);margin-top:3px}
+.ft-links{display:flex;gap:16px;list-style:none;flex-wrap:wrap}
+.ft-links a{font-weight:700;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+
+@media(max-width:1180px){.plans{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:1040px){.sitenav-links{display:none}.sitenav{padding:0 14px}.sitenav-tab{margin-left:-14px}#menuBtn{display:block}}
+@media(max-width:760px){.plans{grid-template-columns:1fr 1fr}.steps{grid-template-columns:1fr}.wrap{padding:44px 16px 60px}.section-sub{text-align:left}footer{padding:20px 16px;flex-direction:column;align-items:flex-start}}
+@media(max-width:520px){.plans{grid-template-columns:1fr}.hero-sub{font-size:17px}}
+@media(max-width:430px){.sitenav-name{display:none}.snbtn.red{display:none}}
+@keyframes breathe{0%,100%{opacity:.55;transform:translate(-50%,-50%) scale(.92)}50%{opacity:1;transform:translate(-50%,-50%) scale(1.08)}}
+
+/* COMMUN PAGES */
+.cards{display:grid;gap:3px;margin-bottom:64px}
+.c2{grid-template-columns:repeat(2,1fr)}.c3{grid-template-columns:repeat(3,1fr)}.c4{grid-template-columns:repeat(4,1fr)}
+.card{background:var(--card);border:1px solid var(--line);padding:24px 22px 22px;position:relative;display:flex;flex-direction:column;gap:10px}
+.card:before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--red)}
+.card h3{font-family:'Bebas Neue';font-size:32px;letter-spacing:.05em;line-height:1}
+.card h3 small{display:block;font-family:'Barlow Condensed';font-size:12px;font-weight:700;letter-spacing:.2em;color:var(--red);margin-bottom:6px}
+.card p{color:rgba(240,240,240,.65);font-size:16px;line-height:1.5}
+.card ul{list-style:none}
+.card li{font-size:16px;line-height:1.4;color:rgba(240,240,240,.85);padding:7px 0 7px 18px;position:relative;border-bottom:1px solid rgba(255,255,255,.04)}
+.card li:before{content:"";position:absolute;left:0;top:15px;width:8px;height:2px;background:var(--red)}
+.card li b{color:#fff}
+.tags{display:flex;flex-wrap:wrap;gap:6px}
+.tag{font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;padding:5px 10px;border:1px solid rgba(255,255,255,.14);color:rgba(240,240,240,.8)}
+.big-n{font-family:'Bebas Neue';font-size:44px;color:var(--red);line-height:1}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:13px 22px;background:var(--red);color:#fff;font-weight:900;font-size:13px;letter-spacing:.14em;text-transform:uppercase;border:0;cursor:pointer;box-shadow:0 0 18px rgba(200,0,0,.45);font-family:inherit}
+.btn.ghost{background:transparent;border:1px solid rgba(255,255,255,.18);box-shadow:none}
+.btn.ghost:hover{border-color:var(--red);background:rgba(200,0,0,.12)}
+.btn.wa{background:#25d366;color:#04210f;box-shadow:0 0 16px rgba(37,211,102,.3)}
+.btn:disabled{opacity:.6;cursor:wait}
+.hero-btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:26px}
+.panel{background:#111;border:1px solid rgba(200,0,0,.2);padding:30px;position:relative}
+.panel:before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--red);box-shadow:0 0 20px rgba(200,0,0,.8)}
+.form{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.field{display:flex;flex-direction:column;gap:6px}
+.field.full{grid-column:1/-1}
+.field label{font-weight:700;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:rgba(240,240,240,.7)}
+.field input,.field select,.field textarea{font:inherit;font-size:17px;color:#fff;background:#0a0a0a;border:1px solid rgba(255,255,255,.14);padding:12px 14px;border-radius:0;width:100%}
+.field textarea{min-height:110px;resize:vertical}
+.field select{appearance:none;background-image:linear-gradient(45deg,transparent 50%,#fff 50%),linear-gradient(135deg,#fff 50%,transparent 50%);background-position:calc(100% - 20px) 52%,calc(100% - 14px) 52%;background-size:6px 6px;background-repeat:no-repeat;padding-right:36px}
+.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--red);box-shadow:0 0 0 3px rgba(200,0,0,.25)}
+.check{grid-column:1/-1;display:flex;gap:10px;align-items:flex-start;font-size:16px;color:rgba(240,240,240,.8)}
+.check input{width:20px;height:20px;accent-color:var(--red);margin-top:2px;flex:0 0 20px}
+.fmsg{grid-column:1/-1;font-size:16px;min-height:1.2em}
+.fmsg.ok{color:#52f0b5}.fmsg.ko{color:#ff6b6b}
+.small{font-size:14px;color:var(--muted);line-height:1.6}
+.hp{position:absolute;left:-9999px;width:1px;height:1px;opacity:0}
+@media(max-width:1040px){.c4{grid-template-columns:1fr 1fr}.c3{grid-template-columns:1fr 1fr}}
+@media(max-width:640px){.c2,.c3,.c4{grid-template-columns:1fr}.form{grid-template-columns:1fr}.panel{padding:22px 18px}}
+</style>
+</head>
+<body>
+<video id="bg" autoplay muted loop playsinline poster="/images/hero-poster.jpg"></video><div class="vig"></div><div class="grain"></div>
+
+<nav class="sitenav">
+  <a class="sitenav-brand" href="/">
+    <div class="sitenav-tab"><img src="/images/logo_rsl.png" alt="RSL"></div>
+    <div class="sitenav-name">RSL<small>Romandie Scooter League</small></div>
+  </a>
+  <ul class="sitenav-links">
+    <li><a href="/cours">Cours</a></li>
+    <li><a href="/formation">Formation</a></li>
+    <li><a href="/ou_rider">Où rider ?</a></li>
+    <li><a href="/evenements">Événements</a></li>
+    <li><a href="/disciplines">Disciplines</a></li>
+    <li><a href="/shop-rsl">Shop</a></li>
+    <li><a href="/comite">Comité</a></li>
+    <li><a href="/contact">Contact</a></li>
+  </ul>
+  <div class="sitenav-right">
+    <a class="snbtn red" href="/membres">Devenir membre</a>
+    <button id="menuBtn" aria-label="Menu">☰</button>
   </div>
-</div>
-<script defer src="js/helpbot.js"></script>
+</nav>
 
+<div class="mobile-sheet" id="mobileMenu" aria-hidden="true">
+  <div class="mobile-dim"></div>
+  <nav class="mobile-panel">
+    <button class="mp-close" id="closeMenu">×</button>
+    <div class="mp-title"><span>RSL</span> MENU</div>
+    <a href="/">Accueil</a>
+    <a href="/cours">Cours</a>
+    <a href="/membres" class="mp-red">Devenir membre</a>
+    <a href="/formation">Formation RSL</a>
+    <a href="/disciplines">Disciplines</a>
+    <a href="/ou_rider">Où rider ?</a>
+    <a href="/evenements">Événements</a>
+    <a href="/shop-rsl">Shop</a>
+    <a href="/comite">Comité</a>
+    <a href="/contact">Contact</a>
+  </nav>
+</div>
+
+<header class="page-hero">
+  <div class="hero-inner">
+    <div class="fed"><div class="fed-bar"></div><div class="fed-dot"></div><div class="fed-txt">Erreur 404</div><div class="fed-dot"></div><div class="fed-bar"></div></div>
+    <h1>PAGE<br><span>INTROUVABLE</span></h1>
+    <div class="redsep"></div>
+    <p class="hero-sub">Cette page n’existe pas.</p><div class="hero-btns"><a class="btn" href="/">Retour à l’accueil</a><a class="btn ghost" href="/contact">Nous contacter</a></div>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="cards c4">
+    <a class="card" href="/cours"><h3>Cours</h3><p>Cours à Montreux tous les samedis.</p></a>
+    <a class="card" href="/evenements"><h3>Événements</h3><p>Contests · championnat · jams · événements partenaires</p></a>
+    <a class="card" href="/membres"><h3>Devenir membre</h3><p>5 formules pour rejoindre la ligue.</p></a>
+    <a class="card" href="/shop-rsl"><h3>Shop</h3><p>Les produits recommandés par la ligue.</p></a>
+  </div>
+</main>
+
+<footer>
+  <div><div class="ft-brand">ROMANDIE <span>SCOOTER LEAGUE</span></div><div class="ft-copy">© 2026 RSL — Association Ride4Style Montreux. Tous droits réservés.</div></div>
+  <ul class="ft-links"><li><a href="/cours">Cours</a></li><li><a href="/formation">Formation</a></li><li><a href="/evenements">Événements</a></li><li><a href="/contact">Contact</a></li><li><a href="/conditions">Conditions</a></li></ul>
+</footer>
+
+<script>
+(function(){
+  const v=document.getElementById('bg');if(!v)return;
+  const vids=[
+    'https://jynxifufaauoxwzjapzq.supabase.co/storage/v1/object/public/videos_rsl/trottvideo1.mp4',
+    'https://jynxifufaauoxwzjapzq.supabase.co/storage/v1/object/public/videos_rsl/trottvideo2.mp4'
+  ];
+  v.src=vids[Math.floor(Math.random()*vids.length)];
+  v.playbackRate=.5;
+  try{const p=v.play();if(p&&p.catch)p.catch(()=>{})}catch(e){}
+})();
+(function(){
+  const b=document.getElementById('menuBtn'),m=document.getElementById('mobileMenu'),c=document.getElementById('closeMenu');
+  if(!b||!m)return;
+  const open=()=>{m.classList.add('open');m.setAttribute('aria-hidden','false')};
+  const close=()=>{m.classList.remove('open');m.setAttribute('aria-hidden','true')};
+  b.addEventListener('click',open);c?.addEventListener('click',close);m.querySelector('.mobile-dim')?.addEventListener('click',close);document.addEventListener('keydown',e=>{if(e.key==='Escape')close()});
+})();
+</script>
 <script src="/js/lang.js" defer></script>
-</body></html>
+</body>
+</html>
