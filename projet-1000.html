@@ -158,6 +158,18 @@ footer .coords{font-family:var(--wide);font-size:10px;color:var(--red);letter-sp
 
 .partner{border:1px solid var(--line);padding:20px;display:grid;gap:12px}
 @media(min-width:760px){.partner{grid-template-columns:1fr auto;align-items:center}}
+
+.riders{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:22px;margin-top:24px}
+.rider{border:1px solid var(--grid);background:var(--panel);display:flex;flex-direction:column}
+.rider .shot{aspect-ratio:4/5;overflow:hidden;border-bottom:1px solid var(--grid)}
+.rider .shot img{width:100%;height:100%;object-fit:cover;object-position:center top}
+.rider .body{padding:20px 20px 22px;display:flex;flex-direction:column;gap:14px}
+.rider .who-r{display:flex;align-items:center;gap:12px}
+.rider .who-r img{width:52px;height:52px;border-radius:50%;object-fit:cover;border:2px solid var(--red)}
+.rider .who-r b{font-family:var(--wide);font-size:.9rem;letter-spacing:.04em;display:block}
+.rider .who-r span{color:var(--dim);font-size:.9rem}
+.rider blockquote{margin:0;font-size:1.05rem;line-height:1.55;color:#e6e6e6;border-left:3px solid var(--red);padding-left:14px}
+.rider small{color:var(--dim);font-size:.78rem}
 </style>
 </head>
 <body>
@@ -347,9 +359,25 @@ footer .coords{font-family:var(--wide);font-size:10px;color:var(--red);letter-sp
       <div><b>La fédération atteint le seuil</b><span>Avec 1’000 inscrits, la trottinette freestyle peut être reconnue comme discipline en Suisse.</span></div>
       <div><b>Notre sport est reconnu</b><span>Une vraie place pour la trottinette freestyle, à côté des autres sports de glisse.</span></div>
     </div>
-    <p>Ce projet ne concerne donc pas seulement la compétition. Il montre que la trottinette freestyle existe, qu’elle rassemble, et qu’elle mérite de se structurer en Suisse.</p>
-    <p>Ce projet ne concerne pas seulement la compétition. Il concerne toute la communauté :</p>
+    <p>Ce projet ne concerne donc pas seulement la compétition. Il montre que la trottinette freestyle existe, qu’elle rassemble, et qu’elle mérite de se structurer en Suisse. Il concerne toute la communauté :</p>
     <div class="who"><span>jeunes riders</span><span>familles</span><span>coachs</span><span>shops</span><span>associations</span><span>skateparks</span><span>marques</span><span>passionnés</span></div>
+  </div>
+</section>
+
+<section style="border-top:1px solid var(--grid)">
+  <div class="sheet">
+    <h2>Ils soutiennent le Projet 1000</h2>
+    <p class="prose" style="color:#cfcfcf">Des riders suisses racontent ce que la trottinette freestyle leur apporte.</p>
+    <div class="riders">
+      <article class="rider">
+        <div class="shot"><img src="/images/p1000/riders/janosch.jpg" alt="Janosch Steinmann en backflip sur sa trottinette" loading="lazy" width="720" height="1088"></div>
+        <div class="body">
+          <div class="who-r"><img src="/images/p1000/riders/janosch-portrait.jpg" alt="Portrait de Janosch Steinmann" loading="lazy" width="300" height="300"><div><b>Janosch Steinmann</b><span>20 ans · St-Gall · rider pro</span></div></div>
+          <blockquote>Je ride depuis mes 13 ans et je fais des compétitions internationales depuis plusieurs années. Ce que j’aime le plus, c’est la liberté de m’entraîner à ce que je veux, quand et où je veux, tout en rencontrant des gens et en ridant avec des potes partout dans le monde. Je me pousse toujours à apprendre de nouveaux tricks pour les mettre dans mes runs. Je suis super reconnaissant de faire partie de cette communauté incroyable, et j’ai hâte de voir où la trottinette va m’emmener&nbsp;!</blockquote>
+          <small>Traduit de l’anglais</small>
+        </div>
+      </article>
+    </div>
   </div>
 </section>
 
