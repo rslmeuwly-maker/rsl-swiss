@@ -207,17 +207,17 @@
     .empty-msg{grid-column:1/-1;color:var(--muted);padding:30px 0;font-size:16px}
 
     /* AUTRES FORMULES */
-    .coachs{display:grid;grid-template-columns:1fr;gap:3px;margin-bottom:56px}
-    .coach{display:grid;grid-template-columns:320px 1fr;background:#111;border:1px solid rgba(255,255,255,.08);position:relative;overflow:hidden}
+    .coachs{display:grid;grid-template-columns:1fr 1fr;gap:3px;margin-bottom:56px}
+    .coach{display:flex;flex-direction:column;background:#111;border:1px solid rgba(255,255,255,.08);position:relative;overflow:hidden}
     .coach:before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--red);z-index:1}
-    .coach-photo{width:100%;height:100%;min-height:320px;object-fit:cover;object-position:center 35%;display:block;filter:grayscale(.15)}
+    .coach-photo{width:100%;height:auto;aspect-ratio:1/1;object-fit:cover;object-position:center top;display:block;filter:grayscale(.15)}
     .coach-body{padding:26px 28px;display:flex;flex-direction:column;justify-content:center}
     .coach-tag{font-size:11px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--red);margin-bottom:6px}
     .coach-name{font-family:'Bebas Neue',sans-serif;font-size:46px;letter-spacing:.04em;line-height:.95;color:#fff}
     .coach-text{font-size:17px;line-height:1.55;color:rgba(240,240,240,.72);margin-top:12px;max-width:62ch}
     .coach-facts{display:flex;flex-wrap:wrap;gap:6px;margin-top:16px}
     .coach-facts span{font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:6px 10px;border:1px solid rgba(204,0,0,.45);color:#ff7373;background:rgba(204,0,0,.08)}
-    @media(max-width:700px){.coach{grid-template-columns:1fr}.coach-photo{height:320px;min-height:0;object-position:center 30%}.coach-body{padding:20px 18px}}
+    @media(max-width:700px){.coachs{grid-template-columns:1fr}.coach-body{padding:20px 18px}}
     .extras{margin-top:58px}
     .extra-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:3px}
     .extra-card{
