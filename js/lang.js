@@ -34,8 +34,9 @@
     "@media print{.rsl-lang{display:none}}";
   document.head.appendChild(css);
 
+  var box = null;
   function buildSwitcher() {
-    var box = document.createElement("div");
+    box = document.createElement("div");
     box.className = "rsl-lang";
     box.setAttribute("translate", "no");
     box.setAttribute("role", "group");
@@ -45,16 +46,16 @@
       b.type = "button";
       b.textContent = l.toUpperCase();
       b.setAttribute("lang", l);
-      b.setAttribute("aria-pressed", l === lang ? "true" : "false");
-      b.addEventListener("click", function () {
-        if (l === lang) return;
-        store("rsl-lang", l);
-        var u = location.href.replace(/([?&])lang=(fr|en|de)&?/, "$1").replace(/[?&]$/, "");
-        location.href = u;
-      });
+      b.addEventListener("click", function () { setLang(l, true); });
       box.appendChild(b);
     });
     document.body.appendChild(box);
+    paintSwitcher();
+  }
+  function paintSwitcher() {
+    if (!box) return;
+    var bs = box.querySelectorAll("button");
+    for (var i = 0; i < bs.length; i++) bs[i].setAttribute("aria-pressed", bs[i].getAttribute("lang") === lang ? "true" : "false");
   }
 
   /* ---------- traduction ---------- */
@@ -97,6 +98,7 @@
   ];
 
   function tr(text) {
+    if (lang === "fr") return null;
     var key = text.replace(/\s+/g, " ").trim();
     if (!key) return null;
     var hit = DICT[key];
@@ -112,7 +114,9 @@
   }
 
   var SKIP = { SCRIPT: 1, STYLE: 1, NOSCRIPT: 1, TEXTAREA: 1, CODE: 1 };
-  var done = new WeakMap();
+  var ORIG = new WeakMap();   // noeud texte -> texte français d'origine
+  var MINE = new WeakMap();   // noeud texte -> dernier texte écrit par ce script
+  var TEXTS = [];             // noeuds touchés (pour changer de langue sans recharger)
   function skipped(el) {
     for (; el && el.nodeType === 1; el = el.parentNode) {
       if (SKIP[el.nodeName]) return true;
@@ -123,31 +127,45 @@
   }
   function doText(node) {
     var v = node.nodeValue;
-    if (!v || !/[A-Za-zÀ-ÿ]/.test(v) || done.get(node) === v) return;
-    if (skipped(node.parentNode)) return;
-    var t = tr(v);
-    if (t !== null && t !== v) node.nodeValue = t;
-    done.set(node, node.nodeValue);
+    if (v == null) return;
+    if (MINE.get(node) !== v) {            // texte nouveau ou changé par la page : c'est du français
+      if (!/[A-Za-zÀ-ÿ]/.test(v) || skipped(node.parentNode)) { MINE.set(node, v); return; }
+      if (!ORIG.has(node)) TEXTS.push(node);
+      ORIG.set(node, v);
+    }
+    if (!ORIG.has(node)) return;
+    var fr = ORIG.get(node);
+    var t = tr(fr);
+    var want = t === null ? fr : t;
+    if (node.nodeValue !== want) node.nodeValue = want;
+    MINE.set(node, want);
   }
   var ATTRS = ["placeholder", "alt", "title", "aria-label"];
+  var ELS = [];
   function doAttrs(el) {
     if (el.nodeType !== 1 || skipped(el)) return;
     for (var i = 0; i < ATTRS.length; i++) {
-      var a = el.getAttribute(ATTRS[i]);
-      if (a && el.getAttribute("data-rsl-" + ATTRS[i]) !== a) {
-        var t = tr(a);
-        if (t !== null) el.setAttribute(ATTRS[i], t);
-        el.setAttribute("data-rsl-" + ATTRS[i], el.getAttribute(ATTRS[i]));
-      }
+      var n = ATTRS[i], a = el.getAttribute(n);
+      if (a == null) continue;
+      var mk = "data-rsl-" + n, ok = "data-rsl-fr-" + n;
+      if (el.getAttribute(mk) !== a) { el.setAttribute(ok, a); if (ELS.indexOf(el) < 0) ELS.push(el); }
+      var fr = el.getAttribute(ok);
+      var t = tr(fr);
+      var want = t === null ? fr : t;
+      if (a !== want) el.setAttribute(n, want);
+      el.setAttribute(mk, want);
     }
     if (el.nodeName === "INPUT" && /^(submit|button|reset)$/i.test(el.type) && el.value) {
-      var tv = tr(el.value);
-      if (tv !== null) el.value = tv;
+      if (el.__rslMine !== el.value) el.__rslFr = el.value;
+      var tv = tr(el.__rslFr);
+      el.value = tv === null ? el.__rslFr : tv;
+      el.__rslMine = el.value;
+      if (ELS.indexOf(el) < 0) ELS.push(el);
     }
   }
   function walk(root) {
     if (root.nodeType === 3) { doText(root); return; }
-    if (root.nodeType !== 1 || root.classList.contains("rsl-lang")) return;
+    if (root.nodeType !== 1 || (root.classList && root.classList.contains("rsl-lang"))) return;
     doAttrs(root);
     var w = document.createTreeWalker(root, NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT, null);
     var n;
@@ -156,20 +174,29 @@
       else doAttrs(n);
     }
   }
+  var HEAD = null;
   function doHead() {
-    var t = tr(document.title);
-    if (t !== null) document.title = t;
-    var metas = document.querySelectorAll('meta[name="description"],meta[property="og:title"],meta[property="og:description"]');
-    for (var i = 0; i < metas.length; i++) {
-      var c = tr(metas[i].getAttribute("content") || "");
-      if (c !== null) metas[i].setAttribute("content", c);
-    }
+    if (!HEAD) {
+      HEAD = { title: document.title, metas: [] };
+      var ms = document.querySelectorAll('meta[name="description"],meta[property="og:title"],meta[property="og:description"]');
+      for (var i = 0; i < ms.length; i++) HEAD.metas.push([ms[i], ms[i].getAttribute("content") || ""]);
+    } else if (document.title !== HEAD.mine) HEAD.title = document.title;
+    var t = tr(HEAD.title);
+    document.title = t === null ? HEAD.title : t;
+    HEAD.mine = document.title;
+    HEAD.metas.forEach(function (m) { var c = tr(m[1]); m[0].setAttribute("content", c === null ? m[1] : c); });
   }
 
+  var observing = false;
   function translatePage() {
     document.documentElement.lang = lang;
     doHead();
     walk(document.body);
+    for (var i = 0; i < TEXTS.length; i++) doText(TEXTS[i]);
+    for (var j = 0; j < ELS.length; j++) doAttrs(ELS[j]);
+    document.documentElement.classList.remove("rsl-lang-wait");
+    if (observing) return;
+    observing = true;
     new MutationObserver(function (list) {
       for (var i = 0; i < list.length; i++) {
         var m = list[i];
@@ -178,21 +205,40 @@
         else for (var j = 0; j < m.addedNodes.length; j++) walk(m.addedNodes[j]);
       }
     }).observe(document.body, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ATTRS });
-    new MutationObserver(doHead).observe(document.querySelector("title") || document.head, { childList: true, characterData: true, subtree: true });
-    document.documentElement.classList.remove("rsl-lang-wait");
+    var tEl = document.querySelector("title");
+    if (tEl) new MutationObserver(function () { if (document.title !== HEAD.mine) doHead(); }).observe(tEl, { childList: true, characterData: true, subtree: true });
+  }
+
+  function loadDict(cb) {
+    if (DICT) return cb();
+    if (window.RSL_DICT) { DICT = window.RSL_DICT; return cb(); }
+    var s = document.createElement("script");
+    var me = document.querySelector('script[src*="lang.js"]');
+    s.src = me ? me.src.replace(/lang\.js(\?.*)?$/, "lang-dict.js$1") : "/js/lang-dict.js";
+    s.onload = function () { DICT = window.RSL_DICT || {}; cb(); };
+    s.onerror = function () { DICT = {}; document.documentElement.classList.remove("rsl-lang-wait"); };
+    document.head.appendChild(s);
+  }
+
+  // Change de langue tout de suite, sans recharger la page
+  function setLang(l, save) {
+    if (LANGS.indexOf(l) < 0) return;
+    if (save) store("rsl-lang", l);
+    if (l === lang && DICT) return;
+    lang = l; IDX = lang === "en" ? 0 : 1;
+    paintSwitcher();
+    if (lang === "fr" && !DICT) { document.documentElement.lang = "fr"; return; }
+    loadDict(translatePage);
   }
 
   function start() {
     buildSwitcher();
-    if (lang === "fr") return;
-    if (window.RSL_DICT) { DICT = window.RSL_DICT; translatePage(); return; }
-    var s = document.createElement("script");
-    var me = document.querySelector('script[src*="lang.js"]');
-    s.src = me ? me.src.replace(/lang\.js(\?.*)?$/, "lang-dict.js$1") : "/js/lang-dict.js";
-    s.onload = function () { DICT = window.RSL_DICT || {}; translatePage(); };
-    s.onerror = function () { document.documentElement.classList.remove("rsl-lang-wait"); };
-    document.head.appendChild(s);
+    if (lang !== "fr") loadDict(translatePage);
   }
+
+  // Retour arrière / autre onglet : on suit la dernière langue choisie
+  window.addEventListener("pageshow", function () { var l = read("rsl-lang"); if (l && l !== lang) setLang(l, false); });
+  window.addEventListener("storage", function (e) { if (e.key === "rsl-lang" && e.newValue && e.newValue !== lang) setLang(e.newValue, false); });
 
   // Évite de voir le français une fraction de seconde
   if (lang !== "fr") {
