@@ -207,7 +207,7 @@
     .empty-msg{grid-column:1/-1;color:var(--muted);padding:30px 0;font-size:16px}
 
     /* AUTRES FORMULES */
-    .coachs{display:grid;grid-template-columns:1fr 1fr;gap:3px;margin-bottom:56px}
+    .coachs{display:grid;grid-template-columns:repeat(3,1fr);gap:3px;margin-bottom:56px}
     .coach{display:flex;flex-direction:column;background:#111;border:1px solid rgba(255,255,255,.08);position:relative;overflow:hidden}
     .coach:before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--red);z-index:1}
     .coach-photo{width:100%;height:auto;aspect-ratio:1/1;object-fit:cover;object-position:center top;display:block;filter:grayscale(.15)}
@@ -217,6 +217,7 @@
     .coach-text{font-size:17px;line-height:1.55;color:rgba(240,240,240,.72);margin-top:12px;max-width:62ch}
     .coach-facts{display:flex;flex-wrap:wrap;gap:6px;margin-top:16px}
     .coach-facts span{font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:6px 10px;border:1px solid rgba(204,0,0,.45);color:#ff7373;background:rgba(204,0,0,.08)}
+    @media(max-width:1000px) and (min-width:701px){.coachs{grid-template-columns:1fr 1fr}}
     @media(max-width:700px){.coachs{grid-template-columns:1fr}.coach-body{padding:20px 18px}}
     .extras{margin-top:58px}
     .extra-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:3px}
@@ -386,6 +387,15 @@
             <div class="coach-tag">Coach RSL · Montreux</div>
             <div class="coach-name">LUCAS</div>
             <p class="coach-text">Présentation à venir.</p>
+          </div>
+        </article>
+        <article class="coach">
+          <img class="coach-photo" src="/images/coachs/william.jpg" alt="William, coach RSL, avec sa trottinette au skatepark de Vidy" loading="lazy">
+          <div class="coach-body">
+            <div class="coach-tag">Coach RSL · Trésorier</div>
+            <div class="coach-name">WILLIAM</div>
+            <p class="coach-text">Je pratique la trottinette freestyle depuis plus de 10 ans. Passionné par cette discipline, je suis aujourd’hui trésorier de la Romandie Scooter League. J’aime partager mon expérience, transmettre mes connaissances et aider chacun à progresser et à prendre du plaisir.</p>
+            <div class="coach-facts"><span>10+ ans de ride</span><span>Trésorier RSL</span><span>Transmission & progression</span></div>
           </div>
         </article>
       </div>
