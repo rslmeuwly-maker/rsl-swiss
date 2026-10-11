@@ -86,6 +86,7 @@
     <div class="top-actions">
       <button class="btn" id="addBtn">+ Ajouter</button>
       <button class="btn secondary" id="refreshBtn">↻ Actualiser</button>
+      <button class="btn secondary" id="bulkMailBtn">📧 Confirmer tous les payés</button>
       <button class="btn secondary" id="exportBtn">⬇ CSV complet</button>
       <button class="btn secondary" id="logoutBtn">Déconnexion</button>
     </div>
@@ -178,6 +179,7 @@
   $("modalBg").addEventListener("click", e => { if(e.target === $("modalBg")) closeModal(); });
   $("modalSave").addEventListener("click", saveModal);
   $("exportBtn").addEventListener("click", exportCsv);
+  $("bulkMailBtn").addEventListener("click", bulkConfirm);
   ["searchInput","filterPaid","filterMethod","filterCategory","filterDiscipline","sortBy"].forEach(id=>{
     $(id).addEventListener("input", renderBlocks); $(id).addEventListener("change", renderBlocks);
   });
@@ -257,6 +259,7 @@
     if(!rows.length){ $("blocks").innerHTML = '<div class="empty">Aucune inscription trouvée.</div>'; return; }
     $("blocks").innerHTML = rows.map(r=>cardHtml(r)).join("");
     document.querySelectorAll(".validate-btn").forEach(btn=>btn.addEventListener("click",()=>togglePaid(btn.dataset.id)));
+    document.querySelectorAll(".mail-btn").forEach(btn=>btn.addEventListener("click",()=>sendConfirm(btn.dataset.id, btn)));
     document.querySelectorAll(".edit-btn").forEach(btn=>btn.addEventListener("click",()=>openModal(btn.dataset.id)));
     document.querySelectorAll(".delete-btn").forEach(btn=>btn.addEventListener("click",()=>deleteRow(btn.dataset.id)));
     document.querySelectorAll(".copy-btn").forEach(btn=>btn.addEventListener("click",()=>copyText(btn.dataset.copy)));
@@ -296,10 +299,12 @@
         ${info("Canton", r.canton)}
         ${info("Ville", r.city)}
         ${info("Club / Team", r.club)}
+        ${info("E-mail de confirmation", r.confirmation_sent_at ? "✅ Envoyé le " + formatDateTime(r.confirmation_sent_at) : "Pas encore envoyé")}
         ${info("Notes", r.notes, true)}
       </div></div>
       <div class="actions">
         <button class="btn small ${r.paid ? 'secondary' : 'green'} validate-btn" data-id="${esc(r.id)}">${r.paid ? 'Remettre attente' : 'Valider payé'}</button>
+        <button class="btn small ${r.confirmation_sent_at ? 'secondary' : ''} mail-btn" data-id="${esc(r.id)}" ${r.email ? '' : 'disabled title="Pas d’e-mail"'}>${r.confirmation_sent_at ? '📧 Renvoyer confirmation' : '📧 Envoyer confirmation'}</button>
         <button class="btn small secondary edit-btn" data-id="${esc(r.id)}">Modifier</button>
         <button class="btn small secondary" onclick="window.print()">Imprimer</button>
         <button class="btn small danger delete-btn" data-id="${esc(r.id)}">Supprimer</button>
@@ -311,6 +316,40 @@
   function infoCopy(k,v){
     if(!v) return info(k,"—");
     return `<div class="info"><div class="k">${esc(k)}</div><div class="copy-row"><div class="v">${esc(v)}</div><button class="copy-btn" data-copy="${esc(v)}">copier</button></div></div>`;
+  }
+
+  const CONFIRM_URL = SUPABASE_URL + "/functions/v1/rsl-event-confirm";
+  async function sendConfirm(id, btn, silent){
+    const row = allRows.find(r=>String(r.id)===String(id)); if(!row) return false;
+    if(!row.email){ if(!silent) alert("Ce rider n’a pas d’e-mail."); return false; }
+    if(!silent){
+      const what = row.paid ? "« inscription confirmée »" : "« inscription reçue, paiement en attente »";
+      if(!confirm("Envoyer l’e-mail " + what + " à " + row.email + " ?")) return false;
+    }
+    if(btn){ btn.disabled = true; btn.textContent = "Envoi…"; }
+    try{
+      const res = await fetch(CONFIRM_URL, { method:"POST", headers:{ "Content-Type":"application/json", apikey: SUPABASE_ANON, Authorization: "Bearer " + SUPABASE_ANON }, body: JSON.stringify({ admin: ADMIN_PASSWORD, id }) });
+      const out = await res.json().catch(()=>({}));
+      if(!res.ok || !out.ok) throw new Error(out.error || ("Erreur " + res.status));
+      row.confirmation_sent_at = out.sent_at;
+      if(!silent){ renderBlocks(); toast("E-mail envoyé à " + row.email); }
+      return true;
+    }catch(e){
+      if(!silent) alert("Envoi impossible : " + e.message);
+      if(btn){ btn.disabled = false; btn.textContent = "📧 Envoyer confirmation"; }
+      return false;
+    }
+  }
+  async function bulkConfirm(){
+    const todo = allRows.filter(r=>r.paid && r.email && !r.confirmation_sent_at);
+    if(!todo.length){ alert("Tous les inscrits payés ont déjà reçu leur confirmation."); return; }
+    if(!confirm("Envoyer la confirmation à " + todo.length + " rider(s) payé(s) qui ne l’ont pas encore reçue ?")) return;
+    const b = $("bulkMailBtn"); b.disabled = true;
+    let ok = 0, ko = 0;
+    for(const r of todo){ b.textContent = "Envoi " + (ok+ko+1) + "/" + todo.length + "…"; (await sendConfirm(r.id, null, true)) ? ok++ : ko++; await new Promise(z=>setTimeout(z, 600)); }
+    b.disabled = false; b.textContent = "📧 Confirmer tous les payés";
+    renderBlocks();
+    alert(ok + " e-mail(s) envoyé(s)" + (ko ? ", " + ko + " échec(s)" : "") + ".");
   }
 
   async function togglePaid(id){
