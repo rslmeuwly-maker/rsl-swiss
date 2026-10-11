@@ -275,6 +275,26 @@
       .coach-text{font-size:15px}
       .coach-facts span{font-size:11px}
     }
+
+    /* CONDITIONS DES COURS */
+    .cond-alert{display:flex;gap:14px;align-items:flex-start;background:linear-gradient(120deg,rgba(204,0,0,.16),#111 70%);border:1px solid rgba(204,0,0,.45);border-left:4px solid var(--red);padding:16px 18px;margin:0 0 18px}
+    .cond-alert .ic{font-size:22px;line-height:1}
+    .cond-alert b{display:block;font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:.05em;line-height:1.1;color:#fff}
+    .cond-alert ul{list-style:none;margin:6px 0 8px;padding:0}
+    .cond-alert li{font-size:15px;line-height:1.45;color:rgba(240,240,240,.85);padding:2px 0 2px 16px;position:relative}
+    .cond-alert li:before{content:"";position:absolute;left:0;top:11px;width:7px;height:2px;background:var(--red)}
+    .cond-alert a{color:#ff7373;font-weight:700;text-decoration:underline}
+    .conds{display:grid;grid-template-columns:repeat(2,1fr);gap:3px;margin-bottom:14px}
+    .cond{background:#111;border:1px solid rgba(255,255,255,.08);padding:20px 20px 18px;position:relative}
+    .cond:before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--red)}
+    .cond h3{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:.05em;line-height:1.05;color:#fff;margin:0 0 8px;display:flex;gap:10px;align-items:center}
+    .cond h3 span{font-size:20px}
+    .cond p{font-size:15px;line-height:1.55;color:rgba(240,240,240,.75);margin:0 0 6px}
+    .cond p.lead{color:#fff;font-weight:700}
+    .cond-accept{background:#0b0b0b;border:1px dashed rgba(255,255,255,.18);padding:16px 18px;font-size:15px;line-height:1.55;color:rgba(240,240,240,.8)}
+    .cond-accept a{color:#ff7373;font-weight:700}
+    #conditions{scroll-margin-top:80px}
+    @media(max-width:760px){.conds{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -338,6 +358,7 @@
         <a class="btn red" href="#cours">Voir les cours</a>
         <a class="btn ghost" href="#coachs">Nos coachs</a>
         <a class="btn ghost" href="#formules">Cours privé · 60 CHF</a>
+        <a class="btn ghost" href="#conditions">Conditions</a>
       </div>
     </div>
   </header>
@@ -359,13 +380,47 @@
         <div><b>3</b><span>Viens rider à Montreux</span></div>
       </div>
 
+      <div class="cond-alert" role="note">
+        <div class="ic" aria-hidden="true">⚠️</div>
+        <div>
+          <b>À LIRE AVANT DE RÉSERVER</b>
+          <ul>
+            <li>D’octobre à mars, les cours ont lieu uniquement à l’intérieur.</li>
+            <li>Les enfants restent sous la responsabilité de leurs parents ou de l’accompagnant.</li>
+            <li>Les enfants ne sont pas gardés plus de 5 minutes après la fin du cours.</li>
+            <li>Par mauvais temps, le cours est déplacé dans un autre lieu ou reporté.</li>
+          </ul>
+          <a href="#conditions">Lire toutes les conditions des cours</a>
+        </div>
+      </div>
+
       <div class="grid short" id="courseGrid"></div>
       <div class="more-dates" hidden><button class="btn ghost" type="button" id="moreDates">Voir plus de dates</button></div>
 
 
-      <div class="section-head" id="coachs" style="margin-top:72px">
+      <div class="section-head" id="conditions" style="margin-top:72px">
         <div class="section-kicker">
           <div class="num">02</div>
+          <div class="section-title">CONDITIONS <span>DES COURS</span></div>
+        </div>
+        <p class="section-sub">En réservant un cours, tu acceptes ces conditions.</p>
+      </div>
+
+      <div class="conds">
+        <article class="cond"><h3><span aria-hidden="true">🏠</span>Octobre à mars : en intérieur</h3><p class="lead">D’octobre à mars, les cours ont lieu uniquement à l’intérieur.</p><p>Un cours à l’extérieur est possible seulement sur arrangement préalable avec la RSL. Il ne peut pas être garanti.</p></article>
+        <article class="cond"><h3><span aria-hidden="true">🌧️</span>Mauvais temps</h3><p class="lead">Si la météo ne permet pas le cours, il est déplacé dans un autre lieu ou reporté à une autre date.</p><p>Tu es prévenu par WhatsApp le plus tôt possible. Un cours reporté est rattrapé, il n’est pas remboursé.</p></article>
+        <article class="cond"><h3><span aria-hidden="true">👨‍👩‍👧</span>Responsabilité des parents</h3><p class="lead">Les enfants restent sous la responsabilité de leurs parents ou de l’adulte qui les accompagne.</p><p>Le coach encadre uniquement pendant la durée du cours. Avant et après le cours, la RSL n’assure aucune surveillance.</p></article>
+        <article class="cond"><h3><span aria-hidden="true">⏱️</span>Après le cours</h3><p class="lead">Les enfants ne sont pas gardés plus de 5 minutes après la fin du cours.</p><p>Merci de venir les chercher à l’heure. Passé ce délai, l’enfant est sous la seule responsabilité de ses parents.</p></article>
+        <article class="cond"><h3><span aria-hidden="true">❌</span>Annulation</h3><p class="lead">Si un cours est annulé ou déplacé par la RSL (météo, coach malade, lieu fermé…), il est reporté ou remplacé.</p><p>La RSL n’est pas responsable des frais annexes (transport, déplacement, temps perdu). Une absence sans prévenir n’est pas remboursée.</p></article>
+        <article class="cond"><h3><span aria-hidden="true">🛡️</span>Accidents & assurance</h3><p class="lead">La trottinette freestyle comporte des risques. Chaque participant ride à ses propres risques.</p><p>Une assurance accident et responsabilité civile est obligatoire et reste à la charge du participant. Dans les limites prévues par la loi, la RSL et ses coachs déclinent toute responsabilité en cas d’accident, de blessure, de perte, de vol ou de dommage au matériel.</p></article>
+        <article class="cond"><h3><span aria-hidden="true">🪖</span>Sécurité</h3><p class="lead">Casque obligatoire. Protections (genoux, coudes) fortement recommandées. Trottinette en bon état.</p><p>Le coach peut refuser un rider sans casque ou au comportement dangereux, sans remboursement.</p></article>
+        <article class="cond"><h3><span aria-hidden="true">❤️</span>Santé</h3><p class="lead">Merci d’informer le coach avant le cours de tout problème de santé, allergie ou blessure récente.</p><p>En cas d’urgence, le coach peut appeler les secours. Les frais restent à la charge du participant ou des parents.</p></article>
+      </div>
+      <p class="cond-accept">En réservant un cours (WhatsApp, membre ou cours privé), le participant ou son représentant légal confirme avoir lu et accepté ces conditions.<br><a href="/conditions">Règlement et conditions générales de la RSL</a></p>
+
+      <div class="section-head" id="coachs" style="margin-top:72px">
+        <div class="section-kicker">
+          <div class="num">03</div>
           <div class="section-title">NOS <span>COACHS</span></div>
         </div>
         <div class="section-sub">Des riders passionnés, qui connaissent le terrain et la compétition.</div>
@@ -404,7 +459,7 @@
       <div class="extras" id="formules" style="margin-top:72px;margin-bottom:24px">
         <div class="section-head">
           <div class="section-kicker">
-            <div class="num">03</div>
+            <div class="num">04</div>
             <div class="section-title">AUTRES <span>FORMULES</span></div>
           </div>
           <p class="section-sub">Cours privé, autre ville ou intervention scolaire : on trouve une solution.</p>
@@ -415,7 +470,7 @@
             <div class="extra-tag">Progression personnalisée</div>
             <h3>COURS INDIVIDUEL · 60 CHF</h3>
             <p>Cours privé à Montreux avec un coach RSL. Tu progresses à ton rythme, sur les tricks que tu veux travailler.</p>
-            <a class="btn red" href="https://wa.me/41783008043?text=Bonjour%2C%20j%27aimerais%20r%C3%A9server%20un%20cours%20individuel%20%C3%A0%20Montreux%20%2860%20CHF%29.%0APr%C3%A9nom%20%3A%0A%C3%82ge%20%3A%0ADisponibilit%C3%A9s%20%3A" target="_blank" rel="noopener">Réserver sur WhatsApp</a>
+            <a class="btn red" href="https://wa.me/41783008043?text=Bonjour%2C%20j%27aimerais%20r%C3%A9server%20un%20cours%20individuel%20%C3%A0%20Montreux%20%2860%20CHF%29.%0APr%C3%A9nom%20%3A%0A%C3%82ge%20%3A%0ADisponibilit%C3%A9s%20%3A%0A%0AJ%27ai%20lu%20et%20j%27accepte%20les%20conditions%20des%20cours%20RSL%20%28rsl-swiss.ch%2Fcours%23conditions%29." target="_blank" rel="noopener">Réserver sur WhatsApp</a>
           </article>
 
           <article class="extra-card">
@@ -523,7 +578,7 @@
     }
 
     function buildWaUrl(dateStr,lieu){
-      const msg=encodeURIComponent(`Bonjour,\nJ'aimerais participer au cours de trottinette du ${dateStr} à ${lieu}.\nMerci !`);
+      const msg=encodeURIComponent(`Bonjour,\nJ'aimerais participer au cours de trottinette du ${dateStr} à ${lieu}.\nPrénom et âge du rider :\n\nJ'ai lu et j'accepte les conditions des cours RSL (rsl-swiss.ch/cours#conditions).\nMerci !`);
       return `https://wa.me/${WHATSAPP}?text=${msg}`;
     }
 
