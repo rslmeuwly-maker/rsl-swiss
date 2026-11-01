@@ -49,6 +49,7 @@ canvas{width:100%;max-width:540px;height:auto;border:1px solid var(--line);box-s
   <div class="panel">
     <label>Événement</label>
     <select id="event">
+      <option value="live" selected>🔴 Finale Montreux — 31 oct. (en direct)</option>
       <option value="mtx">Montreux — 30 mai 2026 (1re manche)</option>
       <option value="vidy">Vidy — 27 juin 2026 (2e manche)</option>
       <option value="best">Général — meilleur des 2 manches</option>
@@ -58,6 +59,10 @@ canvas{width:100%;max-width:540px;height:auto;border:1px solid var(--line);box-s
     <div id="autoBox">
       <label>Catégorie</label>
       <select id="cat"></select>
+      <div id="liveBox">
+        <button type="button" class="dl" id="refresh" style="margin-top:10px;box-shadow:none;background:#222">🔄 Mettre à jour les notes</button>
+        <div class="hint" id="liveInfo">Chargement des notes des juges…</div>
+      </div>
     </div>
 
     <div id="manualBox">
@@ -104,6 +109,7 @@ Nom Prénom; 70; Club / Sponsor</textarea>
   <div class="preview"><canvas id="cv" width="1080" height="1350"></canvas></div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const MTX_RAW = {
   'street-pro': [
@@ -319,6 +325,50 @@ EVENTS.best={title:'GÉNÉRAL',date:'Meilleur score · Montreux + Vidy',cats:[]}
   });
 })();
 
+/* ===== Finale en direct : notes des 3 juges (Supabase) ===== */
+EVENTS.live={title:'FINALE MONTREUX',date:'31 octobre 2026 · Montreux',cats:[]};
+async function loadLive(){
+  const info=document.getElementById('liveInfo');
+  try{
+    const db=supabase.createClient("https://jynxifufaauoxwzjapzq.supabase.co","eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp5bnhpZnVmYWF1b3h3emphcHpxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEzODI2NzcsImV4cCI6MjA3Njk1ODY3N30.vFPGhGakPIM3Xg5rn8_BrAXl6oJMJOssO780C9nXmr4");
+    const [r,s]=await Promise.all([db.from('inscriptions').select('*'),db.from('scores').select('*')]);
+    if(r.error||s.error) throw new Error((r.error||s.error).message);
+    const riders=r.data||[], scores=s.data||[];
+    const norm=x=>String(x||'').toLowerCase().trim().replace(/[_-]+/g,' ').replace(/\s+/g,' ');
+    const cap=x=>String(x||'').toLowerCase()==='street'?'Street':'Park';
+    const v=x=>{const n=Number(x);return x===null||x===undefined||x===''||isNaN(n)?null:n;};
+    const mean=a=>{a=a.filter(x=>x!==null);return a.length?a.reduce((p,x)=>p+x,0)/a.length:null;};
+    const mx=a=>{a=a.filter(x=>x!==null);return a.length?Math.max(...a):null;};
+    const sex=x=>['f','femme','female','féminin','feminin','girl'].includes(norm(x))?'Femme':'Homme';
+    const discRun=row=>{const sd=norm(row.discipline),rn=Number(row.run??row.run_number??row.run_no??row.run_index??0);
+      let m=sd.match(/^(park|street)\s*(run|r)\s*([12])$/); if(m) return {d:cap(m[1]),run:+m[3]};
+      if(sd==='park'||sd==='street') return {d:cap(sd),run:rn===2?2:1};
+      m=sd.match(/^(park|street).*([12])$/); if(m) return {d:cap(m[1]),run:+m[2]};
+      return {d:cap(sd),run:rn===2?2:1};};
+    const cats=[];
+    ['Park','Street'].forEach(disc=>{
+      const find=(id,j,run)=>{const l=scores.filter(x=>String(x.inscription_id)===String(id)&&Number(x.juge)===j&&(d=>d.d===disc&&d.run===run)(discRun(x)));
+        l.sort((a,b)=>String(b.updated_at||b.created_at||b.id||'').localeCompare(String(a.updated_at||a.created_at||a.id||''))); return l[0]||null;};
+      const run=(id,n)=>mean([1,2,3].map(j=>{const x=find(id,j,n);return x?mean([v(x.style),v(x.technique),v(x.originalite)]):null;}));
+      const bt=(id,n)=>mean([1,2,3].map(j=>{const x=find(id,j,n);return x?mx([v(x.t1),v(x.t2),v(x.t3)]):null;}));
+      const pool=riders.filter(x=>{const d=norm(x.discipline),p=norm(x.pack_type);return p.includes('pack')||!x.discipline||d===norm(disc)||d.includes(norm(disc));});
+      ['U13','U15','Amateur','Pro'].forEach(cat=>['Homme','Femme'].forEach(sx=>{
+        const rows=pool.filter(x=>x.category===cat&&sex(x.sex)===sx).map(x=>{
+          const a=run(x.id,1),b=run(x.id,2); if(a===null&&b===null) return null;
+          const br=(a??-1)>=(b??-1)?1:2, f=br===1?a:b, t=bt(x.id,br);
+          return {name:(x.first_name||'')+' '+(x.last_name||''),info:(x.club&&!/^none$/i.test(x.club)?x.club:'')||x.city||'',n:f,t:t??-1,
+            score:f.toFixed(2).replace('.',','),bt:t!==null&&t>0?t.toFixed(2).replace('.',','):null};
+        }).filter(Boolean).sort((a,b)=>b.n-a.n||b.t-a.t);
+        if(rows.length) cats.push({label:(sx==='Femme'?cat.toUpperCase()+' FEMME':cat.toUpperCase())+' · '+disc.toUpperCase(),rows});
+      }));
+    });
+    EVENTS.live.cats=cats;
+    const h=new Date().toLocaleTimeString('fr-CH',{hour:'2-digit',minute:'2-digit'});
+    info.textContent=cats.length?`Notes à jour (${h}) · ${scores.length} notes · ${cats.length} catégories`:'Pas encore de notes des juges.';
+  }catch(e){ info.textContent='Erreur de chargement : '+e.message; }
+  if($('event').value==='live'){ const k=$('cat').value; fillCats(); if(k && $('cat').options[k]) $('cat').value=k; draw(); }
+}
+
 
 /* ===== Sponsors ===== */
 const SP_KEY='rsl-insta-sponsors', SPBG_KEY='rsl-insta-spbg';
@@ -393,6 +443,7 @@ $('event').addEventListener('change',()=>{
   const man=$('event').value==='manual';
   $('manualBox').style.display=man?'block':'none';
   $('autoBox').style.display=man?'none':'block';
+  $('liveBox').style.display=$('event').value==='live'?'block':'none';
   if(!man) fillCats();
   draw();
 });
@@ -413,6 +464,7 @@ function current(){
     return {title:$('mTitle').value.toUpperCase(),date:$('mDate').value,cat:$('mCat').value.toUpperCase(),rows};
   }
   const ev=EVENTS[$('event').value]; const c=ev.cats[+$('cat').value]||ev.cats[0];
+  if(!c) return {title:ev.title,date:ev.date,cat:'EN ATTENTE DES NOTES',rows:[]};
   return {title:ev.title,date:ev.date,cat:c.label,rows:c.rows.filter(r=>r.score!=null)};
 }
 
@@ -510,6 +562,8 @@ $('dl').addEventListener('click',()=>{
 });
 
 fillCats();
+$('refresh').addEventListener('click',loadLive);
+loadLive();
 Promise.all([document.fonts.load("40px 'Bebas Neue'"),document.fonts.load("700 20px 'Barlow Condensed'")]).finally(draw);
 draw();
 </script>
