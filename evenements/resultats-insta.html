@@ -324,13 +324,15 @@ EVENTS.best={title:'GÉNÉRAL',date:'Meilleur score · Montreux + Vidy',cats:[]}
 
 /* ===== Finale en direct : notes des 3 juges (Supabase) ===== */
 EVENTS.live={title:'FINALE MONTREUX',date:'31 octobre 2026 · Montreux',cats:[]};
+// Riders à retirer du classement (pas qualifiés pour la finale) — id de l'inscription
+const EXCLURE=['8dc16416-d4cb-4469-bfc5-3f02cb7c0756' /* Hermès Favre — pas en finale Pro Street */];
 async function loadLive(){
   const info=document.getElementById('liveInfo');
   try{
     const db=supabase.createClient("https://jynxifufaauoxwzjapzq.supabase.co","eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp5bnhpZnVmYWF1b3h3emphcHpxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEzODI2NzcsImV4cCI6MjA3Njk1ODY3N30.vFPGhGakPIM3Xg5rn8_BrAXl6oJMJOssO780C9nXmr4");
     const [r,s]=await Promise.all([db.from('inscriptions').select('*'),db.from('scores').select('*')]);
     if(r.error||s.error) throw new Error((r.error||s.error).message);
-    const riders=r.data||[], scores=s.data||[];
+    const riders=(r.data||[]).filter(x=>!EXCLURE.includes(String(x.id))), scores=s.data||[];
     const norm=x=>String(x||'').toLowerCase().trim().replace(/[_-]+/g,' ').replace(/\s+/g,' ');
     const cap=x=>String(x||'').toLowerCase()==='street'?'Street':'Park';
     const v=x=>{const n=Number(x);return x===null||x===undefined||x===''||isNaN(n)?null:n;};
