@@ -85,13 +85,9 @@ Nom Prénom; 70; Club / Sponsor</textarea>
       <button data-f="story">Story 9:16</button>
     </div>
 
-    <label>Nombre de riders affichés</label>
-    <select id="top">
-      <option value="3">Podium (Top 3)</option>
-      <option value="5">Top 5</option>
-      <option value="8" selected>Top 8</option>
-      <option value="12">Top 12</option>
-    </select>
+    <label>Image (8 riders max par image)</label>
+    <select id="top"></select>
+    <div class="hint" id="pageInfo"></div>
 
     <label>Sponsors (logos en bas de l'image)</label>
     <input type="file" id="spFile" accept="image/*" multiple>
@@ -102,7 +98,8 @@ Nom Prénom; 70; Club / Sponsor</textarea>
     </div>
     <div class="hint">Les logos restent enregistrés sur cet appareil. Clique sur ✕ pour en enlever un.</div>
 
-    <button class="dl" id="dl">⬇ Télécharger l'image</button>
+    <button class="dl" id="dl">⬇ Télécharger cette image</button>
+    <button class="dl" id="dlAll" style="background:#222;box-shadow:none;margin-top:8px">⬇ Télécharger tout le classement</button>
     <div class="hint">L'image se télécharge en PNG, prête à poster sur Instagram.</div>
   </div>
 
@@ -357,7 +354,7 @@ async function loadLive(){
           const a=run(x.id,1),b=run(x.id,2); if(a===null&&b===null) return null;
           const br=(a??-1)>=(b??-1)?1:2, f=br===1?a:b, t=bt(x.id,br);
           return {name:(x.first_name||'')+' '+(x.last_name||''),info:(x.club&&!/^none$/i.test(x.club)?x.club:'')||x.city||'',n:f,t:t??-1,
-            score:f.toFixed(2).replace('.',','),bt:t!==null&&t>0?t.toFixed(2).replace('.',','):null};
+            score:(f*10).toFixed(1).replace('.',','),bt:t!==null&&t>0?(t*10).toFixed(1).replace('.',','):null};
         }).filter(Boolean).sort((a,b)=>b.n-a.n||b.t-a.t);
         if(rows.length) cats.push({label:(sx==='Femme'?cat.toUpperCase()+' FEMME':cat.toUpperCase())+' · '+disc.toUpperCase(),rows});
       }));
@@ -366,7 +363,7 @@ async function loadLive(){
     const h=new Date().toLocaleTimeString('fr-CH',{hour:'2-digit',minute:'2-digit'});
     info.textContent=cats.length?`Notes à jour (${h}) · ${scores.length} notes · ${cats.length} catégories`:'Pas encore de notes des juges.';
   }catch(e){ info.textContent='Erreur de chargement : '+e.message; }
-  if($('event').value==='live'){ const k=$('cat').value; fillCats(); if(k && $('cat').options[k]) $('cat').value=k; draw(); }
+  if($('event').value==='live'){ const k=$('cat').value; fillCats(); if(k && $('cat').options[k]) $('cat').value=k; fillPages(); draw(); }
 }
 
 
@@ -435,6 +432,17 @@ const $=id=>document.getElementById(id);
 let format='post';
 const logo=new Image(); logo.src='/images/logo_rsl.png'; logo.onload=draw;
 
+const PER=8;
+function fillPages(){
+  const sel=$('top'); const old=sel.value;
+  const n=current().rows.length; const pages=Math.max(1,Math.ceil(n/PER));
+  let h='<option value="podium">Podium (Top 3)</option>';
+  for(let i=0;i<pages;i++){ const a=i*PER+1,b=Math.min(n,(i+1)*PER); h+=`<option value="p${i}">${n?`Places ${a} à ${b}`:'Classement'}</option>`; }
+  sel.innerHTML=h;
+  sel.value=[...sel.options].some(o=>o.value===old)?old:'p0';
+  $('pageInfo').textContent=n?`${n} riders classés → ${pages} image${pages>1?'s':''}`:'';
+}
+function pageRange(v){ return v==='podium'?[0,3]:[(+String(v).slice(1)||0)*PER,PER]; }
 function fillCats(){
   const ev=EVENTS[$('event').value]; if(!ev) return;
   $('cat').innerHTML=ev.cats.map((c,i)=>`<option value="${i}">${c.label}</option>`).join('');
@@ -445,9 +453,10 @@ $('event').addEventListener('change',()=>{
   $('autoBox').style.display=man?'none':'block';
   $('liveBox').style.display=$('event').value==='live'?'block':'none';
   if(!man) fillCats();
-  draw();
+  fillPages(); draw();
 });
-['cat','top','mTitle','mDate','mCat','mList'].forEach(id=>$(id).addEventListener('input',draw));
+['cat','mTitle','mDate','mCat','mList'].forEach(id=>$(id).addEventListener('input',()=>{fillPages();draw();}));
+$('top').addEventListener('input',draw);
 $('fmt').addEventListener('click',e=>{
   const b=e.target.closest('button'); if(!b) return;
   format=b.dataset.f;
@@ -478,7 +487,7 @@ function draw(){
   const cv=$('cv'), W=1080, H=format==='story'?1920:1350;
   cv.width=W; cv.height=H;
   const ctx=cv.getContext('2d');
-  const d=current(); const top=+$('top').value; const rows=d.rows.slice(0,top);
+  const d=current(); const [pOff,cnt]=pageRange($('top').value||'p0'); const rows=d.rows.slice(pOff,pOff+cnt);
   const B="'Bebas Neue', Impact, sans-serif", C="'Barlow Condensed', Arial, sans-serif";
 
   // fond
@@ -518,10 +527,11 @@ function draw(){
   const spH=hasSp?(format==='story'?190:150):0;
   const footer=(format==='story'?260:110)+spH;
   const avail=H-y-footer;
-  const rh=Math.min(format==='story'?120:104,Math.floor(avail/Math.max(rows.length,1)));
+  const rh=Math.min(format==='story'?120:104,Math.floor(avail/Math.max(rows.length,cnt===3?3:PER)));
   const medal=['#f5c518','#c9c9c9','#cd7f32'];
-  rows.forEach((r,i)=>{
-    const x=70, w=W-140, h=rh-12, yy=y+i*rh;
+  rows.forEach((r,j)=>{
+    const i=pOff+j;
+    const x=70, w=W-140, h=rh-12, yy=y+j*rh;
     ctx.fillStyle=i<3?'rgba(255,255,255,.07)':'rgba(255,255,255,.035)';
     ctx.fillRect(x,yy,w,h);
     ctx.fillStyle=i<3?medal[i]:'#cc0000'; ctx.fillRect(x,yy,h,h);
@@ -554,14 +564,20 @@ function draw(){
   ctx.fillStyle='#cc0000'; ctx.fillRect(0,H-10,W,10);
 }
 
-$('dl').addEventListener('click',()=>{
+function dlCurrent(){
   draw();
-  const d=current();
-  const name=('rsl-'+d.title+'-'+d.cat+'-'+format).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/-+$/,'');
+  const d=current(); const v=$('top').value; const [o,c]=pageRange(v);
+  const name=('rsl-'+d.title+'-'+d.cat+'-'+(v==='podium'?'podium':'places-'+(o+1)+'-'+Math.min(d.rows.length,o+c))+'-'+format).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/-+$/,'');
   const a=document.createElement('a'); a.download=name+'.png'; a.href=$('cv').toDataURL('image/png'); a.click();
+}
+$('dl').addEventListener('click',dlCurrent);
+$('dlAll').addEventListener('click',async()=>{
+  const sel=$('top'), keep=sel.value;
+  for(const o of [...sel.options]){ if(o.value==='podium') continue; sel.value=o.value; dlCurrent(); await new Promise(r=>setTimeout(r,600)); }
+  sel.value=keep; draw();
 });
 
-fillCats();
+fillCats(); fillPages();
 $('refresh').addEventListener('click',loadLive);
 loadLive();
 Promise.all([document.fonts.load("40px 'Bebas Neue'"),document.fonts.load("700 20px 'Barlow Condensed'")]).finally(draw);
