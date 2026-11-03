@@ -325,7 +325,8 @@ EVENTS.best={title:'GÉNÉRAL',date:'Meilleur score · Montreux + Vidy',cats:[]}
 /* ===== Finale en direct : notes des 3 juges (Supabase) ===== */
 EVENTS.live={title:'FINALE MONTREUX',date:'31 octobre 2026 · Montreux',cats:[]};
 // Riders à retirer du classement (pas qualifiés pour la finale) — id de l'inscription
-const EXCLURE=['8dc16416-d4cb-4469-bfc5-3f02cb7c0756' /* Hermès Favre — pas en finale Pro Street */];
+const EXCLURE=['8dc16416-d4cb-4469-bfc5-3f02cb7c0756' /* Hermès Favre — pas en finale Pro Street */,
+  '92e6a7d0-6f8d-418a-990d-04fe7644798c' /* Killian Froidevaux — pas là en finale */];
 async function loadLive(){
   const info=document.getElementById('liveInfo');
   try{
