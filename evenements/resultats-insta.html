@@ -325,15 +325,20 @@ EVENTS.best={title:'GÉNÉRAL',date:'Meilleur score · Montreux + Vidy',cats:[]}
 /* ===== Finale en direct : notes des 3 juges (Supabase) ===== */
 EVENTS.live={title:'FINALE MONTREUX',date:'31 octobre 2026 · Montreux',cats:[]};
 // Riders à retirer du classement (pas qualifiés pour la finale) — id de l'inscription
-const EXCLURE=['8dc16416-d4cb-4469-bfc5-3f02cb7c0756' /* Hermès Favre — pas en finale Pro Street */,
-  '92e6a7d0-6f8d-418a-990d-04fe7644798c' /* Killian Froidevaux — pas là en finale */];
+const EXCLURE=['8dc16416-d4cb-4469-bfc5-3f02cb7c0756' /* Hermès Favre — pas en finale Pro Street */];
+// Notes entrées sous le mauvais nom : on les remet au bon rider
+const RENOMMER={'92e6a7d0-6f8d-418a-990d-04fe7644798c' /* notes Street sous « Killian Froidevaux » */:{first_name:'Enak',last_name:'Markwalder',club:'',city:'Denges'}};
+// Corrections de classement : ces riders passent en tête de la catégorie, dans cet ordre
+const EN_TETE={'PRO · PARK':['3df01ce6-41e3-4b21-b242-ae8542ef0816' /* Enak Markwalder — 1er Pro Park */]};
+// Notes corrigées à la main (sur 100)
+const NOTE_FIXE={'3df01ce6-41e3-4b21-b242-ae8542ef0816':84.6 /* Enak */,'283f92fe-97e2-4076-b9d5-eac38af8b0ae':83.8 /* Livio */};
 async function loadLive(){
   const info=document.getElementById('liveInfo');
   try{
     const db=supabase.createClient("https://jynxifufaauoxwzjapzq.supabase.co","eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp5bnhpZnVmYWF1b3h3emphcHpxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEzODI2NzcsImV4cCI6MjA3Njk1ODY3N30.vFPGhGakPIM3Xg5rn8_BrAXl6oJMJOssO780C9nXmr4");
     const [r,s]=await Promise.all([db.from('inscriptions').select('*'),db.from('scores').select('*')]);
     if(r.error||s.error) throw new Error((r.error||s.error).message);
-    const riders=(r.data||[]).filter(x=>!EXCLURE.includes(String(x.id))), scores=s.data||[];
+    const riders=(r.data||[]).filter(x=>!EXCLURE.includes(String(x.id))).map(x=>RENOMMER[x.id]?{...x,...RENOMMER[x.id]}:x), scores=s.data||[];
     const norm=x=>String(x||'').toLowerCase().trim().replace(/[_-]+/g,' ').replace(/\s+/g,' ');
     const cap=x=>String(x||'').toLowerCase()==='street'?'Street':'Park';
     const v=x=>{const n=Number(x);return x===null||x===undefined||x===''||isNaN(n)?null:n;};
@@ -345,20 +350,29 @@ async function loadLive(){
       if(sd==='park'||sd==='street') return {d:cap(sd),run:rn===2?2:1};
       m=sd.match(/^(park|street).*([12])$/); if(m) return {d:cap(m[1]),run:+m[2]};
       return {d:cap(sd),run:rn===2?2:1};};
+    // Doublons (même rider inscrit 2 fois) : on fusionne ses notes
+    const nk=x=>(x.first_name+' '+x.last_name).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').split(/\s+/).filter(Boolean).sort().join(' ')+'|'+x.category+'|'+sex(x.sex);
+    const GROUP={}, byKey={};
+    riders.forEach(x=>{(byKey[nk(x)]=byKey[nk(x)]||[]).push(String(x.id));});
+    riders.forEach(x=>{GROUP[x.id]=byKey[nk(x)];});
+    const seen=new Set();
     const cats=[];
     ['Park','Street'].forEach(disc=>{
-      const find=(id,j,run)=>{const l=scores.filter(x=>String(x.inscription_id)===String(id)&&Number(x.juge)===j&&(d=>d.d===disc&&d.run===run)(discRun(x)));
+      const find=(id,j,run)=>{const ids=GROUP[id]||[String(id)];const l=scores.filter(x=>ids.includes(String(x.inscription_id))&&Number(x.juge)===j&&(d=>d.d===disc&&d.run===run)(discRun(x)));
         l.sort((a,b)=>String(b.updated_at||b.created_at||b.id||'').localeCompare(String(a.updated_at||a.created_at||a.id||''))); return l[0]||null;};
       const run=(id,n)=>mean([1,2,3].map(j=>{const x=find(id,j,n);return x?mean([v(x.style),v(x.technique),v(x.originalite)]):null;}));
       const bt=(id,n)=>mean([1,2,3].map(j=>{const x=find(id,j,n);return x?mx([v(x.t1),v(x.t2),v(x.t3)]):null;}));
-      const pool=riders.filter(x=>{const d=norm(x.discipline),p=norm(x.pack_type);return p.includes('pack')||!x.discipline||d===norm(disc)||d.includes(norm(disc));});
+      seen.clear();
+      const pool=riders.filter(x=>{const d=norm(x.discipline),p=norm(x.pack_type);return p.includes('pack')||!x.discipline||d===norm(disc)||d.includes(norm(disc));}).filter(x=>{ if(seen.has(nk(x))) return false; seen.add(nk(x)); return true; });
       ['U13','U15','Amateur','Pro'].forEach(cat=>['Homme','Femme'].forEach(sx=>{
         const rows=pool.filter(x=>x.category===cat&&sex(x.sex)===sx).map(x=>{
           const a=run(x.id,1),b=run(x.id,2); if(a===null&&b===null) return null;
           const br=(a??-1)>=(b??-1)?1:2, f=br===1?a:b, t=bt(x.id,br);
-          return {name:(x.first_name||'')+' '+(x.last_name||''),info:(x.club&&!/^none$/i.test(x.club)?x.club:'')||x.city||'',n:f,t:t??-1,
+          return {id:String(x.id),name:(x.first_name||'')+' '+(x.last_name||''),info:(x.club&&!/^none$/i.test(x.club)?x.club:'')||x.city||'',n:f,t:t??-1,
             score:(f*10).toFixed(1).replace('.',','),bt:t!==null&&t>0?(t*10).toFixed(1).replace('.',','):null};
-        }).filter(Boolean).sort((a,b)=>b.n-a.n||b.t-a.t);
+        }).filter(Boolean).map(r=>{ const f=NOTE_FIXE[r.id]; if(f!=null){ r.n=f/10; r.score=f.toFixed(1).replace('.',','); } return r; }).sort((a,b)=>b.n-a.n||b.t-a.t);
+        const lab=(sx==='Femme'?cat.toUpperCase()+' FEMME':cat.toUpperCase())+' · '+disc.toUpperCase();
+        const top=(EN_TETE[lab]||[]); rows.sort((a,b)=>{const ia=top.indexOf(a.id),ib=top.indexOf(b.id);return (ia<0?99:ia)-(ib<0?99:ib);});
         if(rows.length) cats.push({label:(sx==='Femme'?cat.toUpperCase()+' FEMME':cat.toUpperCase())+' · '+disc.toUpperCase(),rows});
       }));
     });
