@@ -325,7 +325,16 @@ EVENTS.best={title:'GÉNÉRAL',date:'Meilleur score · Montreux + Vidy',cats:[]}
 /* ===== Finale en direct : notes des 3 juges (Supabase) ===== */
 EVENTS.live={title:'FINALE MONTREUX',date:'31 octobre 2026 · Montreux',cats:[]};
 // Riders à retirer du classement (pas qualifiés pour la finale) — id de l'inscription
-const EXCLURE=['8dc16416-d4cb-4469-bfc5-3f02cb7c0756' /* Hermès Favre — pas en finale Pro Street */];
+const EXCLURE=[];
+// Finalistes : classés d'abord (note de finale), puis tous les autres (note de qualif)
+const FINALISTES={'PRO · STREET':[
+  'fdf4ca77-328a-4579-9e79-6edb9461ab52' /* Thoma Gendre */,
+  'febad8b7-48e0-419c-96dc-11fa3a4e1aa7' /* Matteo Wozniak */,
+  '9903bfb6-1389-4bb1-aaea-2beb6d8d6466' /* Clément Laugier */,
+  '3df01ce6-41e3-4b21-b242-ae8542ef0816','92e6a7d0-6f8d-418a-990d-04fe7644798c' /* Enak Markwalder */,
+  'a23ef0fa-d3c2-4e6b-82ae-f18d25a638a4' /* David Sugnaux */,
+  'c81c5f46-1b1a-4de7-b5dd-7fcf04e0ba14' /* Pierrick Frossard */,
+  '85e25836-312a-4ff3-9b6b-870a79cad0b2' /* Ruben Victorio */]};
 // Notes entrées sous le mauvais nom : on les remet au bon rider
 const RENOMMER={'92e6a7d0-6f8d-418a-990d-04fe7644798c' /* notes Street sous « Killian Froidevaux » */:{first_name:'Enak',last_name:'Markwalder',club:'',city:'Denges'}};
 // Corrections de classement : ces riders passent en tête de la catégorie, dans cet ordre
@@ -368,11 +377,13 @@ async function loadLive(){
         const rows=pool.filter(x=>x.category===cat&&sex(x.sex)===sx).map(x=>{
           const a=run(x.id,1),b=run(x.id,2); if(a===null&&b===null) return null;
           const br=(a??-1)>=(b??-1)?1:2, f=br===1?a:b, t=bt(x.id,br);
-          return {id:String(x.id),name:(x.first_name||'')+' '+(x.last_name||''),info:(x.club&&!/^none$/i.test(x.club)?x.club:'')||x.city||'',n:f,t:t??-1,
+          return {id:String(x.id),ids:GROUP[x.id]||[String(x.id)],name:(x.first_name||'')+' '+(x.last_name||''),info:(x.club&&!/^none$/i.test(x.club)?x.club:'')||x.city||'',n:f,t:t??-1,
             score:(f*10).toFixed(1).replace('.',','),bt:t!==null&&t>0?(t*10).toFixed(1).replace('.',','):null};
         }).filter(Boolean).map(r=>{ const f=NOTE_FIXE[r.id]; if(f!=null){ r.n=f/10; r.score=f.toFixed(1).replace('.',','); } return r; }).sort((a,b)=>b.n-a.n||b.t-a.t);
         const lab=(sx==='Femme'?cat.toUpperCase()+' FEMME':cat.toUpperCase())+' · '+disc.toUpperCase();
         const top=(EN_TETE[lab]||[]); rows.sort((a,b)=>{const ia=top.indexOf(a.id),ib=top.indexOf(b.id);return (ia<0?99:ia)-(ib<0?99:ib);});
+        const fin=FINALISTES[lab];
+        if(fin){ const isF=r=>r.ids.some(i=>fin.includes(i)); const a=rows.filter(isF), b=rows.filter(r=>!isF(r)); rows.length=0; rows.push(...a,...b); }
         if(rows.length) cats.push({label:(sx==='Femme'?cat.toUpperCase()+' FEMME':cat.toUpperCase())+' · '+disc.toUpperCase(),rows});
       }));
     });
